@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:ignore="HardcodedText">
+    <item android:title="Prepare database">
+        <menu>
+            <item
+                android:id="@+id/button33"
+                android:title="Prepare database" />
+        </menu>
+    </item>
+    <item android:title="Word filter">
+        <menu>
+            <item
+                android:id="@+id/button4"
+                android:title="Custom query" />
+            <item
+                android:id="@+id/button15"
+                android:title="Filter by tag" />
+            <item
+                android:id="@+id/button34"
+                android:title="Search for anagrams" />
+            <item
+                android:id="@+id/button35"
+                android:title="Search for subanagrams" />
+        </menu>
+    </item>
+    <item android:title="Tag manager">
+        <menu>
+            <item
+                android:id="@+id/button7"
+                android:title="View all tag colours" />
+            <item
+                android:id="@+id/button16"
+                android:title="Add new tag" />
+            <item
+                android:id="@+id/button17"
+                android:title="Rename tag by colour" />
+            <item
+                android:id="@+id/button18"
+                android:title="Change tag colour by name" />
+            <item
+                android:id="@+id/button19"
+                android:title="Delete single tag by name" />
+            <item
+                android:id="@+id/button20"
+                android:title="Delete single tag by colour" />
+            <item
+                android:id="@+id/button29"
+                android:title="Delete all tags" />
+        </menu>
+    </item>
+    <item android:title="Zoom in and out">
+        <menu>
+            <item
+                android:id="@+id/button13"
+                android:title="Change rows, columns, font size" />
+        </menu>
+    </item>
+    <item android:title="Hide and show">
+        <menu>
+            <item
+                android:id="@+id/button14"
+                android:title="Hide number of anagrams" />
+        </menu>
+    </item>
+    <item android:title="Prefixes and suffixes">
+        <menu>
+            <item
+                android:id="@+id/button21"
+                android:title="Hide full details" />
+            <item
+                android:id="@+id/button22"
+                android:title="View all prefixes and suffixes" />
+            <item
+                android:id="@+id/button23"
+                android:title="Add new prefix" />
+            <item
+                android:id="@+id/button24"
+                android:title="Change prefix" />
+            <item
+                android:id="@+id/button25"
+                android:title="Delete single prefix" />
+            <item
+                android:id="@+id/button30"
+                android:title="Delete all prefixes" />
+            <item
+                android:id="@+id/button26"
+                android:title="Add new suffix" />
+            <item
+                android:id="@+id/button27"
+                android:title="Change suffix" />
+            <item
+                android:id="@+id/button28"
+                android:title="Delete single suffix" />
+            <item
+                android:id="@+id/button31"
+                android:title="Delete all suffixes" />
+        </menu>
+    </item>
+    <item android:title="Database manager">
+        <menu>
+            <item
+                android:id="@+id/button6"
+                android:title="SQL query" />
+        </menu>
+    </item>
+    <item android:title="Import and export">
+        <menu>
+            <item
+                android:id="@+id/button10"
+                android:title="Export CSV" />
+            <item
+                android:id="@+id/button8"
+                android:title="Export tags" />
+            <item
+                android:id="@+id/button11"
+                android:title="Import CSV" />
+            <item
+                android:id="@+id/button9"
+                android:title="Import tags" />
+        </menu>
+    </item>
+</menu>
