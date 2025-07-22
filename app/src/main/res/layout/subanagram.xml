@@ -1,41 +1,75 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="wrap_content">
     <LinearLayout
-        android:orientation="horizontal"
+        android:orientation="vertical"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="match_parent">
+        <LinearLayout
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+            <TextView
+                android:id="@+id/textview59"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Letters:">
+            </TextView>
+            <EditText
+                android:id="@+id/edittext17"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/rectangle">
+            </EditText>
+        </LinearLayout>
+        <LinearLayout
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+            <TextView
+                android:id="@+id/textview60"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Number of blanks:">
+            </TextView>
+            <EditText
+                android:id="@+id/edittext18"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/rectangle"
+                android:inputType="number">
+            </EditText>
+        </LinearLayout>
         <TextView
-            android:id="@+id/textview59"
+            android:id="@+id/textview61"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Letters:">
+            android:text="Additional SQL conditions (Optional):">
         </TextView>
-        <EditText
-            android:id="@+id/edittext17"
+        <RelativeLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:background="@drawable/rectangle">
-        </EditText>
-    </LinearLayout>
-    <LinearLayout
-        android:orientation="horizontal"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+            android:layout_height="wrap_content">
+            <Button
+                android:id="@+id/button36"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentRight="true"
+                android:text="Examples">
+            </Button>
+            <EditText
+                android:id="@+id/edittext19"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_toLeftOf="@+id/button36"
+                android:layout_centerVertical="true"
+                android:background="@drawable/rectangle">
+            </EditText>
+        </RelativeLayout>
         <TextView
-            android:id="@+id/textview60"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Number of blanks:">
-        </TextView>
-        <EditText
-            android:id="@+id/edittext18"
+            android:id="@+id/textview62"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:background="@drawable/rectangle"
-            android:inputType="number">
-        </EditText>
+            android:layout_height="wrap_content">
+        </TextView>
     </LinearLayout>
-</LinearLayout>
+</ScrollView>

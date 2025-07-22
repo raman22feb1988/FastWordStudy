@@ -585,9 +585,9 @@ public class MainActivity extends AppCompatActivity {
                 .setView(yourCustomView)
                 .setPositiveButton("OK", new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int whichButton) {
-                        sqlQuery = ((e2.getText()).toString()).replace("\"", "'");
+                        String temporaryQuery = ((e2.getText()).toString()).replace("\"", "'");
                         boolean skipUnderscore = false;
-                        execute(false);
+                        execute(false, temporaryQuery);
                     }
                 }).create();
         dialog.show();
@@ -605,11 +605,12 @@ public class MainActivity extends AppCompatActivity {
         nextWord();
     }
 
-    public void execute(boolean skipUnderscore)
+    public void execute(boolean skipUnderscore, String permanentQuery)
     {
-        Cursor resultSet = db.getSqlQuery(sqlQuery, MainActivity.this, skipUnderscore);
+        Cursor resultSet = db.getSqlQuery(permanentQuery, MainActivity.this, skipUnderscore);
 
         if (resultSet != null) {
+            sqlQuery = permanentQuery;
             mode = 2;
             skipUnderscores = skipUnderscore;
 
@@ -1097,6 +1098,19 @@ public class MainActivity extends AppCompatActivity {
 
         EditText e11 = yourCustomView.findViewById(R.id.edittext17);
         EditText e12 = yourCustomView.findViewById(R.id.edittext18);
+        EditText e13 = yourCustomView.findViewById(R.id.edittext19);
+
+        TextView t7 = yourCustomView.findViewById(R.id.textview62);
+        t7.setText(db.getSchema());
+
+        Button b8 = yourCustomView.findViewById(R.id.button36);
+        b8.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Help help = new Help();
+                db.messageBox("Example custom queries", help.getCustomHelp(), MainActivity.this);
+            }
+        });
 
         AlertDialog dialog = new AlertDialog.Builder(MainActivity.this)
                 .setTitle(subanagram ? "Search for subanagrams" : "Search for anagrams")
@@ -1139,7 +1153,7 @@ public class MainActivity extends AppCompatActivity {
                                     char occurrences = (char) (myIndex + 97);
                                     theQuery.append(myIndex == 0 ? "" : " + ").append("ABS(_no_").append(occurrences).append("_ - ").append(occurrence[myIndex]).append(")");
                                 }
-                                theQuery.append(" <= ").append((2 * blanks) + letter.length()).append(" - _length_ ORDER BY _length_ DESC");
+                                theQuery.append(" <= ").append((2 * blanks) + letter.length()).append(" - _length_");
                             } else {
                                 char[] myCharacter = letter.toCharArray();
                                 Arrays.sort(myCharacter);
@@ -1152,9 +1166,19 @@ public class MainActivity extends AppCompatActivity {
                                 theQuery.append("_length_ = ").append(letter.length() + blanks).append(" AND _alphagram_ LIKE '").append(empty).append("'");
                             }
 
-                            sqlQuery = new String(theQuery);
+                            String extra = (e13.getText()).toString();
+                            if (extra.length() > 0)
+                            {
+                                theQuery.append(" AND (").append(db.addUnderscores(extra)).append(")");
+                            }
+
+                            if (subanagram)
+                            {
+                                theQuery.append(" ORDER BY _length_ DESC");
+                            }
+
                             boolean skipUnderscore = true;
-                            execute(true);
+                            execute(true, new String(theQuery));
                         }
                     }
                 }).create();

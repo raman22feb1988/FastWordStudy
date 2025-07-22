@@ -34,10 +34,18 @@
         <entry key="..\:/Users/raman/AndroidStudioProjects/WordStudy2/app/src/main/res/layout/message.xml" value="0.1234375" />
         <entry key="..\:/Users/raman/AndroidStudioProjects/WordStudy2/app/src/main/res/layout/path.xml" value="0.1234375" />
         <entry key="..\:/Users/raman/AndroidStudioProjects/WordStudy2/app/src/main/res/layout/query.xml" value="0.1234375" />
+        <entry key="..\:/Users/raman/Documents/GitHub/FastWordStudy/app/src/main/res/layout/activity_main.xml" value="0.12158054711246201" />
+        <entry key="..\:/Users/raman/Documents/GitHub/FastWordStudy/app/src/main/res/layout/app_bar_main.xml" value="0.12158054711246201" />
+        <entry key="..\:/Users/raman/Documents/GitHub/FastWordStudy/app/src/main/res/layout/cell.xml" value="0.12158054711246201" />
+        <entry key="..\:/Users/raman/Documents/GitHub/FastWordStudy/app/src/main/res/layout/change.xml" value="0.12158054711246201" />
+        <entry key="..\:/Users/raman/Documents/GitHub/FastWordStudy/app/src/main/res/layout/display.xml" value="0.12158054711246201" />
+        <entry key="..\:/Users/raman/Documents/GitHub/FastWordStudy/app/src/main/res/layout/filter.xml" value="0.12158054711246201" />
+        <entry key="..\:/Users/raman/Documents/GitHub/FastWordStudy/app/src/main/res/layout/query.xml" value="0.12158054711246201" />
+        <entry key="..\:/Users/raman/Documents/GitHub/FastWordStudy/app/src/main/res/layout/subanagram.xml" value="0.12158054711246201" />
       </map>
     </option>
   </component>
-  <component name="ProjectRootManager" version="2" languageLevel="JDK_X" project-jdk-name="11" project-jdk-type="JavaSDK">
+  <component name="ProjectRootManager" version="2" languageLevel="JDK_15" project-jdk-name="11" project-jdk-type="JavaSDK">
     <output url="file://$PROJECT_DIR$/build/classes" />
   </component>
   <component name="ProjectType">
