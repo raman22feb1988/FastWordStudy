@@ -45,7 +45,7 @@
             android:id="@+id/textview61"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Additional SQL conditions (Optional):">
+            android:text="Additional word filters (Optional):">
         </TextView>
         <RelativeLayout
             android:layout_width="match_parent"

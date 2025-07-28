@@ -600,6 +600,12 @@ public class MainActivity extends AppCompatActivity {
         words = anagrams.getCount();
         counter = db.getCounter(letters, sqlQuery);
 
+        int high = (words - 1) / (rows * columns);
+        if (counter > high && words > 0) {
+            counter = high;
+            db.updateScores(letters, counter, sqlQuery);
+        }
+
         ultimate = null;
         skipUnderscores = false;
         nextWord();
@@ -625,6 +631,12 @@ public class MainActivity extends AppCompatActivity {
                 db.insertScores(letters, counter, sqlQuery);
             } else {
                 counter = db.getCounter(letters, sqlQuery);
+            }
+
+            int highest = (words - 1) / (rows * columns);
+            if (counter > highest && words > 0) {
+                counter = highest;
+                db.updateScores(letters, counter, sqlQuery);
             }
 
             ultimate = null;
@@ -859,9 +871,9 @@ public class MainActivity extends AppCompatActivity {
             words = anagrams.getCount();
             counter = db.getCounter(letters, sqlQuery);
 
-            int peak = (words - 1) / (rows * columns);
-            if (counter > peak && words > 0) {
-                counter = peak;
+            int apex = (words - 1) / (rows * columns);
+            if (counter > apex && words > 0) {
+                counter = apex;
                 db.updateScores(letters, counter, sqlQuery);
             }
 
@@ -1117,7 +1129,7 @@ public class MainActivity extends AppCompatActivity {
                 .setView(yourCustomView)
                 .setPositiveButton("OK", new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int whichButton) {
-                        String letter = ((e11.getText()).toString()).toUpperCase();
+                        String letter = (((e11.getText()).toString()).trim()).toUpperCase();
                         boolean flag = false;
                         for (int digits = 0; digits < letter.length(); digits++) {
                             int flags = (int) letter.charAt(digits);
@@ -1166,7 +1178,7 @@ public class MainActivity extends AppCompatActivity {
                                 theQuery.append("_length_ = ").append(letter.length() + blanks).append(" AND _alphagram_ LIKE '").append(empty).append("'");
                             }
 
-                            String extra = (e13.getText()).toString();
+                            String extra = ((e13.getText()).toString()).replace("\"", "'");
                             if (extra.length() > 0)
                             {
                                 theQuery.append(" AND (").append(db.addUnderscores(extra)).append(")");
