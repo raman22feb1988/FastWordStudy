@@ -12,6 +12,7 @@ import android.database.sqlite.SQLiteOpenHelper;
 import android.graphics.Color;
 import android.os.Environment;
 import android.text.Html;
+import android.util.Pair;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.AdapterView;
@@ -132,6 +133,8 @@ public class sqliteDB extends SQLiteOpenHelper {
             {
                 db.execSQL(theQuery);
             }
+
+            refresh(activity);
         }
         catch (SQLiteException e) {
             alertBox("Error", e.toString(), activity);
@@ -463,10 +466,10 @@ public class sqliteDB extends SQLiteOpenHelper {
         dialog.show();
     }
 
-    public List<RowItem> getAllLabels()
+    public List<Pair<String, String>> getAllLabels()
     {
         HashSet<String> labelsList = new HashSet<>();
-        List<RowItem> columnItemList = new ArrayList<>();
+        List<Pair<String, String>> columnItemList = new ArrayList<>();
 
         SQLiteDatabase db = this.getReadableDatabase();
         Cursor cursor = db.rawQuery("SELECT _tag_, _colour_ FROM colours", null);
@@ -478,19 +481,19 @@ public class sqliteDB extends SQLiteOpenHelper {
 
                 if (!labelsList.contains(label)) {
                     labelsList.add(label);
-                    columnItemList.add(new RowItem(label, colour));
+                    columnItemList.add(new Pair<>(label, colour));
                 }
             } while (cursor.moveToPrevious());
         }
         cursor.close();
-        Collections.sort(columnItemList, (o1, o2) -> (o1.getTag()).compareTo(o2.getTag()));
+        Collections.sort(columnItemList, (o1, o2) -> (o1.first).compareTo(o2.first));
         return columnItemList;
     }
 
-    public List<RowItem> getAllColours()
+    public List<Pair<String, String>> getAllColours()
     {
         HashSet<String> tagList = new HashSet<>();
-        List<RowItem> rowItemList = new ArrayList<>();
+        List<Pair<String, String>> rowItemList = new ArrayList<>();
 
         SQLiteDatabase db = this.getReadableDatabase();
         Cursor cursor = db.rawQuery("SELECT _tag_, _colour_ FROM colours", null);
@@ -502,12 +505,12 @@ public class sqliteDB extends SQLiteOpenHelper {
 
                 if (!tagList.contains(colour)) {
                     tagList.add(colour);
-                    rowItemList.add(new RowItem(label, colour));
+                    rowItemList.add(new Pair<>(label, colour));
                 }
             } while (cursor.moveToPrevious());
         }
         cursor.close();
-        Collections.sort(rowItemList, (o1, o2) -> (o1.getColour()).compareTo(o2.getColour()));
+        Collections.sort(rowItemList, (o1, o2) -> (o1.second).compareTo(o2.second));
         return rowItemList;
     }
 
@@ -973,193 +976,193 @@ public class sqliteDB extends SQLiteOpenHelper {
                     contentValues.put("_size_", 11);
                     db.insert("zoom", null, contentValues);
 
-                    ArrayList<RowItem> myPrefixes = new ArrayList<>();
-                    myPrefixes.add(new RowItem("AB", ""));
-                    myPrefixes.add(new RowItem("UN", ""));
-                    myPrefixes.add(new RowItem("DE", ""));
-                    myPrefixes.add(new RowItem("IN", ""));
-                    myPrefixes.add(new RowItem("RE", ""));
-                    myPrefixes.add(new RowItem("IM", ""));
-                    myPrefixes.add(new RowItem("IL", "L"));
-                    myPrefixes.add(new RowItem("IR", "R"));
-                    myPrefixes.add(new RowItem("DIS", ""));
-                    myPrefixes.add(new RowItem("MIS", ""));
-                    myPrefixes.add(new RowItem("NON", ""));
-                    myPrefixes.add(new RowItem("BI", ""));
-                    myPrefixes.add(new RowItem("DI", ""));
-                    myPrefixes.add(new RowItem("TRI", ""));
-                    myPrefixes.add(new RowItem("BE", ""));
-                    myPrefixes.add(new RowItem("OUT", ""));
-                    myPrefixes.add(new RowItem("OVER", ""));
-                    myPrefixes.add(new RowItem("SUB", ""));
-                    myPrefixes.add(new RowItem("CO", ""));
-                    myPrefixes.add(new RowItem("UP", ""));
-                    myPrefixes.add(new RowItem("DOWN", ""));
-                    myPrefixes.add(new RowItem("OFF", ""));
-                    myPrefixes.add(new RowItem("ANTI", ""));
-                    myPrefixes.add(new RowItem("SEMI", ""));
-                    myPrefixes.add(new RowItem("TRANS", ""));
-                    myPrefixes.add(new RowItem("GRAND", ""));
-                    myPrefixes.add(new RowItem("MULTI", ""));
-                    myPrefixes.add(new RowItem("INTER", ""));
-                    myPrefixes.add(new RowItem("INTRA", ""));
-                    myPrefixes.add(new RowItem("SUPER", ""));
-                    myPrefixes.add(new RowItem("UNDER", ""));
-                    myPrefixes.add(new RowItem("UNI", ""));
-                    myPrefixes.add(new RowItem("SOME", ""));
-                    myPrefixes.add(new RowItem("BACK", ""));
-                    myPrefixes.add(new RowItem("PRE", ""));
-                    myPrefixes.add(new RowItem("MID", ""));
-                    myPrefixes.add(new RowItem("MONO", ""));
-                    myPrefixes.add(new RowItem("MINI", ""));
-                    myPrefixes.add(new RowItem("POLY", ""));
-                    myPrefixes.add(new RowItem("POST", ""));
-                    myPrefixes.add(new RowItem("FORE", ""));
-                    myPrefixes.add(new RowItem("SIDE", ""));
-                    myPrefixes.add(new RowItem("AUTO", ""));
-                    myPrefixes.add(new RowItem("ORTHO", ""));
-                    myPrefixes.add(new RowItem("PARA", ""));
-                    myPrefixes.add(new RowItem("META", ""));
-                    myPrefixes.add(new RowItem("ISO", ""));
-                    myPrefixes.add(new RowItem("HOMO", ""));
-                    myPrefixes.add(new RowItem("HOMEO", ""));
-                    myPrefixes.add(new RowItem("HETERO", ""));
+                    ArrayList<Pair<String, String>> myPrefixes = new ArrayList<>();
+                    myPrefixes.add(new Pair<>("AB", ""));
+                    myPrefixes.add(new Pair<>("UN", ""));
+                    myPrefixes.add(new Pair<>("DE", ""));
+                    myPrefixes.add(new Pair<>("IN", ""));
+                    myPrefixes.add(new Pair<>("RE", ""));
+                    myPrefixes.add(new Pair<>("IM", ""));
+                    myPrefixes.add(new Pair<>("IL", "L"));
+                    myPrefixes.add(new Pair<>("IR", "R"));
+                    myPrefixes.add(new Pair<>("DIS", ""));
+                    myPrefixes.add(new Pair<>("MIS", ""));
+                    myPrefixes.add(new Pair<>("NON", ""));
+                    myPrefixes.add(new Pair<>("BI", ""));
+                    myPrefixes.add(new Pair<>("DI", ""));
+                    myPrefixes.add(new Pair<>("TRI", ""));
+                    myPrefixes.add(new Pair<>("BE", ""));
+                    myPrefixes.add(new Pair<>("OUT", ""));
+                    myPrefixes.add(new Pair<>("OVER", ""));
+                    myPrefixes.add(new Pair<>("SUB", ""));
+                    myPrefixes.add(new Pair<>("CO", ""));
+                    myPrefixes.add(new Pair<>("UP", ""));
+                    myPrefixes.add(new Pair<>("DOWN", ""));
+                    myPrefixes.add(new Pair<>("OFF", ""));
+                    myPrefixes.add(new Pair<>("ANTI", ""));
+                    myPrefixes.add(new Pair<>("SEMI", ""));
+                    myPrefixes.add(new Pair<>("TRANS", ""));
+                    myPrefixes.add(new Pair<>("GRAND", ""));
+                    myPrefixes.add(new Pair<>("MULTI", ""));
+                    myPrefixes.add(new Pair<>("INTER", ""));
+                    myPrefixes.add(new Pair<>("INTRA", ""));
+                    myPrefixes.add(new Pair<>("SUPER", ""));
+                    myPrefixes.add(new Pair<>("UNDER", ""));
+                    myPrefixes.add(new Pair<>("UNI", ""));
+                    myPrefixes.add(new Pair<>("SOME", ""));
+                    myPrefixes.add(new Pair<>("BACK", ""));
+                    myPrefixes.add(new Pair<>("PRE", ""));
+                    myPrefixes.add(new Pair<>("MID", ""));
+                    myPrefixes.add(new Pair<>("MONO", ""));
+                    myPrefixes.add(new Pair<>("MINI", ""));
+                    myPrefixes.add(new Pair<>("POLY", ""));
+                    myPrefixes.add(new Pair<>("POST", ""));
+                    myPrefixes.add(new Pair<>("FORE", ""));
+                    myPrefixes.add(new Pair<>("SIDE", ""));
+                    myPrefixes.add(new Pair<>("AUTO", ""));
+                    myPrefixes.add(new Pair<>("ORTHO", ""));
+                    myPrefixes.add(new Pair<>("PARA", ""));
+                    myPrefixes.add(new Pair<>("META", ""));
+                    myPrefixes.add(new Pair<>("ISO", ""));
+                    myPrefixes.add(new Pair<>("HOMO", ""));
+                    myPrefixes.add(new Pair<>("HOMEO", ""));
+                    myPrefixes.add(new Pair<>("HETERO", ""));
 
-                    for (RowItem columnItem : myPrefixes) {
+                    for (Pair<String, String> columnItem : myPrefixes) {
                         ContentValues prefixValues = new ContentValues();
-                        prefixValues.put("_prefix_", columnItem.getTag());
-                        prefixValues.put("_before_", columnItem.getColour());
+                        prefixValues.put("_prefix_", columnItem.first);
+                        prefixValues.put("_before_", columnItem.second);
                         db.insert("prefixes", null, prefixValues);
                     }
 
-                    ArrayList<RowItem> mySuffixes = new ArrayList<>();
-                    mySuffixes.add(new RowItem("S", ""));
-                    mySuffixes.add(new RowItem("ES", ""));
-                    mySuffixes.add(new RowItem("-IES", "Y"));
-                    mySuffixes.add(new RowItem("+IES", ""));
-                    mySuffixes.add(new RowItem("ED", ""));
-                    mySuffixes.add(new RowItem("-ED", "E"));
-                    mySuffixes.add(new RowItem("-IED", "Y"));
-                    mySuffixes.add(new RowItem("+IED", ""));
-                    mySuffixes.add(new RowItem("+ED", ""));
-                    mySuffixes.add(new RowItem("ING", ""));
-                    mySuffixes.add(new RowItem("-ING", "E"));
-                    mySuffixes.add(new RowItem("+ING", ""));
-                    mySuffixes.add(new RowItem("ION", ""));
-                    mySuffixes.add(new RowItem("-ION", "EY"));
-                    mySuffixes.add(new RowItem("+ION", ""));
-                    mySuffixes.add(new RowItem("Y", ""));
-                    mySuffixes.add(new RowItem("-Y", "E"));
-                    mySuffixes.add(new RowItem("+Y", ""));
-                    mySuffixes.add(new RowItem("LY", ""));
-                    mySuffixes.add(new RowItem("-ILY", "Y"));
-                    mySuffixes.add(new RowItem("ER", ""));
-                    mySuffixes.add(new RowItem("-ER", "E"));
-                    mySuffixes.add(new RowItem("+ER", ""));
-                    mySuffixes.add(new RowItem("EST", ""));
-                    mySuffixes.add(new RowItem("-EST", "E"));
-                    mySuffixes.add(new RowItem("+EST", ""));
-                    mySuffixes.add(new RowItem("IER", ""));
-                    mySuffixes.add(new RowItem("-IER", "EY"));
-                    mySuffixes.add(new RowItem("+IER", ""));
-                    mySuffixes.add(new RowItem("IEST", ""));
-                    mySuffixes.add(new RowItem("-IEST", "EY"));
-                    mySuffixes.add(new RowItem("+IEST", ""));
-                    mySuffixes.add(new RowItem("FUL", ""));
-                    mySuffixes.add(new RowItem("-FUL", ""));
-                    mySuffixes.add(new RowItem("-IFUL", "Y"));
-                    mySuffixes.add(new RowItem("FULLY", ""));
-                    mySuffixes.add(new RowItem("-FULLY", ""));
-                    mySuffixes.add(new RowItem("-IFULLY", "Y"));
-                    mySuffixes.add(new RowItem("LESS", ""));
-                    mySuffixes.add(new RowItem("-ILESS", "Y"));
-                    mySuffixes.add(new RowItem("NESS", ""));
-                    mySuffixes.add(new RowItem("-INESS", "Y"));
-                    mySuffixes.add(new RowItem("ABLE", ""));
-                    mySuffixes.add(new RowItem("-ABLE", "E"));
-                    mySuffixes.add(new RowItem("-IABLE", "Y"));
-                    mySuffixes.add(new RowItem("ABLY", ""));
-                    mySuffixes.add(new RowItem("-ABLY", "E"));
-                    mySuffixes.add(new RowItem("-IABLY", "Y"));
-                    mySuffixes.add(new RowItem("LIKE", ""));
-                    mySuffixes.add(new RowItem("AGE", ""));
-                    mySuffixes.add(new RowItem("LET", ""));
-                    mySuffixes.add(new RowItem("ISH", ""));
-                    mySuffixes.add(new RowItem("-ISH", "E"));
-                    mySuffixes.add(new RowItem("+ISH", ""));
-                    mySuffixes.add(new RowItem("IST", ""));
-                    mySuffixes.add(new RowItem("-IST", "EO"));
-                    mySuffixes.add(new RowItem("+IST", ""));
-                    mySuffixes.add(new RowItem("ISM", ""));
-                    mySuffixes.add(new RowItem("-ISM", "EO"));
-                    mySuffixes.add(new RowItem("+ISM", ""));
-                    mySuffixes.add(new RowItem("DOM", ""));
-                    mySuffixes.add(new RowItem("SHIP", ""));
-                    mySuffixes.add(new RowItem("HOOD", ""));
-                    mySuffixes.add(new RowItem("UP", ""));
-                    mySuffixes.add(new RowItem("DOWN", ""));
-                    mySuffixes.add(new RowItem("OFF", ""));
-                    mySuffixes.add(new RowItem("WARD", ""));
-                    mySuffixes.add(new RowItem("SOME", ""));
-                    mySuffixes.add(new RowItem("MAN", ""));
-                    mySuffixes.add(new RowItem("WOMAN", ""));
-                    mySuffixes.add(new RowItem("MEN", ""));
-                    mySuffixes.add(new RowItem("WOMEN", ""));
-                    mySuffixes.add(new RowItem("MENT", ""));
-                    mySuffixes.add(new RowItem("-MENT", "E"));
-                    mySuffixes.add(new RowItem("-IMENT", "Y"));
-                    mySuffixes.add(new RowItem("BACK", ""));
-                    mySuffixes.add(new RowItem("FOLD", ""));
-                    mySuffixes.add(new RowItem("OUT", ""));
-                    mySuffixes.add(new RowItem("OVER", ""));
-                    mySuffixes.add(new RowItem("UNDER", ""));
-                    mySuffixes.add(new RowItem("BOY", ""));
-                    mySuffixes.add(new RowItem("SIDE", ""));
-                    mySuffixes.add(new RowItem("WISE", ""));
-                    mySuffixes.add(new RowItem("AL", ""));
-                    mySuffixes.add(new RowItem("UAL", ""));
-                    mySuffixes.add(new RowItem("+AL", ""));
-                    mySuffixes.add(new RowItem("-AL", "AE"));
-                    mySuffixes.add(new RowItem("-IAL", "Y"));
-                    mySuffixes.add(new RowItem("ALLY", ""));
-                    mySuffixes.add(new RowItem("UALLY", ""));
-                    mySuffixes.add(new RowItem("+ALLY", ""));
-                    mySuffixes.add(new RowItem("-ALLY", "AE"));
-                    mySuffixes.add(new RowItem("-IALLY", "Y"));
-                    mySuffixes.add(new RowItem("IC", ""));
-                    mySuffixes.add(new RowItem("+IC", ""));
-                    mySuffixes.add(new RowItem("-IC", "EY"));
-                    mySuffixes.add(new RowItem("ICAL", ""));
-                    mySuffixes.add(new RowItem("+ICAL", ""));
-                    mySuffixes.add(new RowItem("-ICAL", "EY"));
-                    mySuffixes.add(new RowItem("ICALLY", ""));
-                    mySuffixes.add(new RowItem("+ICALLY", ""));
-                    mySuffixes.add(new RowItem("-ICALLY", "EY"));
-                    mySuffixes.add(new RowItem("+IFUL", ""));
-                    mySuffixes.add(new RowItem("+IFULLY", ""));
-                    mySuffixes.add(new RowItem("+ILESS", ""));
-                    mySuffixes.add(new RowItem("+INESS", ""));
-                    mySuffixes.add(new RowItem("+IABLE", ""));
-                    mySuffixes.add(new RowItem("+IABLY", ""));
-                    mySuffixes.add(new RowItem("+IMENT", ""));
-                    mySuffixes.add(new RowItem("+IAL", ""));
-                    mySuffixes.add(new RowItem("OR", ""));
-                    mySuffixes.add(new RowItem("+OR", ""));
-                    mySuffixes.add(new RowItem("-OR", "E"));
-                    mySuffixes.add(new RowItem("IOR", ""));
-                    mySuffixes.add(new RowItem("+IOR", ""));
-                    mySuffixes.add(new RowItem("-IOR", "EY"));
-                    mySuffixes.add(new RowItem("OUR", ""));
-                    mySuffixes.add(new RowItem("+OUR", ""));
-                    mySuffixes.add(new RowItem("-OUR", "E"));
-                    mySuffixes.add(new RowItem("IOUR", ""));
-                    mySuffixes.add(new RowItem("+IOUR", ""));
-                    mySuffixes.add(new RowItem("-IOUR", "EY"));
+                    ArrayList<Pair<String, String>> mySuffixes = new ArrayList<>();
+                    mySuffixes.add(new Pair<>("S", ""));
+                    mySuffixes.add(new Pair<>("ES", ""));
+                    mySuffixes.add(new Pair<>("-IES", "Y"));
+                    mySuffixes.add(new Pair<>("+IES", ""));
+                    mySuffixes.add(new Pair<>("ED", ""));
+                    mySuffixes.add(new Pair<>("-ED", "E"));
+                    mySuffixes.add(new Pair<>("-IED", "Y"));
+                    mySuffixes.add(new Pair<>("+IED", ""));
+                    mySuffixes.add(new Pair<>("+ED", ""));
+                    mySuffixes.add(new Pair<>("ING", ""));
+                    mySuffixes.add(new Pair<>("-ING", "E"));
+                    mySuffixes.add(new Pair<>("+ING", ""));
+                    mySuffixes.add(new Pair<>("ION", ""));
+                    mySuffixes.add(new Pair<>("-ION", "EY"));
+                    mySuffixes.add(new Pair<>("+ION", ""));
+                    mySuffixes.add(new Pair<>("Y", ""));
+                    mySuffixes.add(new Pair<>("-Y", "E"));
+                    mySuffixes.add(new Pair<>("+Y", ""));
+                    mySuffixes.add(new Pair<>("LY", ""));
+                    mySuffixes.add(new Pair<>("-ILY", "Y"));
+                    mySuffixes.add(new Pair<>("ER", ""));
+                    mySuffixes.add(new Pair<>("-ER", "E"));
+                    mySuffixes.add(new Pair<>("+ER", ""));
+                    mySuffixes.add(new Pair<>("EST", ""));
+                    mySuffixes.add(new Pair<>("-EST", "E"));
+                    mySuffixes.add(new Pair<>("+EST", ""));
+                    mySuffixes.add(new Pair<>("IER", ""));
+                    mySuffixes.add(new Pair<>("-IER", "EY"));
+                    mySuffixes.add(new Pair<>("+IER", ""));
+                    mySuffixes.add(new Pair<>("IEST", ""));
+                    mySuffixes.add(new Pair<>("-IEST", "EY"));
+                    mySuffixes.add(new Pair<>("+IEST", ""));
+                    mySuffixes.add(new Pair<>("FUL", ""));
+                    mySuffixes.add(new Pair<>("-FUL", ""));
+                    mySuffixes.add(new Pair<>("-IFUL", "Y"));
+                    mySuffixes.add(new Pair<>("FULLY", ""));
+                    mySuffixes.add(new Pair<>("-FULLY", ""));
+                    mySuffixes.add(new Pair<>("-IFULLY", "Y"));
+                    mySuffixes.add(new Pair<>("LESS", ""));
+                    mySuffixes.add(new Pair<>("-ILESS", "Y"));
+                    mySuffixes.add(new Pair<>("NESS", ""));
+                    mySuffixes.add(new Pair<>("-INESS", "Y"));
+                    mySuffixes.add(new Pair<>("ABLE", ""));
+                    mySuffixes.add(new Pair<>("-ABLE", "E"));
+                    mySuffixes.add(new Pair<>("-IABLE", "Y"));
+                    mySuffixes.add(new Pair<>("ABLY", ""));
+                    mySuffixes.add(new Pair<>("-ABLY", "E"));
+                    mySuffixes.add(new Pair<>("-IABLY", "Y"));
+                    mySuffixes.add(new Pair<>("LIKE", ""));
+                    mySuffixes.add(new Pair<>("AGE", ""));
+                    mySuffixes.add(new Pair<>("LET", ""));
+                    mySuffixes.add(new Pair<>("ISH", ""));
+                    mySuffixes.add(new Pair<>("-ISH", "E"));
+                    mySuffixes.add(new Pair<>("+ISH", ""));
+                    mySuffixes.add(new Pair<>("IST", ""));
+                    mySuffixes.add(new Pair<>("-IST", "EO"));
+                    mySuffixes.add(new Pair<>("+IST", ""));
+                    mySuffixes.add(new Pair<>("ISM", ""));
+                    mySuffixes.add(new Pair<>("-ISM", "EO"));
+                    mySuffixes.add(new Pair<>("+ISM", ""));
+                    mySuffixes.add(new Pair<>("DOM", ""));
+                    mySuffixes.add(new Pair<>("SHIP", ""));
+                    mySuffixes.add(new Pair<>("HOOD", ""));
+                    mySuffixes.add(new Pair<>("UP", ""));
+                    mySuffixes.add(new Pair<>("DOWN", ""));
+                    mySuffixes.add(new Pair<>("OFF", ""));
+                    mySuffixes.add(new Pair<>("WARD", ""));
+                    mySuffixes.add(new Pair<>("SOME", ""));
+                    mySuffixes.add(new Pair<>("MAN", ""));
+                    mySuffixes.add(new Pair<>("WOMAN", ""));
+                    mySuffixes.add(new Pair<>("MEN", ""));
+                    mySuffixes.add(new Pair<>("WOMEN", ""));
+                    mySuffixes.add(new Pair<>("MENT", ""));
+                    mySuffixes.add(new Pair<>("-MENT", "E"));
+                    mySuffixes.add(new Pair<>("-IMENT", "Y"));
+                    mySuffixes.add(new Pair<>("BACK", ""));
+                    mySuffixes.add(new Pair<>("FOLD", ""));
+                    mySuffixes.add(new Pair<>("OUT", ""));
+                    mySuffixes.add(new Pair<>("OVER", ""));
+                    mySuffixes.add(new Pair<>("UNDER", ""));
+                    mySuffixes.add(new Pair<>("BOY", ""));
+                    mySuffixes.add(new Pair<>("SIDE", ""));
+                    mySuffixes.add(new Pair<>("WISE", ""));
+                    mySuffixes.add(new Pair<>("AL", ""));
+                    mySuffixes.add(new Pair<>("UAL", ""));
+                    mySuffixes.add(new Pair<>("+AL", ""));
+                    mySuffixes.add(new Pair<>("-AL", "AE"));
+                    mySuffixes.add(new Pair<>("-IAL", "Y"));
+                    mySuffixes.add(new Pair<>("ALLY", ""));
+                    mySuffixes.add(new Pair<>("UALLY", ""));
+                    mySuffixes.add(new Pair<>("+ALLY", ""));
+                    mySuffixes.add(new Pair<>("-ALLY", "AE"));
+                    mySuffixes.add(new Pair<>("-IALLY", "Y"));
+                    mySuffixes.add(new Pair<>("IC", ""));
+                    mySuffixes.add(new Pair<>("+IC", ""));
+                    mySuffixes.add(new Pair<>("-IC", "EY"));
+                    mySuffixes.add(new Pair<>("ICAL", ""));
+                    mySuffixes.add(new Pair<>("+ICAL", ""));
+                    mySuffixes.add(new Pair<>("-ICAL", "EY"));
+                    mySuffixes.add(new Pair<>("ICALLY", ""));
+                    mySuffixes.add(new Pair<>("+ICALLY", ""));
+                    mySuffixes.add(new Pair<>("-ICALLY", "EY"));
+                    mySuffixes.add(new Pair<>("+IFUL", ""));
+                    mySuffixes.add(new Pair<>("+IFULLY", ""));
+                    mySuffixes.add(new Pair<>("+ILESS", ""));
+                    mySuffixes.add(new Pair<>("+INESS", ""));
+                    mySuffixes.add(new Pair<>("+IABLE", ""));
+                    mySuffixes.add(new Pair<>("+IABLY", ""));
+                    mySuffixes.add(new Pair<>("+IMENT", ""));
+                    mySuffixes.add(new Pair<>("+IAL", ""));
+                    mySuffixes.add(new Pair<>("OR", ""));
+                    mySuffixes.add(new Pair<>("+OR", ""));
+                    mySuffixes.add(new Pair<>("-OR", "E"));
+                    mySuffixes.add(new Pair<>("IOR", ""));
+                    mySuffixes.add(new Pair<>("+IOR", ""));
+                    mySuffixes.add(new Pair<>("-IOR", "EY"));
+                    mySuffixes.add(new Pair<>("OUR", ""));
+                    mySuffixes.add(new Pair<>("+OUR", ""));
+                    mySuffixes.add(new Pair<>("-OUR", "E"));
+                    mySuffixes.add(new Pair<>("IOUR", ""));
+                    mySuffixes.add(new Pair<>("+IOUR", ""));
+                    mySuffixes.add(new Pair<>("-IOUR", "EY"));
 
-                    for (RowItem columnItem : mySuffixes) {
+                    for (Pair<String, String> columnItem : mySuffixes) {
                         ContentValues suffixValues = new ContentValues();
-                        suffixValues.put("_suffix_", columnItem.getTag());
-                        suffixValues.put("_after_", columnItem.getColour());
+                        suffixValues.put("_suffix_", columnItem.first);
+                        suffixValues.put("_after_", columnItem.second);
                         db.insert("suffixes", null, suffixValues);
                     }
 
@@ -1378,7 +1381,7 @@ public class sqliteDB extends SQLiteOpenHelper {
     {
         try {
             SQLiteDatabase db = this.getReadableDatabase();
-            String theQuery = (skipUnderscores ? sqlQuery : addUnderscores(sqlQuery));
+            String theQuery = "(" + (skipUnderscores ? sqlQuery : addUnderscores(sqlQuery)) + ")";
             Cursor cursor = db.rawQuery("SELECT _word_ FROM words WHERE " + theQuery, null);
             return cursor;
         }
@@ -1697,16 +1700,16 @@ public class sqliteDB extends SQLiteOpenHelper {
         String white = (nightModeFlags == Configuration.UI_MODE_NIGHT_YES ? "#000000" : "#FFFFFF");
         int grey = t10.getCurrentTextColor();
 
-        List<RowItem> spinnerList = (name ? getAllLabels() : getAllColours());
+        List<Pair<String, String>> spinnerList = (name ? getAllLabels() : getAllColours());
         ColourAdapter colourAdapter = new ColourAdapter(theContext, R.layout.colour, R.id.textview41, spinnerList, (MainActivity) theContext, name);
         s1.setAdapter(colourAdapter);
 
         s1.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
-                String oldValue = (spinnerList.get(i)).getTag();
+                String oldValue = (spinnerList.get(i)).first;
                 e5.setText(oldValue);
-                hexValue[0] = (spinnerList.get(i)).getColour();
+                hexValue[0] = (spinnerList.get(i)).second;
                 int hexColour = Integer.parseInt(hexValue[0].substring(1), 16);
                 rgb[0] = (hexColour >> 16) & 255;
                 rgb[1] = (hexColour >> 8) & 255;
@@ -1793,15 +1796,15 @@ public class sqliteDB extends SQLiteOpenHelper {
         String white = (nightModeFlags == Configuration.UI_MODE_NIGHT_YES ? "#000000" : "#FFFFFF");
         int grey = t18.getCurrentTextColor();
 
-        List<RowItem> spinnerList = (name ? getAllLabels() : getAllColours());
+        List<Pair<String, String>> spinnerList = (name ? getAllLabels() : getAllColours());
         ColourAdapter colourAdapter = new ColourAdapter(theContext, R.layout.colour, R.id.textview41, spinnerList, (MainActivity) theContext, name);
         s2.setAdapter(colourAdapter);
 
         s2.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
-                String oldValue = (spinnerList.get(i)).getTag();
-                String hexNumber = (spinnerList.get(i)).getColour();
+                String oldValue = (spinnerList.get(i)).first;
+                String hexNumber = (spinnerList.get(i)).second;
                 t20.setText(name ? hexNumber : oldValue);
                 t20.setTextColor(hexNumber.equals(white) ? grey : Color.parseColor(hexNumber));
                 old[0] = (name ? oldValue : hexNumber);
@@ -1864,16 +1867,16 @@ public class sqliteDB extends SQLiteOpenHelper {
         return dictionariesList;
     }
 
-    public List<RowItem> getAllPrefixes()
+    public List<Pair<String, String>> getAllPrefixes()
     {
-        ArrayList<RowItem> prefixesList = new ArrayList();
+        ArrayList<Pair<String, String>> prefixesList = new ArrayList();
 
         SQLiteDatabase db = this.getReadableDatabase();
         Cursor cursor = db.rawQuery("SELECT _prefix_, _before_ FROM prefixes ORDER BY _prefix_", null);
 
         if (cursor.moveToFirst()) {
             do {
-                prefixesList.add(new RowItem(cursor.getString(0), cursor.getString(1)));
+                prefixesList.add(new Pair<>(cursor.getString(0), cursor.getString(1)));
             } while (cursor.moveToNext());
         }
 
@@ -1881,16 +1884,16 @@ public class sqliteDB extends SQLiteOpenHelper {
         return prefixesList;
     }
 
-    public List<RowItem> getAllSuffixes()
+    public List<Pair<String, String>> getAllSuffixes()
     {
-        ArrayList<RowItem> suffixesList = new ArrayList();
+        ArrayList<Pair<String, String>> suffixesList = new ArrayList();
 
         SQLiteDatabase db = this.getReadableDatabase();
         Cursor cursor = db.rawQuery("SELECT _suffix_, _after_ FROM suffixes ORDER BY _suffix_", null);
 
         if (cursor.moveToFirst()) {
             do {
-                suffixesList.add(new RowItem(cursor.getString(0), cursor.getString(1)));
+                suffixesList.add(new Pair<>(cursor.getString(0), cursor.getString(1)));
             } while (cursor.moveToNext());
         }
 
@@ -2051,7 +2054,7 @@ public class sqliteDB extends SQLiteOpenHelper {
         EditText e8 = yourCustomView.findViewById(R.id.edittext15);
         EditText e9 = yourCustomView.findViewById(R.id.edittext16);
 
-        List<RowItem> insertList;
+        List<Pair<String, String>> insertList;
         ArrayList<String> queryList = new ArrayList<>();
         ArrayList<String> beforeList = new ArrayList<>();
         ArrayList<String> afterList = new ArrayList<>();
@@ -2060,9 +2063,9 @@ public class sqliteDB extends SQLiteOpenHelper {
         if (suffix)
         {
             insertList = getAllSuffixes();
-            for (RowItem object : insertList)
+            for (Pair<String, String> object : insertList)
             {
-                queryList.add(object.getTag());
+                queryList.add(object.first);
             }
             t23.setText("Old suffix:");
             t25.setText("After last letters:");
@@ -2078,9 +2081,9 @@ public class sqliteDB extends SQLiteOpenHelper {
         else
         {
             insertList = getAllPrefixes();
-            for (RowItem object : insertList)
+            for (Pair<String, String> object : insertList)
             {
-                queryList.add(object.getTag());
+                queryList.add(object.first);
             }
             t23.setText("Old prefix:");
             t25.setText("Before first letters:");
@@ -2103,7 +2106,7 @@ public class sqliteDB extends SQLiteOpenHelper {
             public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
                 variable[0] = i;
                 String prefix = queryList.get(i);
-                String myColour = (insertList.get(i)).getColour();
+                String myColour = (insertList.get(i)).second;
 
                 s7.setSelection(myColour.length() == 0 ? 0 : 1);
                 e9.setText(myColour);
@@ -2179,11 +2182,11 @@ public class sqliteDB extends SQLiteOpenHelper {
                     public void onClick(DialogInterface dialog, int whichButton) {
                         if (suffix)
                         {
-                            int result = changePrefix((insertList.get(variable[0])).getTag(), (insertList.get(variable[0])).getColour(), (variable[1] == 0 ? "" : (variable[1] == 1 ? "-" : "+")) + ((e8.getText()).toString()).toUpperCase(), variable[2] == 0 ? "" : ((e9.getText()).toString()).toUpperCase(), suffix);
+                            int result = changePrefix((insertList.get(variable[0])).first, (insertList.get(variable[0])).second, (variable[1] == 0 ? "" : (variable[1] == 1 ? "-" : "+")) + ((e8.getText()).toString()).toUpperCase(), variable[2] == 0 ? "" : ((e9.getText()).toString()).toUpperCase(), suffix);
                         }
                         else
                         {
-                            int result = changePrefix((insertList.get(variable[0])).getTag(), (insertList.get(variable[0])).getColour(), ((e8.getText()).toString()).toUpperCase() + (variable[1] == 0 ? "" : (variable[1] == 1 ? "-" : "+")), variable[2] == 0 ? "" : ((e9.getText()).toString()).toUpperCase(), suffix);
+                            int result = changePrefix((insertList.get(variable[0])).first, (insertList.get(variable[0])).second, ((e8.getText()).toString()).toUpperCase() + (variable[1] == 0 ? "" : (variable[1] == 1 ? "-" : "+")), variable[2] == 0 ? "" : ((e9.getText()).toString()).toUpperCase(), suffix);
                         }
 
                         if (mode != null) {
@@ -2206,16 +2209,16 @@ public class sqliteDB extends SQLiteOpenHelper {
         TextView t32 = yourCustomView.findViewById(R.id.textview56);
         Spinner s8 = yourCustomView.findViewById(R.id.spinner11);
 
-        List<RowItem> insertList;
+        List<Pair<String, String>> insertList;
         ArrayList<String> queryList = new ArrayList<>();
         final int variable[] = {0};
 
         if (suffix)
         {
             insertList = getAllSuffixes();
-            for (RowItem object : insertList)
+            for (Pair<String, String> object : insertList)
             {
-                queryList.add(object.getTag());
+                queryList.add(object.first);
             }
             t29.setText("Suffix:");
             t31.setText("After last letters:");
@@ -2223,9 +2226,9 @@ public class sqliteDB extends SQLiteOpenHelper {
         else
         {
             insertList = getAllPrefixes();
-            for (RowItem object : insertList)
+            for (Pair<String, String> object : insertList)
             {
-                queryList.add(object.getTag());
+                queryList.add(object.first);
             }
             t29.setText("Prefix:");
             t31.setText("Before first letters:");
@@ -2240,7 +2243,7 @@ public class sqliteDB extends SQLiteOpenHelper {
             public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
                 variable[0] = i;
                 String prefix = queryList.get(i);
-                String myColour = (insertList.get(i)).getColour();
+                String myColour = (insertList.get(i)).second;
 
                 if (suffix)
                 {
@@ -2267,11 +2270,11 @@ public class sqliteDB extends SQLiteOpenHelper {
                     public void onClick(DialogInterface dialog, int whichButton) {
                         if (suffix)
                         {
-                            int result = deletePrefix((insertList.get(variable[0])).getTag(), (insertList.get(variable[0])).getColour(), suffix);
+                            int result = deletePrefix((insertList.get(variable[0])).first, (insertList.get(variable[0])).second, suffix);
                         }
                         else
                         {
-                            int result = deletePrefix((insertList.get(variable[0])).getTag(), (insertList.get(variable[0])).getColour(), suffix);
+                            int result = deletePrefix((insertList.get(variable[0])).first, (insertList.get(variable[0])).second, suffix);
                         }
 
                         if (mode != null) {
@@ -2357,12 +2360,12 @@ public class sqliteDB extends SQLiteOpenHelper {
         Arrays.sort(charArray);
         String myAnagram = new String(charArray);
 
-        List<RowItem> thePrefixes = getAllPrefixes();
+        List<Pair<String, String>> thePrefixes = getAllPrefixes();
         ArrayList<String> thePrefix = new ArrayList<>();
-        for (RowItem rowItem : thePrefixes)
+        for (Pair<String, String> rowItem : thePrefixes)
         {
-            String alpha = rowItem.getTag();
-            String beta = rowItem.getColour();
+            String alpha = rowItem.first;
+            String beta = rowItem.second;
             boolean match = (beta.length() == 0 || beta.contains(Character.toString(myGuess.charAt(0))));
 
             if (alpha.length() > 0 && alpha.charAt(alpha.length() - 1) == '+')
@@ -2393,12 +2396,12 @@ public class sqliteDB extends SQLiteOpenHelper {
             allDetails.append("<br>").append("<b>Prefixes:</b> ").append(result1);
         }
 
-        List<RowItem> theSuffixes = getAllSuffixes();
+        List<Pair<String, String>> theSuffixes = getAllSuffixes();
         ArrayList<String> theSuffix = new ArrayList<>();
-        for (RowItem rowItem : theSuffixes)
+        for (Pair<String, String> rowItem : theSuffixes)
         {
-            String alpha = rowItem.getTag();
-            String beta = rowItem.getColour();
+            String alpha = rowItem.first;
+            String beta = rowItem.second;
             boolean mismatch = (beta.length() == 0 || beta.contains(Character.toString(myGuess.charAt(myGuess.length() - 1))));
 
             if (alpha.length() > 0 && alpha.charAt(0) == '+')

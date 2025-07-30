@@ -18,6 +18,7 @@ import android.database.Cursor;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.text.Html;
+import android.util.Pair;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -57,7 +58,7 @@ public class MainActivity extends AppCompatActivity {
     ArrayList<String> wordsList;
     HashMap<String, ArrayList<String>> jumbles;
     HashMap<String, String> colourList;
-    List<RowItem> labelsList;
+    List<Pair<String, String>> labelsList;
     HashMap<String, String> dictionary;
     HashMap<String, Integer> anagramsList;
     HashMap<String, String> lexicon;
@@ -164,9 +165,10 @@ public class MainActivity extends AppCompatActivity {
                                 .setPositiveButton("OK", new DialogInterface.OnClickListener() {
                                     public void onClick(DialogInterface dialog, int whichButton) {
                                         String subQuery = ((e5.getText()).toString()).replace("\"", "'");
-                                        db.myQuery(subQuery, MainActivity.this);
 
-                                        refresh();
+                                        if (subQuery.length() > 0) {
+                                            db.myQuery(subQuery, MainActivity.this);
+                                        }
                                     }
                                 }).create();
                         dialog1.show();
@@ -587,7 +589,7 @@ public class MainActivity extends AppCompatActivity {
                     public void onClick(DialogInterface dialog, int whichButton) {
                         String temporaryQuery = ((e2.getText()).toString()).replace("\"", "'");
                         boolean skipUnderscore = false;
-                        execute(false, temporaryQuery);
+                        execute(false, temporaryQuery.length() == 0 ? "1" : temporaryQuery);
                     }
                 }).create();
         dialog.show();
@@ -917,7 +919,7 @@ public class MainActivity extends AppCompatActivity {
     public void refreshSpinner()
     {
         labelsList = db.getAllLabels();
-        labelsList.add(0, new RowItem("(No Action)", null));
+        labelsList.add(0, new Pair<>("(No Action)", null));
         colourList = db.getColours();
 
         ColourAdapter comboBoxAdapter = new ColourAdapter(MainActivity.this, R.layout.colour, R.id.textview41, labelsList, MainActivity.this, true);
@@ -926,7 +928,7 @@ public class MainActivity extends AppCompatActivity {
         s1.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
-                label = (labelsList.get(i)).getTag();
+                label = (labelsList.get(i)).first;
             }
 
             @Override
@@ -1020,8 +1022,8 @@ public class MainActivity extends AppCompatActivity {
         e10.setHint("Enter a value between 2 and 58");
 
         Spinner s2 = yourCustomView.findViewById(R.id.spinner2);
-        List<RowItem> tagsList = new ArrayList<>(labelsList.subList(1, labelsList.size()));;
-        tagsList.add(0, new RowItem("(All Tags)", null));
+        List<Pair<String, String>> tagsList = new ArrayList<>(labelsList.subList(1, labelsList.size()));;
+        tagsList.add(0, new Pair<>("(All Tags)", null));
 
         ColourAdapter spinnerAdapter = new ColourAdapter(MainActivity.this, R.layout.colour, R.id.textview41, tagsList, MainActivity.this, true);
         s2.setAdapter(spinnerAdapter);
@@ -1033,7 +1035,7 @@ public class MainActivity extends AppCompatActivity {
                     e9.setText("*");
                 }
                 else {
-                    e9.setText((tagsList.get(i)).getTag());
+                    e9.setText((tagsList.get(i)).first);
                 }
             }
 
