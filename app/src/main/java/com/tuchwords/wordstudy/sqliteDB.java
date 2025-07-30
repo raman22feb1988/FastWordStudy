@@ -64,7 +64,7 @@ public class sqliteDB extends SQLiteOpenHelper {
                 "create table words(_word_ text collate nocase, _length_ integer, _alphagram_ text collate nocase, _definition_ text collate nocase, _probability_ real, _back_ text collate nocase, _front_ text collate nocase, _tag_ text collate nocase, _page_ integer, _answers_ integer, _csw24_ integer, _csw21_ integer, _csw19_ integer, _csw15_ integer, _csw12_ integer, _csw07_ integer, _nwl23_ integer, _nwl20_ integer, _nwl18_ integer, _twl06_ integer, _nswl23_ integer, _nswl20_ integer, _nswl18_ integer, _wims_ integer, _cel21_ integer, _serial_ integer, _position_ integer, _timestamp_ text collate nocase, _reverse_ text collate nocase, _anagram_ text collate nocase, _no_a_ integer, _no_b_ integer, _no_c_ integer, _no_d_ integer, _no_e_ integer, _no_f_ integer, _no_g_ integer, _no_h_ integer, _no_i_ integer, _no_j_ integer, _no_k_ integer, _no_l_ integer, _no_m_ integer, _no_n_ integer, _no_o_ integer, _no_p_ integer, _no_q_ integer, _no_r_ integer, _no_s_ integer, _no_t_ integer, _no_u_ integer, _no_v_ integer, _no_w_ integer, _no_x_ integer, _no_y_ integer, _no_z_ integer, _vowels_ integer, _consonants_ integer, _points_ integer, _power_ integer)"
         );
         db.execSQL(
-                "create table scores(_length_ integer, _counter_ integer, _query_ text collate nocase)"
+                "create table scores(_length_ integer, _query_ text collate nocase, _counter_ integer)"
         );
         db.execSQL(
                 "create table colours(_tag_ text collate nocase, _colour_ text collate nocase)"
