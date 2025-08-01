@@ -14,7 +14,6 @@ import android.widget.TextView;
 import java.util.List;
 
 public class ColourAdapter extends ArrayAdapter<Pair<String, String>> {
-
     LayoutInflater inflater;
     boolean mode;
     String white;

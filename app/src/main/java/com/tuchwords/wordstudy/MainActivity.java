@@ -357,9 +357,7 @@ public class MainActivity extends AppCompatActivity {
         g1 = findViewById(R.id.gridview1);
         s1 = findViewById(R.id.spinner1);
 
-        if (prepared) {
-            getWordLength();
-        } else {
+        if (!prepared) {
             promptDictionary();
         }
 
@@ -465,11 +463,10 @@ public class MainActivity extends AppCompatActivity {
 
         try {
             BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(getAssets().open(international ? "CSW2024.txt" : "NWL2023.txt"), "UTF-8"));
-            String s = bufferedReader.readLine();
 
             while (true)
             {
-                s = bufferedReader.readLine();
+                String s = bufferedReader.readLine();
                 if (s == null)
                 {
                     break;
@@ -497,10 +494,6 @@ public class MainActivity extends AppCompatActivity {
     public void prepareDatabase()
     {
         db.insertWord(this, dictionary, anagramsList, lexicon);
-
-        SharedPreferences.Editor editor = pref.edit();
-        editor.putBoolean("prepared", true);
-        editor.apply();
     }
 
     public void updateGridView()

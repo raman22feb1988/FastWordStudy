@@ -55,22 +55,17 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content" />
     </FrameLayout>
-    <LinearLayout
-        android:orientation="horizontal"
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Word length:"
+        android:id="@+id/textview15">
+    </TextView>
+    <EditText
+        android:id="@+id/edittext10"
+        android:inputType="number"
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Word length:"
-            android:id="@+id/textview15">
-        </TextView>
-        <EditText
-            android:id="@+id/edittext10"
-            android:inputType="number"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:background="@drawable/rectangle">
-        </EditText>
-    </LinearLayout>
+        android:layout_height="wrap_content"
+        android:background="@drawable/rectangle">
+    </EditText>
 </LinearLayout>
