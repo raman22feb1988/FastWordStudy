@@ -26,6 +26,7 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.Spinner;
@@ -54,7 +55,7 @@ public class MainActivity extends AppCompatActivity {
     String white;
     boolean hidden;
     boolean detail;
-    boolean skipUnderscores;
+    String orderBy;
     ArrayList<String> wordsList;
     HashMap<String, ArrayList<String>> jumbles;
     HashMap<String, String> colourList;
@@ -62,6 +63,8 @@ public class MainActivity extends AppCompatActivity {
     HashMap<String, String> dictionary;
     HashMap<String, Integer> anagramsList;
     HashMap<String, String> lexicon;
+    ArrayList<String> sort;
+    ArrayList<String> allColumns;
     CustomAdapter cusadapter;
     SharedPreferences pref;
 
@@ -138,19 +141,20 @@ public class MainActivity extends AppCompatActivity {
                 switch(item.getItemId()) {
                     case R.id.button4:
                         // Show a Toast message for the Custom query item
-                        getSqlQuery();
+                        getQuery();
                         break;
                     case R.id.button6:
                         // Show a Toast message for the SQL query item
                         LayoutInflater inflater1 = LayoutInflater.from(MainActivity.this);
-                        final View yourCustomView1 = inflater1.inflate(R.layout.query, null);
+                        final View yourCustomView1 = inflater1.inflate(R.layout.sqlquery, null);
 
-                        TextView t4 = yourCustomView1.findViewById(R.id.textview3);
+                        TextView t4 = yourCustomView1.findViewById(R.id.textview68);
                         t4.setText(db.getSchema());
 
-                        EditText e5 = yourCustomView1.findViewById(R.id.edittext2);
+                        EditText e5 = yourCustomView1.findViewById(R.id.edittext21);
+                        CheckBox c3 = yourCustomView1.findViewById(R.id.checkbox3);
 
-                        Button b7 = yourCustomView1.findViewById(R.id.button32);
+                        Button b7 = yourCustomView1.findViewById(R.id.button37);
                         b7.setOnClickListener(new View.OnClickListener() {
                             @Override
                             public void onClick(View v) {
@@ -167,7 +171,7 @@ public class MainActivity extends AppCompatActivity {
                                         String subQuery = ((e5.getText()).toString()).replace("\"", "'");
 
                                         if (subQuery.length() > 0) {
-                                            db.myQuery(subQuery, MainActivity.this);
+                                            db.myQuery(c3.isChecked() ? db.addUnderscores(subQuery) : subQuery, MainActivity.this);
                                         }
                                     }
                                 }).create();
@@ -308,7 +312,7 @@ public class MainActivity extends AppCompatActivity {
                         break;
                     case R.id.button33:
                         // Show a Toast message for the Prepare database item
-                        promptDictionary();
+                        promptDictionary(true);
                         break;
                     case R.id.button34:
                         // Show a Toast message for the Search for anagrams item
@@ -358,7 +362,7 @@ public class MainActivity extends AppCompatActivity {
         s1 = findViewById(R.id.spinner1);
 
         if (!prepared) {
-            promptDictionary();
+            promptDictionary(false);
         }
 
         ArrayList<Integer> dimensions = db.getZoom("Main");
@@ -367,6 +371,18 @@ public class MainActivity extends AppCompatActivity {
         font = dimensions.get(2);
 
         refreshSpinner();
+
+        sort = new ArrayList<>();
+        sort.add("ascending");
+        sort.add("descending");
+
+        allColumns = new ArrayList<>();
+        allColumns.add("(default)");
+        allColumns.add("(random)");
+
+        for (String oneColumn : db.getAllColumns("words")) {
+            allColumns.add(oneColumn.substring(1, oneColumn.length() - 1));
+        }
 
         b3.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -384,26 +400,33 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    public void promptDictionary()
+    public void promptDictionary(boolean deleteTable)
     {
         LayoutInflater inflater = LayoutInflater.from(MainActivity.this);
-        final View yourCustomView = inflater.inflate(R.layout.display, null);
+        final View yourCustomView = inflater.inflate(R.layout.prompt, null);
 
-        TextView t6 = yourCustomView.findViewById(R.id.textview4);
+        TextView t6 = yourCustomView.findViewById(R.id.textview69);
         t6.setText("CSW24 or NWL23?");
+
+        CheckBox c1 = yourCustomView.findViewById(R.id.checkbox1);
+        c1.setChecked(deleteTable);
 
         AlertDialog dialog = new AlertDialog.Builder(MainActivity.this)
                 .setTitle("Choose your lexicon")
                 .setView(yourCustomView)
                 .setPositiveButton("CSW24", new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int whichButton) {
-                        db.dropTable(MainActivity.this);
+                        if (c1.isChecked()) {
+                            db.dropTable(MainActivity.this);
+                        }
                         prepareDictionary(true);
                     }
                 })
                 .setNegativeButton("NWL23", new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int whichButton) {
-                        db.dropTable(MainActivity.this);
+                        if (c1.isChecked()) {
+                            db.dropTable(MainActivity.this);
+                        }
                         prepareDictionary(false);
                     }
                 }).create();
@@ -502,12 +525,24 @@ public class MainActivity extends AppCompatActivity {
         int open = counter * rows * columns;
         int close = Math.min((counter + 1) * rows * columns, words);
 
-        if (anagrams.moveToPosition(open)) {
-            do {
-                String jumble = anagrams.getString(0);
+        if(orderBy.equals("DESC"))
+        {
+            if (anagrams.moveToPosition(words - 1 - open)) {
+                do {
+                    String jumble = anagrams.getString(0);
 
-                wordsList.add(jumble);
-            } while (anagrams.moveToNext() && anagrams.getPosition() < close);
+                    wordsList.add(jumble);
+                } while (anagrams.moveToPrevious() && anagrams.getPosition() >= (words - close));
+            }
+        }
+        else {
+            if (anagrams.moveToPosition(open)) {
+                do {
+                    String jumble = anagrams.getString(0);
+
+                    wordsList.add(jumble);
+                } while (anagrams.moveToNext() && anagrams.getPosition() < close);
+            }
         }
 
         jumbles = db.getAllWords(wordsList);
@@ -531,6 +566,42 @@ public class MainActivity extends AppCompatActivity {
         EditText e1 = yourCustomView.findViewById(R.id.edittext20);
         TextView t8 = yourCustomView.findViewById(R.id.textview63);
         e1.setHint("Enter a value between 2 and 58");
+
+        final int[] sortIndex = new int[2];
+        Spinner s5 = yourCustomView.findViewById(R.id.spinner13);
+        ArrayAdapter<String> orderAdapter = new ArrayAdapter(MainActivity.this, android.R.layout.simple_spinner_item, allColumns);
+        orderAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        s5.setAdapter(orderAdapter);
+
+        Spinner s6 = yourCustomView.findViewById(R.id.spinner14);
+        ArrayAdapter<String> sortAdapter = new ArrayAdapter(MainActivity.this, android.R.layout.simple_spinner_item, sort);
+        sortAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        s6.setAdapter(sortAdapter);
+
+        s5.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
+                sortIndex[0] = i;
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> adapterView) {
+            }
+        });
+
+        s6.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
+                sortIndex[1] = i;
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> adapterView) {
+            }
+        });
+
+        s5.setSelection(6);
+        s6.setSelection(1);
 
         final int[] lengthIndex = new int[1];
         Spinner s4 = yourCustomView.findViewById(R.id.spinner12);
@@ -572,7 +643,7 @@ public class MainActivity extends AppCompatActivity {
 
                         if (lengthIndex[0] == 0 && precursor < 2)
                         {
-                            Toast.makeText(MainActivity.this, "Enter a value between 2 and 58", Toast.LENGTH_LONG).show();
+                            Toast.makeText(MainActivity.this, "Enter a value between 2 and 58 for word length", Toast.LENGTH_LONG).show();
                             getWordLength();
                         }
                         else
@@ -580,6 +651,7 @@ public class MainActivity extends AppCompatActivity {
                             mode = 1;
                             letters = precursor;
                             sqlQuery = "*";
+                            orderBy = sortBy(sortIndex);
                             start();
                         }
                     }
@@ -587,12 +659,13 @@ public class MainActivity extends AppCompatActivity {
         dialog.show();
     }
 
-    public void getSqlQuery()
+    public void getQuery()
     {
         LayoutInflater inflater = LayoutInflater.from(MainActivity.this);
         final View yourCustomView = inflater.inflate(R.layout.query, null);
 
         EditText e2 = yourCustomView.findViewById(R.id.edittext2);
+        CheckBox c2 = yourCustomView.findViewById(R.id.checkbox2);
 
         TextView t3 = yourCustomView.findViewById(R.id.textview3);
         t3.setText(db.getSchema());
@@ -606,14 +679,49 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        final int[] sortIndex = new int[2];
+        Spinner s9 = yourCustomView.findViewById(R.id.spinner17);
+        ArrayAdapter<String> orderAdapter = new ArrayAdapter(MainActivity.this, android.R.layout.simple_spinner_item, allColumns);
+        orderAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        s9.setAdapter(orderAdapter);
+
+        Spinner s10 = yourCustomView.findViewById(R.id.spinner18);
+        ArrayAdapter<String> sortAdapter = new ArrayAdapter(MainActivity.this, android.R.layout.simple_spinner_item, sort);
+        sortAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        s10.setAdapter(sortAdapter);
+
+        s9.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
+                sortIndex[0] = i;
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> adapterView) {
+            }
+        });
+
+        s10.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
+                sortIndex[1] = i;
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> adapterView) {
+            }
+        });
+
+        s9.setSelection(6);
+        s10.setSelection(1);
+
         AlertDialog dialog = new AlertDialog.Builder(MainActivity.this)
                 .setTitle("SELECT front, word, back, definition FROM words WHERE")
                 .setView(yourCustomView)
                 .setPositiveButton("OK", new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int whichButton) {
                         String temporaryQuery = ((e2.getText()).toString()).replace("\"", "'");
-                        boolean skipUnderscore = false;
-                        execute(false, temporaryQuery.length() == 0 ? "1" : temporaryQuery);
+                        execute(c2.isChecked(), temporaryQuery.length() == 0 ? "1" : temporaryQuery, sortBy(sortIndex));
                     }
                 }).create();
         dialog.show();
@@ -622,47 +730,54 @@ public class MainActivity extends AppCompatActivity {
     public void start()
     {
         closeCursor();
-        anagrams = db.getAllAnagrams(letters, sqlQuery);
+
+        boolean exist = db.getExist(letters, sqlQuery, orderBy);
+
+        if (!exist) {
+            db.insertScores(letters, 0, sqlQuery, orderBy);
+        }
+
+        anagrams = db.getAllAnagrams(letters, sqlQuery, orderBy);
         words = anagrams.getCount();
-        counter = db.getCounter(letters, sqlQuery);
+        counter = db.getCounter(letters, sqlQuery, orderBy);
 
         int high = (words - 1) / (rows * columns);
         if (counter > high && words > 0) {
             counter = high;
-            db.updateScores(letters, counter, sqlQuery);
+            db.updateCounter(letters, counter, sqlQuery, orderBy);
         }
 
         ultimate = null;
-        skipUnderscores = false;
         nextWord();
     }
 
-    public void execute(boolean skipUnderscore, String permanentQuery)
+    public void execute(boolean autoUnderscores, String permanentQuery, String orderIndex)
     {
-        Cursor resultSet = db.getSqlQuery(permanentQuery, MainActivity.this, skipUnderscore);
+        String processingQuery = (autoUnderscores ? db.addUnderscores(permanentQuery) : permanentQuery);
+        Cursor resultSet = db.getSqlQuery(processingQuery, MainActivity.this, orderIndex);
 
         if (resultSet != null) {
-            sqlQuery = permanentQuery;
+            sqlQuery = processingQuery;
+            orderBy = orderIndex;
             mode = 2;
-            skipUnderscores = skipUnderscore;
 
             closeCursor();
             anagrams = resultSet;
             words = anagrams.getCount();
             letters = 1;
-            boolean exist = db.getExist(letters, sqlQuery);
+            boolean exist = db.getExist(letters, sqlQuery, orderBy);
 
             if (!exist) {
                 counter = 0;
-                db.insertScores(letters, counter, sqlQuery);
+                db.insertScores(letters, counter, sqlQuery, orderBy);
             } else {
-                counter = db.getCounter(letters, sqlQuery);
+                counter = db.getCounter(letters, sqlQuery, orderBy);
             }
 
             int highest = (words - 1) / (rows * columns);
             if (counter > highest && words > 0) {
                 counter = highest;
-                db.updateScores(letters, counter, sqlQuery);
+                db.updateCounter(letters, counter, sqlQuery, orderBy);
             }
 
             ultimate = null;
@@ -692,7 +807,7 @@ public class MainActivity extends AppCompatActivity {
                 {
                     counter = (words - 1) / (rows * columns);
                 }
-                db.updateScores(letters, counter, sqlQuery);
+                db.updateCounter(letters, counter, sqlQuery, orderBy);
                 ultimate = null;
                 nextWord();
             }
@@ -706,7 +821,7 @@ public class MainActivity extends AppCompatActivity {
                 {
                     counter = 0;
                 }
-                db.updateScores(letters, counter, sqlQuery);
+                db.updateCounter(letters, counter, sqlQuery, orderBy);
                 ultimate = null;
                 nextWord();
             }
@@ -737,7 +852,7 @@ public class MainActivity extends AppCompatActivity {
                                 {
                                     ultimate = null;
                                     counter = page - 1;
-                                    db.updateScores(letters, counter, sqlQuery);
+                                    db.updateCounter(letters, counter, sqlQuery, orderBy);
                                     nextWord();
                                 }
                             }
@@ -768,7 +883,7 @@ public class MainActivity extends AppCompatActivity {
                 {
                     counter = (words - 1) / (rows * columns);
                 }
-                db.updateScores(letters, counter, sqlQuery);
+                db.updateCounter(letters, counter, sqlQuery, orderBy);
                 ultimate = null;
                 executeSqlQuery();
             }
@@ -782,7 +897,7 @@ public class MainActivity extends AppCompatActivity {
                 {
                     counter = 0;
                 }
-                db.updateScores(letters, counter, sqlQuery);
+                db.updateCounter(letters, counter, sqlQuery, orderBy);
                 ultimate = null;
                 executeSqlQuery();
             }
@@ -812,7 +927,7 @@ public class MainActivity extends AppCompatActivity {
                                 else
                                 {
                                     counter = page - 1;
-                                    db.updateScores(letters, counter, sqlQuery);
+                                    db.updateCounter(letters, counter, sqlQuery, orderBy);
                                     ultimate = null;
                                     nextWord();
                                 }
@@ -879,28 +994,28 @@ public class MainActivity extends AppCompatActivity {
 
         if (mode == 1) {
             closeCursor();
-            anagrams = db.getAllAnagrams(letters, sqlQuery);
+            anagrams = db.getAllAnagrams(letters, sqlQuery, orderBy);
             words = anagrams.getCount();
-            counter = db.getCounter(letters, sqlQuery);
+            counter = db.getCounter(letters, sqlQuery, orderBy);
 
             int peak = (words - 1) / (rows * columns);
             if (counter > peak && words > 0) {
                 counter = peak;
-                db.updateScores(letters, counter, sqlQuery);
+                db.updateCounter(letters, counter, sqlQuery, orderBy);
             }
 
             nextWord();
             refreshDefinition();
         } else if (mode == 2) {
             closeCursor();
-            anagrams = db.getSqlQuery(sqlQuery, MainActivity.this, skipUnderscores);
+            anagrams = db.getSqlQuery(sqlQuery, MainActivity.this, orderBy);
             words = anagrams.getCount();
-            counter = db.getCounter(letters, sqlQuery);
+            counter = db.getCounter(letters, sqlQuery, orderBy);
 
             int apex = (words - 1) / (rows * columns);
             if (counter > apex && words > 0) {
                 counter = apex;
-                db.updateScores(letters, counter, sqlQuery);
+                db.updateCounter(letters, counter, sqlQuery, orderBy);
             }
 
             executeSqlQuery();
@@ -1042,8 +1157,43 @@ public class MainActivity extends AppCompatActivity {
         EditText e9 = yourCustomView.findViewById(R.id.edittext9);
         EditText e10 = yourCustomView.findViewById(R.id.edittext10);
         TextView t5 = yourCustomView.findViewById(R.id.textview15);
-
         e10.setHint("Enter a value between 2 and 58");
+
+        final int[] sortIndex = new int[2];
+        Spinner s7 = yourCustomView.findViewById(R.id.spinner15);
+        ArrayAdapter<String> orderAdapter = new ArrayAdapter(MainActivity.this, android.R.layout.simple_spinner_item, allColumns);
+        orderAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        s7.setAdapter(orderAdapter);
+
+        Spinner s8 = yourCustomView.findViewById(R.id.spinner16);
+        ArrayAdapter<String> sortAdapter = new ArrayAdapter(MainActivity.this, android.R.layout.simple_spinner_item, sort);
+        sortAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        s8.setAdapter(sortAdapter);
+
+        s7.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
+                sortIndex[0] = i;
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> adapterView) {
+            }
+        });
+
+        s8.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
+                sortIndex[1] = i;
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> adapterView) {
+            }
+        });
+
+        s7.setSelection(6);
+        s8.setSelection(1);
 
         Spinner s2 = yourCustomView.findViewById(R.id.spinner2);
         List<Pair<String, String>> tagsList = new ArrayList<>(labelsList.subList(1, labelsList.size()));;
@@ -1103,7 +1253,7 @@ public class MainActivity extends AppCompatActivity {
                 .setView(yourCustomView)
                 .setPositiveButton("OK", new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int whichButton) {
-                        sqlQuery = (e9.getText()).toString();
+                        String intermediate = (e9.getText()).toString();
                         String alphabets = (lengthIndex[0] == 0 ? (e10.getText()).toString() : "0");
                         int temporary = (alphabets.length() == 0 ? 0 : Integer.parseInt(alphabets));
 
@@ -1115,13 +1265,8 @@ public class MainActivity extends AppCompatActivity {
                         else
                         {
                             letters = temporary;
-                            boolean exist = db.getExist(letters, sqlQuery);
-
-                            if (!exist)
-                            {
-                                db.insertScores(letters, 0, sqlQuery);
-                            }
-
+                            sqlQuery = intermediate;
+                            orderBy = sortBy(sortIndex);
                             start();
                         }
                     }
@@ -1137,6 +1282,7 @@ public class MainActivity extends AppCompatActivity {
         EditText e11 = yourCustomView.findViewById(R.id.edittext17);
         EditText e12 = yourCustomView.findViewById(R.id.edittext18);
         EditText e13 = yourCustomView.findViewById(R.id.edittext19);
+        CheckBox c4 = yourCustomView.findViewById(R.id.checkbox4);
 
         TextView t7 = yourCustomView.findViewById(R.id.textview62);
         t7.setText(db.getSchema());
@@ -1149,6 +1295,42 @@ public class MainActivity extends AppCompatActivity {
                 db.messageBox("Example custom queries", help.getCustomHelp(), MainActivity.this);
             }
         });
+
+        final int[] sortIndex = new int[2];
+        Spinner s11 = yourCustomView.findViewById(R.id.spinner19);
+        ArrayAdapter<String> orderAdapter = new ArrayAdapter(MainActivity.this, android.R.layout.simple_spinner_item, allColumns);
+        orderAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        s11.setAdapter(orderAdapter);
+
+        Spinner s12 = yourCustomView.findViewById(R.id.spinner20);
+        ArrayAdapter<String> sortAdapter = new ArrayAdapter(MainActivity.this, android.R.layout.simple_spinner_item, sort);
+        sortAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        s12.setAdapter(sortAdapter);
+
+        s11.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
+                sortIndex[0] = i;
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> adapterView) {
+            }
+        });
+
+        s12.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
+                sortIndex[1] = i;
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> adapterView) {
+            }
+        });
+
+        s11.setSelection(subanagram ? 3 : 6);
+        s12.setSelection(1);
 
         AlertDialog dialog = new AlertDialog.Builder(MainActivity.this)
                 .setTitle(subanagram ? "Search for subanagrams" : "Search for anagrams")
@@ -1207,19 +1389,21 @@ public class MainActivity extends AppCompatActivity {
                             String extra = ((e13.getText()).toString()).replace("\"", "'");
                             if (extra.length() > 0)
                             {
-                                theQuery.append(" AND (").append(db.addUnderscores(extra)).append(")");
+                                theQuery.append(" AND (").append(c4.isChecked() ? db.addUnderscores(extra) : extra).append(")");
                             }
 
-                            if (subanagram)
-                            {
-                                theQuery.append(" ORDER BY _length_ DESC");
-                            }
-
-                            boolean skipUnderscore = true;
-                            execute(true, new String(theQuery));
+                            execute(false, new String(theQuery), sortBy(sortIndex));
                         }
                     }
                 }).create();
         dialog.show();
+    }
+
+    public String sortBy(int[] selection) {
+        switch (selection[0]) {
+            case 0: return (selection[1] == 1 ? "DESC" : "ASC");
+            case 1: return " ORDER BY RANDOM()" + (selection[1] == 1 ? " DESC" : "");
+            default: return " ORDER BY _" + allColumns.get(selection[0]) + "_" + (selection[1] == 1 ? " DESC" : "");
+        }
     }
 }

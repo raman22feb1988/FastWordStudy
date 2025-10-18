@@ -64,7 +64,7 @@ public class sqliteDB extends SQLiteOpenHelper {
                 "create table words(_word_ text collate nocase, _length_ integer, _alphagram_ text collate nocase, _definition_ text collate nocase, _probability_ real, _back_ text collate nocase, _front_ text collate nocase, _tag_ text collate nocase, _page_ integer, _answers_ integer, _csw24_ integer, _csw21_ integer, _csw19_ integer, _csw15_ integer, _csw12_ integer, _csw07_ integer, _nwl23_ integer, _nwl20_ integer, _nwl18_ integer, _twl06_ integer, _nswl23_ integer, _nswl20_ integer, _nswl18_ integer, _wims_ integer, _cel21_ integer, _serial_ integer, _position_ integer, _timestamp_ text collate nocase, _reverse_ text collate nocase, _zetagram_ text collate nocase, _no_a_ integer, _no_b_ integer, _no_c_ integer, _no_d_ integer, _no_e_ integer, _no_f_ integer, _no_g_ integer, _no_h_ integer, _no_i_ integer, _no_j_ integer, _no_k_ integer, _no_l_ integer, _no_m_ integer, _no_n_ integer, _no_o_ integer, _no_p_ integer, _no_q_ integer, _no_r_ integer, _no_s_ integer, _no_t_ integer, _no_u_ integer, _no_v_ integer, _no_w_ integer, _no_x_ integer, _no_y_ integer, _no_z_ integer, _vowels_ integer, _consonants_ integer, _points_ integer, _power_ integer)"
         );
         db.execSQL(
-                "create table scores(_length_ integer, _query_ text collate nocase, _counter_ integer)"
+                "create table scores(_length_ integer, _query_ text collate nocase, _counter_ integer, _sort_ text collate nocase)"
         );
         db.execSQL(
                 "create table colours(_tag_ text collate nocase, _colour_ text collate nocase)"
@@ -118,10 +118,9 @@ public class sqliteDB extends SQLiteOpenHelper {
     public void myQuery(String sqlQuery, Context activity) {
         try {
             SQLiteDatabase db = this.getWritableDatabase();
-            String theQuery = addUnderscores(sqlQuery);
-            String tokens[] = theQuery.split("\\s+");
+            String tokens[] = sqlQuery.split("\\s+");
             ArrayList<String> theQueries = new ArrayList<>();
-            theQueries.add(theQuery);
+            theQueries.add(sqlQuery);
             if (tokens[0].equalsIgnoreCase("ALTER") || tokens[0].equalsIgnoreCase("DROP") || tokens[0].equalsIgnoreCase("CREATE") || tokens[0].equalsIgnoreCase("TRUNCATE"))
             {
                 DATABASE_VERSION++;
@@ -131,7 +130,7 @@ public class sqliteDB extends SQLiteOpenHelper {
             }
             else
             {
-                db.execSQL(theQuery);
+                db.execSQL(sqlQuery);
             }
 
             refresh(activity);
@@ -659,23 +658,20 @@ public class sqliteDB extends SQLiteOpenHelper {
         StringBuilder schema = new StringBuilder();
         ArrayList<String> tablesList = getTableNames();
 
-        SQLiteDatabase db = this.getReadableDatabase();
         for (String tableName : tablesList)
         {
-            Cursor cursor = db.query(tableName, null, null, null, null, null, null);
-            String[] columnList = cursor.getColumnNames();
+            String[] columnList = getAllColumns(tableName);
             ArrayList<String> columnArray = new ArrayList<>();
             for (String columnName : columnList)
             {
                 columnArray.add(columnName.substring(1, columnName.length() - 1));
             }
             schema.append(schema.length() == 0 ? tableName + "\n" + columnArray.toString() : "\n" + tableName + "\n" + columnArray.toString());
-            cursor.close();
         }
         return new String(schema);
     }
 
-    public boolean insertScores(int letters, int counter, String sqlQuery)
+    public boolean insertScores(int letters, int counter, String sqlQuery, String orderBy)
     {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues contentValues = new ContentValues();
@@ -683,6 +679,7 @@ public class sqliteDB extends SQLiteOpenHelper {
         contentValues.put("_length_", letters);
         contentValues.put("_counter_", counter);
         contentValues.put("_query_", sqlQuery);
+        contentValues.put("_sort_", orderBy);
 
         db.insert("scores", null, contentValues);
 
@@ -856,7 +853,7 @@ public class sqliteDB extends SQLiteOpenHelper {
                     HashMap<Integer, ArrayList<String>> cellHash = new HashMap<>();
 
                     for (int lengths = 2; lengths <= 58; lengths++) {
-                        Cursor anagramList = getAllAnagrams(lengths, "*");
+                        Cursor anagramList = getAllAnagrams(lengths, "*", " ORDER BY _probability_ DESC");
                         int wordLength = anagramList.getCount();
                         int pages = (((wordLength - 1) / 100) + 1);
 
@@ -922,16 +919,6 @@ public class sqliteDB extends SQLiteOpenHelper {
                         {
                             updateProgressBar(myContext, p5, t42, t43, myDialog, 90 + ((int) (cellNumber / myStep3)), cellNumber + "/" + cellHash.size());
                         }
-                    }
-
-                    for (int i = 2; i <= 58; i++) {
-                        ContentValues contentValue = new ContentValues();
-
-                        contentValue.put("_length_", i);
-                        contentValue.put("_counter_", 0);
-                        contentValue.put("_query_", "*");
-
-                        db.insert("scores", null, contentValue);
                     }
 
                     int nightModeFlags =
@@ -1243,10 +1230,10 @@ public class sqliteDB extends SQLiteOpenHelper {
         }
     }
 
-    public int getCounter(int letters, String sqlQuery)
+    public int getCounter(int letters, String sqlQuery, String orderBy)
     {
         SQLiteDatabase db = this.getReadableDatabase();
-        Cursor cursor = db.rawQuery("SELECT _counter_ FROM scores WHERE _length_ = " + letters + " AND _query_ = \"" + sqlQuery + "\"", null);
+        Cursor cursor = db.rawQuery("SELECT _counter_ FROM scores WHERE _length_ = " + letters + " AND _query_ = \"" + sqlQuery + "\" AND _sort_ = \"" + orderBy + "\"", null);
 
         String data = null;
 
@@ -1266,10 +1253,10 @@ public class sqliteDB extends SQLiteOpenHelper {
         }
     }
 
-    public boolean getExist(int letters, String sqlQuery)
+    public boolean getExist(int letters, String sqlQuery, String orderBy)
     {
         SQLiteDatabase db = this.getReadableDatabase();
-        Cursor cursor = db.rawQuery("SELECT EXISTS(SELECT 1 FROM scores WHERE _length_ = " + letters + " AND _query_ = \"" + sqlQuery + "\")", null);
+        Cursor cursor = db.rawQuery("SELECT EXISTS(SELECT 1 FROM scores WHERE _length_ = " + letters + " AND _query_ = \"" + sqlQuery + "\" AND _sort_ = \"" + orderBy + "\")", null);
 
         int exist = 0;
 
@@ -1283,11 +1270,10 @@ public class sqliteDB extends SQLiteOpenHelper {
         return (exist != 0);
     }
 
-    public Cursor getAllAnagrams(int letters, String sqlQuery)
+    public Cursor getAllAnagrams(int letters, String sqlQuery, String orderBy)
     {
         SQLiteDatabase db = this.getReadableDatabase();
-        Cursor cursor = db.rawQuery("SELECT _word_ FROM words" + ((letters > 1 || !sqlQuery.equals("*")) ? " WHERE " : "") + (letters > 1 ? "_length_ = " + letters : "") + ((letters > 1 && !sqlQuery.equals("*")) ? " AND " : "") + (!sqlQuery.equals("*") ? "_tag_ = \"" + sqlQuery + "\"" : "") + " ORDER BY _probability_ DESC", null);
-        return cursor;
+        return db.rawQuery("SELECT _word_ FROM words" + ((letters > 1 || !sqlQuery.equals("*")) ? " WHERE " : "") + (letters > 1 ? "_length_ = " + letters : "") + ((letters > 1 && !sqlQuery.equals("*")) ? " AND " : "") + (!sqlQuery.equals("*") ? "_tag_ = \"" + sqlQuery + "\"" : "") + (orderBy.charAt(0) == ' ' ? orderBy : ""), null);
     }
 
     public ArrayList<String> getDefinition(String guess)
@@ -1378,13 +1364,11 @@ public class sqliteDB extends SQLiteOpenHelper {
         return jumbles;
     }
 
-    public Cursor getSqlQuery(String sqlQuery, Context activity, boolean skipUnderscores)
+    public Cursor getSqlQuery(String sqlQuery, Context activity, String orderBy)
     {
         try {
             SQLiteDatabase db = this.getReadableDatabase();
-            String theQuery = (skipUnderscores ? sqlQuery : addUnderscores(sqlQuery));
-            Cursor cursor = db.rawQuery("SELECT _word_ FROM words WHERE " + theQuery, null);
-            return cursor;
+            return db.rawQuery("SELECT _word_ FROM words WHERE " + sqlQuery + (orderBy.charAt(0) == ' ' ? orderBy : ""), null);
         }
         catch (SQLiteException e)
         {
@@ -1393,14 +1377,14 @@ public class sqliteDB extends SQLiteOpenHelper {
         }
     }
 
-    public int updateScores(int letters, int counter, String sqlQuery) {
+    public int updateCounter(int letters, int counter, String sqlQuery, String orderBy) {
         SQLiteDatabase db = this.getWritableDatabase();
 
         ContentValues values = new ContentValues();
         values.put("_counter_", counter);
 
-        return db.update("scores", values, "_length_ = ? AND _query_ = ?",
-                new String[] {Integer.toString(letters), sqlQuery});
+        return db.update("scores", values, "_length_ = ? AND _query_ = ? AND _sort_ = ?",
+                new String[] {Integer.toString(letters), sqlQuery, orderBy});
     }
 
     public void alertBox(String title, String message, Context location)
@@ -1478,8 +1462,6 @@ public class sqliteDB extends SQLiteOpenHelper {
 
     public String addUnderscores(String argumentQuery)
     {
-        SQLiteDatabase db = this.getReadableDatabase();
-
         String firstQuery = " " + argumentQuery + " ";
         String[] secondQuery = firstQuery.split("'");
 
@@ -1488,8 +1470,7 @@ public class sqliteDB extends SQLiteOpenHelper {
         HashSet<String> done = new HashSet<>();
         for (String tableName : tablesList)
         {
-            Cursor cursor = db.query(tableName, null, null, null, null, null, null);
-            String[] columnList = cursor.getColumnNames();
+            String[] columnList = getAllColumns(tableName);
             for (String attribute : columnList)
             {
                 if (!done.contains(attribute)) {
@@ -1500,7 +1481,6 @@ public class sqliteDB extends SQLiteOpenHelper {
                     done.add(attribute);
                 }
             }
-            cursor.close();
         }
         for (int regexLists = 0; regexLists < regexList.size(); regexLists++)
         {
@@ -1510,13 +1490,11 @@ public class sqliteDB extends SQLiteOpenHelper {
         argumentQuery = argumentQuery.replace("ze_tag_ram", "_zetagram_");
         for (String tableName : tablesList)
         {
-            Cursor cursor = db.query(tableName, null, null, null, null, null, null);
-            String[] columnList = cursor.getColumnNames();
+            String[] columnList = getAllColumns(tableName);
             for (String attribute : columnList)
             {
                 argumentQuery = argumentQuery.replaceAll("_+" + attribute.substring(1, attribute.length() - 1) + "_+", attribute);
             }
-            cursor.close();
         }
 
         String thirdQuery = " " + argumentQuery + " ";
@@ -2611,6 +2589,15 @@ public class sqliteDB extends SQLiteOpenHelper {
                 rightText.setText(fraction);
             }
         });
+    }
+
+    public String[] getAllColumns(String tableName)
+    {
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor myCursor = db.query(tableName, null, null, null, null, null, null);
+        String[] allColumns = myCursor.getColumnNames();
+        myCursor.close();
+        return allColumns;
     }
 
     public static void main(String[] args) {
