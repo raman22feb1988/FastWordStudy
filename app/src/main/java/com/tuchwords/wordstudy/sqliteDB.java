@@ -731,7 +731,7 @@ public class sqliteDB extends SQLiteOpenHelper {
                 try {
                     Iterator<Map.Entry<String, String>> itr = dictionary.entrySet().iterator();
                     double myLine = 0.0;
-                    double myStep1 = dictionary.size() / 50.0;
+                    double myStep1 = dictionary.size() / 40.0;
                     while (itr.hasNext()) {
                         Map.Entry<String, String> entry = itr.next();
                         String word = entry.getKey();
@@ -888,7 +888,7 @@ public class sqliteDB extends SQLiteOpenHelper {
                     }
 
                     uiThreadTitle("Setting page numbers", myDialog, myContext);
-                    double myStep2 = pageHash.size() / 40.0;
+                    double myStep2 = pageHash.size() / 50.0;
                     for (int positionNumber = 1; positionNumber <= pageHash.size(); positionNumber++) {
                         String pageString = ((((pageHash.get(positionNumber)).toString()).replace("[", "(\"")).replace("]", "\")")).replace(", ", "\", \"");
 
@@ -900,7 +900,7 @@ public class sqliteDB extends SQLiteOpenHelper {
 
                         if (positionNumber % myStep2 < 1 || positionNumber == 1)
                         {
-                            updateProgressBar(myContext, p5, t42, t43, myDialog, 50 + ((int) (positionNumber / myStep2)), positionNumber + "/" + pageHash.size());
+                            updateProgressBar(myContext, p5, t42, t43, myDialog, 40 + ((int) (positionNumber / myStep2)), positionNumber + "/" + pageHash.size());
                         }
                     }
 

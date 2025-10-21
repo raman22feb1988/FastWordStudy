@@ -525,7 +525,7 @@ public class MainActivity extends AppCompatActivity {
         int open = counter * rows * columns;
         int close = Math.min((counter + 1) * rows * columns, words);
 
-        if(orderBy.equals("DESC"))
+        if (orderBy.equals("DESC"))
         {
             if (anagrams.moveToPosition(words - 1 - open)) {
                 do {
