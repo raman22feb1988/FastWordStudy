@@ -86,6 +86,7 @@ public class MainActivity extends AppCompatActivity {
     int rows;
     int columns;
     int font;
+    int maximumWordLength;
 
     // Declare the DrawerLayout, NavigationView and Toolbar
     private DrawerLayout drawerLayout;
@@ -369,6 +370,7 @@ public class MainActivity extends AppCompatActivity {
         rows = dimensions.get(0);
         columns = dimensions.get(1);
         font = dimensions.get(2);
+        maximumWordLength = db.getMaximumWordLength();
 
         refreshSpinner();
 
@@ -565,7 +567,7 @@ public class MainActivity extends AppCompatActivity {
 
         EditText e1 = yourCustomView.findViewById(R.id.edittext20);
         TextView t8 = yourCustomView.findViewById(R.id.textview63);
-        e1.setHint("Enter a value between 2 and 58");
+        e1.setHint("Enter a value between 2 and " + db.getMaximumWordLength());
 
         final int[] sortIndex = new int[2];
         Spinner s5 = yourCustomView.findViewById(R.id.spinner13);
@@ -643,7 +645,7 @@ public class MainActivity extends AppCompatActivity {
 
                         if (lengthIndex[0] == 0 && precursor < 2)
                         {
-                            Toast.makeText(MainActivity.this, "Enter a value between 2 and 58 for word length", Toast.LENGTH_LONG).show();
+                            Toast.makeText(MainActivity.this, "Enter a value between 2 and " + db.getMaximumWordLength() + " for word length", Toast.LENGTH_LONG).show();
                             getWordLength();
                         }
                         else
@@ -1157,7 +1159,7 @@ public class MainActivity extends AppCompatActivity {
         EditText e9 = yourCustomView.findViewById(R.id.edittext9);
         EditText e10 = yourCustomView.findViewById(R.id.edittext10);
         TextView t5 = yourCustomView.findViewById(R.id.textview15);
-        e10.setHint("Enter a value between 2 and 58");
+        e10.setHint("Enter a value between 2 and " + db.getMaximumWordLength());
 
         final int[] sortIndex = new int[2];
         Spinner s7 = yourCustomView.findViewById(R.id.spinner15);
@@ -1259,7 +1261,7 @@ public class MainActivity extends AppCompatActivity {
 
                         if (lengthIndex[0] == 0 && temporary < 2)
                         {
-                            Toast.makeText(MainActivity.this, "Enter a value between 2 and 58 for word length", Toast.LENGTH_LONG).show();
+                            Toast.makeText(MainActivity.this, "Enter a value between 2 and " + db.getMaximumWordLength() + " for word length", Toast.LENGTH_LONG).show();
                             filterByLabel();
                         }
                         else

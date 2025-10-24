@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Fast Word Study</string>
+    <string name="app_name">Fast word study</string>
     <string name="nav_open">Open navigation drawer</string>
     <string name="nav_close">Close navigation drawer</string>
 </resources>

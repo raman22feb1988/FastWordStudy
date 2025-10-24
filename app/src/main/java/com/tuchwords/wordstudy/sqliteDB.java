@@ -187,7 +187,7 @@ public class sqliteDB extends SQLiteOpenHelper {
                             myLine++;
                             if (myLine % myStep < 1 || myLine == 1.0)
                             {
-                                updateProgressBar(situation, p4, t40, t41, myDialog, ((int) (myLine / myStep)), ((int) myLine) + "/" + curCSV.getCount());
+                                updateProgressBar(situation, p4, t40, t41, myDialog, (int) (myLine / myStep), ((int) myLine) + "/" + curCSV.getCount());
                             }
                         }
                         csvWrite.close();
@@ -279,7 +279,7 @@ public class sqliteDB extends SQLiteOpenHelper {
                                                 nextLine = csvRead.readNext();
                                                 myLine++;
                                                 if (myLine % myStep < 1 || myLine == 1.0) {
-                                                    updateProgressBar(situation, p2, t36, t37, myDialog, ((int) (myLine / myStep)), ((int) myLine) + "/" + lines);
+                                                    updateProgressBar(situation, p2, t36, t37, myDialog, (int) (myLine / myStep), ((int) myLine) + "/" + lines);
                                                 }
                                             } while (nextLine != null);
                                             csvRead.close();
@@ -351,7 +351,7 @@ public class sqliteDB extends SQLiteOpenHelper {
                         myLine++;
                         if (myLine % myStep < 1 || myLine == 1.0)
                         {
-                            updateProgressBar(situation, p3, t38, t39, myDialog, ((int) (myLine / myStep)), ((int) myLine) + "/" + curCSV.getCount());
+                            updateProgressBar(situation, p3, t38, t39, myDialog, (int) (myLine / myStep), ((int) myLine) + "/" + curCSV.getCount());
                         }
                     }
                     csvWrite.close();
@@ -441,7 +441,7 @@ public class sqliteDB extends SQLiteOpenHelper {
                                             nextLine = csvRead.readNext();
                                             myLine++;
                                             if (myLine % myStep < 1 || myLine == 1.0) {
-                                                updateProgressBar(situation, p1, t34, t35, myDialog, ((int) (myLine / myStep)), ((int) myLine) + "/" + lines);
+                                                updateProgressBar(situation, p1, t34, t35, myDialog, (int) (myLine / myStep), ((int) myLine) + "/" + lines);
                                             }
                                         } while (nextLine != null);
                                         csvRead.close();
@@ -686,6 +686,21 @@ public class sqliteDB extends SQLiteOpenHelper {
         return true;
     }
 
+    public int getMaximumWordLength()
+    {
+        SQLiteDatabase db = this.getWritableDatabase();
+        Cursor cursor = db.rawQuery("SELECT MAX(_length_) FROM words", null);
+        int maximumWordLength = 0;
+
+        if (cursor.moveToFirst()) {
+            do {
+                maximumWordLength = cursor.getInt(0);
+            } while (cursor.moveToNext());
+        }
+        cursor.close();
+        return maximumWordLength;
+    }
+
     public double probability(String st)
     {
         int[] frequency = new int[] {9, 2, 2, 4, 12, 2, 3, 2, 9, 1, 1, 4, 2, 6, 8, 2, 1, 6, 4, 6, 4, 2, 2, 1, 2, 1};
@@ -845,80 +860,84 @@ public class sqliteDB extends SQLiteOpenHelper {
                         myLine++;
                         if (myLine % myStep1 < 1 || myLine == 1.0)
                         {
-                            updateProgressBar(myContext, p5, t42, t43, myDialog, ((int) (myLine / myStep1)), ((int) myLine) + "/" + dictionary.size());
+                            updateProgressBar(myContext, p5, t42, t43, myDialog, (int) (myLine / myStep1), ((int) myLine) + "/" + dictionary.size());
                         }
                     }
 
-                    HashMap<Integer, ArrayList<String>> pageHash = new HashMap<>();
-                    HashMap<Integer, ArrayList<String>> cellHash = new HashMap<>();
+                    Cursor[] anagramList = new Cursor[getMaximumWordLength() - 1];
+                    int[] wordLength = new int[anagramList.length];
+                    int[] pages = new int[anagramList.length];
+                    int maximumPages = 0;
 
-                    for (int lengths = 2; lengths <= 58; lengths++) {
-                        Cursor anagramList = getAllAnagrams(lengths, "*", " ORDER BY _probability_ DESC");
-                        int wordLength = anagramList.getCount();
-                        int pages = (((wordLength - 1) / 100) + 1);
+                    for (int lengths = 0; lengths < anagramList.length; lengths++) {
+                        anagramList[lengths] = getAllRegularAnagrams(lengths + 2);
+                        wordLength[lengths] = anagramList[lengths].getCount();
+                        pages[lengths] = (((wordLength[lengths] - 1) / 100) + 1);
 
-                        for (int pageNumber = 0; pageNumber < pages; pageNumber++) {
-                            if (!pageHash.containsKey(pageNumber + 1)) {
-                                pageHash.put(pageNumber + 1, new ArrayList<>());
-                            }
-
-                            int open = pageNumber * 100;
-                            int close = Math.min((pageNumber + 1) * 100, wordLength);
-
-                            if (anagramList.moveToPosition(open)) {
-                                do {
-                                    (pageHash.get(pageNumber + 1)).add(anagramList.getString(0));
-                                } while (anagramList.moveToNext() && anagramList.getPosition() < close);
-                            }
+                        if (pages[lengths] > maximumPages) {
+                            maximumPages = pages[lengths];
                         }
-
-                        for (int cellValue = 0; cellValue < 100; cellValue++) {
-                            if (!cellHash.containsKey(cellValue + 1)) {
-                                cellHash.put(cellValue + 1, new ArrayList<>());
-                            }
-
-                            if (anagramList.moveToPosition(cellValue)) {
-                                do {
-                                    (cellHash.get(cellValue + 1)).add(anagramList.getString(0));
-                                } while (anagramList.move(100));
-                            }
-                        }
-
-                        anagramList.close();
                     }
 
                     uiThreadTitle("Setting page numbers", myDialog, myContext);
-                    double myStep2 = pageHash.size() / 50.0;
-                    for (int positionNumber = 1; positionNumber <= pageHash.size(); positionNumber++) {
-                        String pageString = ((((pageHash.get(positionNumber)).toString()).replace("[", "(\"")).replace("]", "\")")).replace(", ", "\", \"");
+                    double myStep2 = maximumPages / 50.0;
+                    for (int positionNumber = 1; positionNumber <= maximumPages; positionNumber++) {
+                        ArrayList<String> pageHash = new ArrayList<>();
 
+                        for (int lengths = 0; lengths < anagramList.length; lengths++) {
+                            if(pages[lengths] <= positionNumber) {
+                                int open = (positionNumber - 1) * 100;
+                                int close = Math.min(positionNumber * 100, wordLength[lengths]);
+
+                                if (anagramList[lengths].moveToPosition(open)) {
+                                    do {
+                                        pageHash.add(anagramList[lengths].getString(0));
+                                    } while (anagramList[lengths].moveToNext() && anagramList[lengths].getPosition() < close);
+                                }
+                            }
+                        }
+
+                        String pageString = ((((pageHash).toString()).replace("[", "(\"")).replace("]", "\")")).replace(", ", "\", \"");
                         ContentValues values = new ContentValues();
                         values.put("_page_", positionNumber);
 
-                        success[0] &= db.update("words", values, "_word_ IN " + pageString,
+                        success[0] &= db.update("words", values, ("_word_ IN") + pageString,
                                 new String[] {});
 
                         if (positionNumber % myStep2 < 1 || positionNumber == 1)
                         {
-                            updateProgressBar(myContext, p5, t42, t43, myDialog, 40 + ((int) (positionNumber / myStep2)), positionNumber + "/" + pageHash.size());
+                            updateProgressBar(myContext, p5, t42, t43, myDialog, 40 + ((int) (positionNumber / myStep2)), positionNumber + "/" + maximumPages);
                         }
                     }
 
                     uiThreadTitle("Setting grid numbers", myDialog, myContext);
-                    double myStep3 = cellHash.size() / 10.0;
-                    for (int cellNumber = 1; cellNumber <= cellHash.size(); cellNumber++) {
-                        String cellString = ((((cellHash.get(cellNumber)).toString()).replace("[", "(\"")).replace("]", "\")")).replace(", ", "\", \"");
+                    double myStep3 = 10.0;
+                    for (int cellNumber = 1; cellNumber <= 100.0; cellNumber++) {
+                        ArrayList<String> cellHash = new ArrayList<>();
 
+                        for (int lengths = 0; lengths < anagramList.length; lengths++) {
+                            if (anagramList[lengths].moveToPosition(cellNumber - 1)) {
+                                do {
+                                    cellHash.add(anagramList[lengths].getString(0));
+                                } while (anagramList[lengths].move(100));
+                            }
+                        }
+
+                        String cellString = ((((cellHash).toString()).replace("[", "(\"")).replace("]", "\")")).replace(", ", "\", \"");
                         ContentValues values = new ContentValues();
                         values.put("_position_", cellNumber);
 
-                        success[0] &= db.update("words", values, "_word_ IN " + cellString,
+                        success[0] &= db.update("words", values, ("_word_ IN ") + cellString,
                                 new String[] {});
 
                         if (cellNumber % myStep3 < 1 || cellNumber == 1)
                         {
-                            updateProgressBar(myContext, p5, t42, t43, myDialog, 90 + ((int) (cellNumber / myStep3)), cellNumber + "/" + cellHash.size());
+                            updateProgressBar(myContext, p5, t42, t43, myDialog, 90 + ((int) (cellNumber / myStep3)), cellNumber + "/100");
                         }
+                    }
+
+                    for (int lengths = 0; lengths < anagramList.length; lengths++) {
+                        anagramList[lengths].close();
                     }
 
                     int nightModeFlags =
@@ -1274,6 +1293,12 @@ public class sqliteDB extends SQLiteOpenHelper {
     {
         SQLiteDatabase db = this.getReadableDatabase();
         return db.rawQuery("SELECT _word_ FROM words" + ((letters > 1 || !sqlQuery.equals("*")) ? " WHERE " : "") + (letters > 1 ? "_length_ = " + letters : "") + ((letters > 1 && !sqlQuery.equals("*")) ? " AND " : "") + (!sqlQuery.equals("*") ? "_tag_ = \"" + sqlQuery + "\"" : "") + (orderBy.charAt(0) == ' ' ? orderBy : ""), null);
+    }
+
+    public Cursor getAllRegularAnagrams(int letters)
+    {
+        SQLiteDatabase db = this.getReadableDatabase();
+        return db.rawQuery("SELECT DISTINCT(_alphagram_) FROM words WHERE _length_ = " + letters + " ORDER BY _probability_ DESC", null);
     }
 
     public ArrayList<String> getDefinition(String guess)
