@@ -49,6 +49,7 @@
                 android:id="@+id/edittext17"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:hint="Use full stops for blanks"
                 android:background="@drawable/rectangle">
             </EditText>
         </LinearLayout>
@@ -60,7 +61,7 @@
                 android:id="@+id/textview60"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Number of blanks:">
+                android:text="Additional number of blanks (Optional):">
             </TextView>
             <EditText
                 android:id="@+id/edittext18"

@@ -90,18 +90,16 @@ public class MainActivity extends AppCompatActivity {
 
     // Declare the DrawerLayout, NavigationView and Toolbar
     private DrawerLayout drawerLayout;
-    private NavigationView navigationView;
-    private Toolbar toolbar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        // Initialize the DrawerLayout, Toolbar and NavigationView
+        // Initialize the DrawerLayout, NavigationView and Toolbar
         drawerLayout = findViewById(R.id.drawer_layout_main);
-        toolbar = findViewById(R.id.toolbar_main);
-        navigationView = findViewById(R.id.nav_view_main);
+        NavigationView navigationView = findViewById(R.id.nav_view_main);
+        Toolbar toolbar = findViewById(R.id.toolbar_main);
 
         pref = getApplicationContext().getSharedPreferences("AppData", 0);
         boolean prepared = pref.getBoolean("prepared", false);
@@ -571,12 +569,12 @@ public class MainActivity extends AppCompatActivity {
 
         final int[] sortIndex = new int[2];
         Spinner s5 = yourCustomView.findViewById(R.id.spinner13);
-        ArrayAdapter<String> orderAdapter = new ArrayAdapter(MainActivity.this, android.R.layout.simple_spinner_item, allColumns);
+        ArrayAdapter<String> orderAdapter = new ArrayAdapter<>(MainActivity.this, android.R.layout.simple_spinner_item, allColumns);
         orderAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         s5.setAdapter(orderAdapter);
 
         Spinner s6 = yourCustomView.findViewById(R.id.spinner14);
-        ArrayAdapter<String> sortAdapter = new ArrayAdapter(MainActivity.this, android.R.layout.simple_spinner_item, sort);
+        ArrayAdapter<String> sortAdapter = new ArrayAdapter<>(MainActivity.this, android.R.layout.simple_spinner_item, sort);
         sortAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         s6.setAdapter(sortAdapter);
 
@@ -611,7 +609,7 @@ public class MainActivity extends AppCompatActivity {
         lengthList.add(0, "Specific word length");
         lengthList.add(1, "All word lengths");
 
-        ArrayAdapter<String> lengthAdapter = new ArrayAdapter(MainActivity.this, android.R.layout.simple_spinner_item, lengthList);
+        ArrayAdapter<String> lengthAdapter = new ArrayAdapter<>(MainActivity.this, android.R.layout.simple_spinner_item, lengthList);
         lengthAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         s4.setAdapter(lengthAdapter);
 
@@ -683,12 +681,12 @@ public class MainActivity extends AppCompatActivity {
 
         final int[] sortIndex = new int[2];
         Spinner s9 = yourCustomView.findViewById(R.id.spinner17);
-        ArrayAdapter<String> orderAdapter = new ArrayAdapter(MainActivity.this, android.R.layout.simple_spinner_item, allColumns);
+        ArrayAdapter<String> orderAdapter = new ArrayAdapter<>(MainActivity.this, android.R.layout.simple_spinner_item, allColumns);
         orderAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         s9.setAdapter(orderAdapter);
 
         Spinner s10 = yourCustomView.findViewById(R.id.spinner18);
-        ArrayAdapter<String> sortAdapter = new ArrayAdapter(MainActivity.this, android.R.layout.simple_spinner_item, sort);
+        ArrayAdapter<String> sortAdapter = new ArrayAdapter<>(MainActivity.this, android.R.layout.simple_spinner_item, sort);
         sortAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         s10.setAdapter(sortAdapter);
 
@@ -1115,7 +1113,7 @@ public class MainActivity extends AppCompatActivity {
                         }
                         else
                         {
-                            long magnify = db.setZoom("Main", new_rows, new_columns, new_font);
+                            db.setZoom("Main", new_rows, new_columns, new_font);
                             refresh();
                         }
                     }
@@ -1163,12 +1161,12 @@ public class MainActivity extends AppCompatActivity {
 
         final int[] sortIndex = new int[2];
         Spinner s7 = yourCustomView.findViewById(R.id.spinner15);
-        ArrayAdapter<String> orderAdapter = new ArrayAdapter(MainActivity.this, android.R.layout.simple_spinner_item, allColumns);
+        ArrayAdapter<String> orderAdapter = new ArrayAdapter<>(MainActivity.this, android.R.layout.simple_spinner_item, allColumns);
         orderAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         s7.setAdapter(orderAdapter);
 
         Spinner s8 = yourCustomView.findViewById(R.id.spinner16);
-        ArrayAdapter<String> sortAdapter = new ArrayAdapter(MainActivity.this, android.R.layout.simple_spinner_item, sort);
+        ArrayAdapter<String> sortAdapter = new ArrayAdapter<>(MainActivity.this, android.R.layout.simple_spinner_item, sort);
         sortAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         s8.setAdapter(sortAdapter);
 
@@ -1300,12 +1298,12 @@ public class MainActivity extends AppCompatActivity {
 
         final int[] sortIndex = new int[2];
         Spinner s11 = yourCustomView.findViewById(R.id.spinner19);
-        ArrayAdapter<String> orderAdapter = new ArrayAdapter(MainActivity.this, android.R.layout.simple_spinner_item, allColumns);
+        ArrayAdapter<String> orderAdapter = new ArrayAdapter<>(MainActivity.this, android.R.layout.simple_spinner_item, allColumns);
         orderAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         s11.setAdapter(orderAdapter);
 
         Spinner s12 = yourCustomView.findViewById(R.id.spinner20);
-        ArrayAdapter<String> sortAdapter = new ArrayAdapter(MainActivity.this, android.R.layout.simple_spinner_item, sort);
+        ArrayAdapter<String> sortAdapter = new ArrayAdapter<>(MainActivity.this, android.R.layout.simple_spinner_item, sort);
         sortAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         s12.setAdapter(sortAdapter);
 
@@ -1339,66 +1337,79 @@ public class MainActivity extends AppCompatActivity {
                 .setView(yourCustomView)
                 .setPositiveButton("OK", new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int whichButton) {
-                        String letter = (((e11.getText()).toString()).trim()).toUpperCase();
-                        boolean flag = false;
-                        for (int digits = 0; digits < letter.length(); digits++) {
-                            int flags = (int) letter.charAt(digits);
-                            if (flags < 65 || flags > 90) {
-                                flag = true;
-                                break;
-                            }
-                        }
-
-                        String digit = (e12.getText()).toString();
-                        int blanks = (digit.length() == 0 ? 0 : Integer.parseInt(digit));
-
-                        if (flag) {
-                            Toast.makeText(MainActivity.this, "Letters field can contain only letters", Toast.LENGTH_LONG).show();
-                            getAllSubanagrams(subanagram);
-                        }
-                        else {
-                            StringBuilder theQuery = new StringBuilder();
-
-                            if (subanagram) {
-                                int[] occurrence = new int[26];
-                                for (int myRadix = 0; myRadix < letter.length(); myRadix++) {
-                                    char theCharacter = letter.charAt(myRadix);
-                                    occurrence[theCharacter - 65]++;
-                                }
-
-                                for (int theRadix = 0; theRadix < 26; theRadix++) {
-                                    char occurrences = (char) (theRadix + 97);
-                                    theQuery.append("_no_").append(occurrences).append("_ <= ").append(occurrence[theRadix] + blanks).append(" AND ");
-                                }
-
-                                for (int myIndex = 0; myIndex < 26; myIndex++) {
-                                    char occurrences = (char) (myIndex + 97);
-                                    theQuery.append(myIndex == 0 ? "" : " + ").append("ABS(_no_").append(occurrences).append("_ - ").append(occurrence[myIndex]).append(")");
-                                }
-                                theQuery.append(" <= ").append((2 * blanks) + letter.length()).append(" - _length_");
-                            } else {
-                                char[] myCharacter = letter.toCharArray();
-                                Arrays.sort(myCharacter);
-                                StringBuilder empties = new StringBuilder();
-                                for (char myLetter : myCharacter) {
-                                    empties.append("%").append(myLetter);
-                                }
-                                empties.append("%");
-                                String empty = new String(empties);
-                                theQuery.append("_length_ = ").append(letter.length() + blanks).append(" AND _alphagram_ LIKE '").append(empty).append("'");
-                            }
-
-                            String extra = ((e13.getText()).toString()).replace("\"", "'");
-                            if (extra.length() > 0)
-                            {
-                                theQuery.append(" AND (").append(c4.isChecked() ? db.addUnderscores(extra) : extra).append(")");
-                            }
-
-                            execute(false, new String(theQuery), sortBy(sortIndex));
-                        }
+                        subanagrams((((e11.getText()).toString()).trim()).toUpperCase(), (e12.getText()).toString(), subanagram, ((e13.getText()).toString()).replace("\"", "'"), c4.isChecked(), sortIndex, true);
                     }
                 }).create();
         dialog.show();
+    }
+
+    public void subanagrams(String letterSequence, String digit, boolean subanagram, String extra, boolean autoUnderscore, int[] sortIndex, boolean extraSql) {
+        boolean flag = false;
+        int blanks = 0;
+        for (int digits = 0; digits < letterSequence.length(); digits++) {
+            int flags = (int) letterSequence.charAt(digits);
+            if (flags == 46) {
+                blanks++;
+            }
+            else if (flags < 65 || flags > 90) {
+                flag = true;
+                break;
+            }
+        }
+
+        blanks += (digit.length() == 0 ? 0 : Integer.parseInt(digit));
+
+        if (flag && extraSql) {
+            Toast.makeText(MainActivity.this, "Letters field can contain only letters and full stops for blanks", Toast.LENGTH_LONG).show();
+            getAllSubanagrams(subanagram);
+        }
+        else {
+            String letter;
+            StringBuilder theQuery = new StringBuilder();
+
+            if (flag) {
+                letter = "";
+                blanks = 0;
+            }
+            else {
+                letter = letterSequence.replace(".", "");
+            }
+
+            if (subanagram) {
+                int[] occurrence = new int[26];
+                for (int myRadix = 0; myRadix < letter.length(); myRadix++) {
+                    char theCharacter = letter.charAt(myRadix);
+                    occurrence[theCharacter - 65]++;
+                }
+
+                for (int theRadix = 0; theRadix < 26; theRadix++) {
+                    char occurrences = (char) (theRadix + 97);
+                    theQuery.append("_no_").append(occurrences).append("_ <= ").append(occurrence[theRadix] + blanks).append(" AND ");
+                }
+
+                for (int myIndex = 0; myIndex < 26; myIndex++) {
+                    char occurrences = (char) (myIndex + 97);
+                    theQuery.append(myIndex == 0 ? "" : " + ").append("ABS(_no_").append(occurrences).append("_ - ").append(occurrence[myIndex]).append(")");
+                }
+                theQuery.append(" <= ").append((2 * blanks) + letter.length()).append(" - _length_");
+            } else {
+                char[] myCharacter = letter.toCharArray();
+                Arrays.sort(myCharacter);
+                StringBuilder empties = new StringBuilder();
+                for (char myLetter : myCharacter) {
+                    empties.append("%").append(myLetter);
+                }
+                empties.append("%");
+                String empty = new String(empties);
+                theQuery.append("_length_ = ").append(letter.length() + blanks).append(" AND _alphagram_ LIKE '").append(empty).append("'");
+            }
+
+            if (extra.length() > 0) {
+                theQuery.append(" AND (").append(autoUnderscore ? db.addUnderscores(extra) : extra).append(")");
+            }
+
+            execute(false, new String(theQuery), sortBy(sortIndex));
+        }
     }
 
     public String sortBy(int[] selection) {
