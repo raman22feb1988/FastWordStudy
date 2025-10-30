@@ -437,7 +437,7 @@ public class sqliteDB extends SQLiteOpenHelper {
                                                 }
                                             }
                                             db.update("words", contentValues, "_word_ = ?",
-                                                    new String[]{nextLine[wordIndex]});
+                                                    new String[] {nextLine[wordIndex]});
                                             nextLine = csvRead.readNext();
                                             myLine++;
                                             if (myLine % myStep < 1 || myLine == 1.0) {
