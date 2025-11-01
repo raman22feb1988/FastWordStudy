@@ -728,7 +728,7 @@ public class sqliteDB extends SQLiteOpenHelper {
         TextView t43 = myCustomView.findViewById(R.id.textview58);
 
         AlertDialog myDialog = new AlertDialog.Builder(myContext)
-                .setTitle("Preparing database")
+                .setTitle("Inserting words")
                 .setView(myCustomView)
                 .create();
         myDialog.show();
@@ -1294,7 +1294,7 @@ public class sqliteDB extends SQLiteOpenHelper {
     public Cursor getAllRegularAnagrams(int letters)
     {
         SQLiteDatabase db = this.getReadableDatabase();
-        return db.rawQuery("SELECT DISTINCT(_alphagram_) FROM words WHERE _length_ = " + letters + " ORDER BY _probability_ DESC", null);
+        return db.rawQuery("SELECT _word_ FROM words WHERE _length_ = " + letters + " ORDER BY _probability_ DESC", null);
     }
 
     public ArrayList<String> getDefinition(String guess)
