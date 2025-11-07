@@ -1224,7 +1224,7 @@ public class MainActivity extends AppCompatActivity {
         lengthList.add(0, "Specific word length");
         lengthList.add(1, "All word lengths");
 
-        ArrayAdapter<String> lengthAdapter = new ArrayAdapter(MainActivity.this, android.R.layout.simple_spinner_item, lengthList);
+        ArrayAdapter<String> lengthAdapter = new ArrayAdapter<>(MainActivity.this, android.R.layout.simple_spinner_item, lengthList);
         lengthAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         s3.setAdapter(lengthAdapter);
 
