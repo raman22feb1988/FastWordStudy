@@ -35,7 +35,7 @@
                 android:title="Hide number of anagrams" />
             <item
                 android:id="@+id/button21"
-                android:title="Hide full details" />
+                android:title="Show similar words (Slower)" />
         </menu>
     </item>
     <item android:title="Tag manager">

@@ -6,7 +6,7 @@
     <LinearLayout
         android:orientation="horizontal"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content" >
+        android:layout_height="wrap_content">
         <TextView
             android:text="Rows:"
             android:layout_width="wrap_content"
@@ -23,7 +23,7 @@
     <LinearLayout
         android:orientation="horizontal"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content" >
+        android:layout_height="wrap_content">
         <TextView
             android:text="Columns:"
             android:layout_width="wrap_content"
@@ -40,7 +40,7 @@
     <LinearLayout
         android:orientation="horizontal"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content" >
+        android:layout_height="wrap_content">
         <TextView
             android:text="Font Size:"
             android:layout_width="wrap_content"

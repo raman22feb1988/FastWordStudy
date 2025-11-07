@@ -104,7 +104,7 @@ public class MainActivity extends AppCompatActivity {
         pref = getApplicationContext().getSharedPreferences("AppData", 0);
         boolean prepared = pref.getBoolean("prepared", false);
         hidden = pref.getBoolean("hidden", false);
-        detail = pref.getBoolean("detail", true);
+        detail = pref.getBoolean("detail", false);
         int version = pref.getInt("version", 1);
         Menu menu = navigationView.getMenu();
 
@@ -114,10 +114,10 @@ public class MainActivity extends AppCompatActivity {
             menuItem.setTitle("Show number of anagrams");
         }
 
-        if (!detail)
+        if (detail)
         {
             MenuItem menuItem = menu.findItem(R.id.button21);
-            menuItem.setTitle("Show full details");
+            menuItem.setTitle("Hide similar words (Faster)");
         }
 
         // Create an ActionBarDrawerToggle to handle
@@ -250,16 +250,16 @@ public class MainActivity extends AppCompatActivity {
                         db.deleteByLabel(MainActivity.this, false);
                         break;
                     case R.id.button21:
-                        // Show a Toast message for the Hide and show full details item
+                        // Show a Toast message for the Hide and show similar words item
                         if (detail) {
                             detail = false;
-                            item.setTitle("Show full details");
+                            item.setTitle("Show similar words (Slower)");
                             SharedPreferences.Editor editor = pref.edit();
                             editor.putBoolean("detail", false);
                             editor.apply();
                         } else {
                             detail = true;
-                            item.setTitle("Hide full details");
+                            item.setTitle("Hide similar words (Faster)");
                             SharedPreferences.Editor editor = pref.edit();
                             editor.putBoolean("detail", true);
                             editor.apply();
