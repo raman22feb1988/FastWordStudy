@@ -169,7 +169,7 @@ public class MainActivity extends AppCompatActivity {
                                     public void onClick(DialogInterface dialog, int whichButton) {
                                         String subQuery = ((e5.getText()).toString()).replace("\"", "'");
 
-                                        if (subQuery.length() > 0) {
+                                        if (!subQuery.isEmpty()) {
                                             db.myQuery(c3.isChecked() ? db.addUnderscores(subQuery) : subQuery, MainActivity.this);
                                         }
                                     }
@@ -639,7 +639,7 @@ public class MainActivity extends AppCompatActivity {
                 .setPositiveButton("OK", new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int whichButton) {
                         String alphabet = (lengthIndex[0] == 0 ? (e1.getText()).toString() : "-1");
-                        int precursor = (alphabet.length() == 0 ? 0 : Integer.parseInt(alphabet));
+                        int precursor = (alphabet.isEmpty() ? 0 : Integer.parseInt(alphabet));
 
                         if (lengthIndex[0] == 0 && precursor < 2)
                         {
@@ -721,7 +721,7 @@ public class MainActivity extends AppCompatActivity {
                 .setPositiveButton("OK", new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int whichButton) {
                         String temporaryQuery = ((e2.getText()).toString()).replace("\"", "'");
-                        execute(c2.isChecked(), temporaryQuery.length() == 0 ? "1" : temporaryQuery, sortBy(sortIndex));
+                        execute(c2.isChecked(), temporaryQuery.isEmpty() ? "1" : temporaryQuery, sortBy(sortIndex));
                     }
                 }).create();
         dialog.show();
@@ -843,7 +843,7 @@ public class MainActivity extends AppCompatActivity {
                         .setPositiveButton("OK", new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int whichButton) {
                                 String pages = (e3.getText()).toString();
-                                int page = (pages.length() == 0 ? 0 : Integer.parseInt(pages));
+                                int page = (pages.isEmpty() ? 0 : Integer.parseInt(pages));
                                 if (page < 1 || page > maximum)
                                 {
                                     Toast.makeText(MainActivity.this, "Enter a value between 1 and " + maximum, Toast.LENGTH_LONG).show();
@@ -919,7 +919,7 @@ public class MainActivity extends AppCompatActivity {
                         .setPositiveButton("OK", new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int whichButton) {
                                 String pages = (e4.getText()).toString();
-                                int page = (pages.length() == 0 ? 0 : Integer.parseInt(pages));
+                                int page = (pages.isEmpty() ? 0 : Integer.parseInt(pages));
                                 if (page < 1 || page > maximum)
                                 {
                                     Toast.makeText(MainActivity.this, "Enter a value between 1 and " + maximum, Toast.LENGTH_LONG).show();
@@ -964,9 +964,9 @@ public class MainActivity extends AppCompatActivity {
             l1.setBackgroundColor(Color.parseColor(newColour));
 
             if (newColour.equals(white)) {
-                t2.setText(Html.fromHtml(meaning + " <b>" + (label.length() == 0 ? "(No Tag)" : label) + " " + lexicons + "</b>" + (detail ? db.getFullDetails(selectedWord) : "")));
+                t2.setText(Html.fromHtml(meaning + " <b>" + (label.isEmpty() ? "(No Tag)" : label) + " " + lexicons + "</b>" + (detail ? db.getFullDetails(selectedWord) : "")));
             } else {
-                t2.setText(Html.fromHtml("<font color=\"" + newColour + "\">" + meaning + " <b>" + (label.length() == 0 ? "(No Tag)" : label) + " " + lexicons + "</b>" + (detail ? db.getFullDetails(selectedWord) : "") + "</font>"));
+                t2.setText(Html.fromHtml("<font color=\"" + newColour + "\">" + meaning + " <b>" + (label.isEmpty() ? "(No Tag)" : label) + " " + lexicons + "</b>" + (detail ? db.getFullDetails(selectedWord) : "") + "</font>"));
             }
         }
     }
@@ -1040,18 +1040,18 @@ public class MainActivity extends AppCompatActivity {
     {
         if (colourList.containsKey(category)) {
             if ((colourList.get(category)).equals(white)) {
-                t2.setText(Html.fromHtml(meaning + " <b>" + (category.length() == 0 ? "(No Tag)" : category) + " " + lexicons + "</b>" + (detail ? db.getFullDetails(ultimate) : "")));
+                t2.setText(Html.fromHtml(meaning + " <b>" + (category.isEmpty() ? "(No Tag)" : category) + " " + lexicons + "</b>" + (detail ? db.getFullDetails(ultimate) : "")));
             } else {
-                t2.setText(Html.fromHtml("<font color=\"" + colourList.get(category) + "\">" + meaning + " <b>" + (category.length() == 0 ? "(No Tag)" : category) + " " + lexicons + "</b>" + (detail ? db.getFullDetails(ultimate) : "") + "</font>"));
+                t2.setText(Html.fromHtml("<font color=\"" + colourList.get(category) + "\">" + meaning + " <b>" + (category.isEmpty() ? "(No Tag)" : category) + " " + lexicons + "</b>" + (detail ? db.getFullDetails(ultimate) : "") + "</font>"));
             }
         } else if (colourList.containsKey("")) {
             if ((colourList.get("")).equals(white)) {
-                t2.setText(Html.fromHtml(meaning + " <b>" + (category.length() == 0 ? "(No Tag)" : category) + " " + lexicons + "</b>" + (detail ? db.getFullDetails(ultimate) : "")));
+                t2.setText(Html.fromHtml(meaning + " <b>" + (category.isEmpty() ? "(No Tag)" : category) + " " + lexicons + "</b>" + (detail ? db.getFullDetails(ultimate) : "")));
             } else {
-                t2.setText(Html.fromHtml("<font color=\"" + colourList.get("") + "\">" + meaning + " <b>" + (category.length() == 0 ? "(No Tag)" : category) + " " + lexicons + "</b>" + (detail ? db.getFullDetails(ultimate) : "") + "</font>"));
+                t2.setText(Html.fromHtml("<font color=\"" + colourList.get("") + "\">" + meaning + " <b>" + (category.isEmpty() ? "(No Tag)" : category) + " " + lexicons + "</b>" + (detail ? db.getFullDetails(ultimate) : "") + "</font>"));
             }
         } else {
-            t2.setText(Html.fromHtml(meaning + " <b>" + (category.length() == 0 ? "(No Tag)" : category) + " " + lexicons + "</b>" + (detail ? db.getFullDetails(ultimate) : "")));
+            t2.setText(Html.fromHtml(meaning + " <b>" + (category.isEmpty() ? "(No Tag)" : category) + " " + lexicons + "</b>" + (detail ? db.getFullDetails(ultimate) : "")));
         }
     }
 
@@ -1102,9 +1102,9 @@ public class MainActivity extends AppCompatActivity {
                         String old_columns = (e7.getText()).toString();
                         String old_font = (e8.getText()).toString();
 
-                        int new_rows = (old_rows.length() == 0 ? 0 : Integer.parseInt(old_rows));
-                        int new_columns = (old_columns.length() == 0 ? 0 : Integer.parseInt(old_columns));
-                        int new_font = (old_font.length() == 0 ? 0 : Integer.parseInt(old_font));
+                        int new_rows = (old_rows.isEmpty() ? 0 : Integer.parseInt(old_rows));
+                        int new_columns = (old_columns.isEmpty() ? 0 : Integer.parseInt(old_columns));
+                        int new_font = (old_font.isEmpty() ? 0 : Integer.parseInt(old_font));
 
                         if (new_rows < 1 || new_columns < 1 || new_font < 11)
                         {
@@ -1255,7 +1255,7 @@ public class MainActivity extends AppCompatActivity {
                     public void onClick(DialogInterface dialog, int whichButton) {
                         String intermediate = (e9.getText()).toString();
                         String alphabets = (lengthIndex[0] == 0 ? (e10.getText()).toString() : "0");
-                        int temporary = (alphabets.length() == 0 ? 0 : Integer.parseInt(alphabets));
+                        int temporary = (alphabets.isEmpty() ? 0 : Integer.parseInt(alphabets));
 
                         if (lengthIndex[0] == 0 && temporary < 2)
                         {
@@ -1347,7 +1347,7 @@ public class MainActivity extends AppCompatActivity {
         boolean flag = false;
         int blanks = 0;
         for (int digits = 0; digits < letterSequence.length(); digits++) {
-            int flags = (int) letterSequence.charAt(digits);
+            int flags = letterSequence.charAt(digits);
             if (flags == 46) {
                 blanks++;
             }
@@ -1357,7 +1357,7 @@ public class MainActivity extends AppCompatActivity {
             }
         }
 
-        blanks += (digit.length() == 0 ? 0 : Integer.parseInt(digit));
+        blanks += (digit.isEmpty() ? 0 : Integer.parseInt(digit));
 
         if (flag && extraSql) {
             Toast.makeText(MainActivity.this, "Letters field can contain only letters and full stops for blanks", Toast.LENGTH_LONG).show();
@@ -1404,7 +1404,7 @@ public class MainActivity extends AppCompatActivity {
                 theQuery.append("_length_ = ").append(letter.length() + blanks).append(" AND _alphagram_ LIKE '").append(empty).append("'");
             }
 
-            if (extra.length() > 0) {
+            if (!extra.isEmpty()) {
                 theQuery.append(" AND (").append(autoUnderscore ? db.addUnderscores(extra) : extra).append(")");
             }
 

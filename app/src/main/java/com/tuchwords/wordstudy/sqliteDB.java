@@ -118,7 +118,7 @@ public class sqliteDB extends SQLiteOpenHelper {
     public void myQuery(String sqlQuery, Context activity) {
         try {
             SQLiteDatabase db = this.getWritableDatabase();
-            String tokens[] = sqlQuery.split("\\s+");
+            String[] tokens = sqlQuery.split("\\s+");
             ArrayList<String> theQueries = new ArrayList<>();
             theQueries.add(sqlQuery);
             if (tokens[0].equalsIgnoreCase("ALTER") || tokens[0].equalsIgnoreCase("DROP") || tokens[0].equalsIgnoreCase("CREATE") || tokens[0].equalsIgnoreCase("TRUNCATE"))
@@ -611,16 +611,16 @@ public class sqliteDB extends SQLiteOpenHelper {
 
                 if (colour.equals(white)) {
                     if (line == 1) {
-                        labelColours.append(line).append(". ").append(label.length() == 0 ? "(Default)" : label).append(": ").append(colour);
+                        labelColours.append(line).append(". ").append(label.isEmpty() ? "(Default)" : label).append(": ").append(colour);
                     } else {
-                        labelColours.append("<br>").append(line).append(". ").append(label.length() == 0 ? "(Default)" : label).append(": ").append(colour);
+                        labelColours.append("<br>").append(line).append(". ").append(label.isEmpty() ? "(Default)" : label).append(": ").append(colour);
                     }
                 }
                 else {
                     if (line == 1) {
-                        labelColours.append("<font color=\"").append(colour).append("\">").append(line).append(". ").append(label.length() == 0 ? "(Default)" : label).append(": ").append(colour).append("</font>");
+                        labelColours.append("<font color=\"").append(colour).append("\">").append(line).append(". ").append(label.isEmpty() ? "(Default)" : label).append(": ").append(colour).append("</font>");
                     } else {
-                        labelColours.append("<br><font color=\"").append(colour).append("\">").append(line).append(". ").append(label.length() == 0 ? "(Default)" : label).append(": ").append(colour).append("</font>");
+                        labelColours.append("<br><font color=\"").append(colour).append("\">").append(line).append(". ").append(label.isEmpty() ? "(Default)" : label).append(": ").append(colour).append("</font>");
                     }
                 }
                 line++;
@@ -666,7 +666,7 @@ public class sqliteDB extends SQLiteOpenHelper {
             {
                 columnArray.add(columnName.substring(1, columnName.length() - 1));
             }
-            schema.append(schema.length() == 0 ? tableName + "\n" + columnArray.toString() : "\n" + tableName + "\n" + columnArray.toString());
+            schema.append(schema.length() == 0 ? tableName + "\n" + columnArray : "\n" + tableName + "\n" + columnArray);
         }
         return new String(schema);
     }
@@ -1656,7 +1656,7 @@ public class sqliteDB extends SQLiteOpenHelper {
                 .setView(yourCustomView)
                 .setPositiveButton("OK", new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int whichButton) {
-                        boolean transaction = addLabel((e4.getText()).toString(), hexValue[0]);
+                        addLabel((e4.getText()).toString(), hexValue[0]);
                         refresh(theContext);
                     }
                 }).create();
@@ -1912,7 +1912,7 @@ public class sqliteDB extends SQLiteOpenHelper {
         if (cursor1.moveToFirst()) {
             do {
                 String thePrefix = cursor1.getString(0);
-                prefixList.add(thePrefix.length() == 0 ? "(None)" : cursor1.getString(0));
+                prefixList.add(thePrefix.isEmpty() ? "(None)" : cursor1.getString(0));
             } while (cursor1.moveToNext());
         }
 
@@ -1923,7 +1923,7 @@ public class sqliteDB extends SQLiteOpenHelper {
         if (cursor2.moveToFirst()) {
             do {
                 String theSuffix = cursor2.getString(0);
-                suffixList.add(theSuffix.length() == 0 ? "(None)" : cursor2.getString(0));
+                suffixList.add(theSuffix.isEmpty() ? "(None)" : cursor2.getString(0));
             } while (cursor2.moveToNext());
         }
 
@@ -1949,7 +1949,7 @@ public class sqliteDB extends SQLiteOpenHelper {
 
         ArrayList<String> beforeList = new ArrayList<>();
         ArrayList<String> afterList = new ArrayList<>();
-        final int variable[] = {0, 0};
+        final int[] variable = {0, 0};
 
         if (suffix)
         {
@@ -2058,7 +2058,7 @@ public class sqliteDB extends SQLiteOpenHelper {
         ArrayList<String> queryList = new ArrayList<>();
         ArrayList<String> beforeList = new ArrayList<>();
         ArrayList<String> afterList = new ArrayList<>();
-        final int variable[] = {0, 0, 0};
+        final int[] variable = {0, 0, 0};
 
         if (suffix)
         {
@@ -2108,25 +2108,25 @@ public class sqliteDB extends SQLiteOpenHelper {
                 String prefix = queryList.get(i);
                 String myColour = (insertList.get(i)).second;
 
-                s7.setSelection(myColour.length() == 0 ? 0 : 1);
+                s7.setSelection(myColour.isEmpty() ? 0 : 1);
                 e9.setText(myColour);
 
                 if (suffix)
                 {
-                    t24.setText((prefix.length() > 0 && prefix.charAt(0) == '+') ? (prefix.length() > 1 ? "Double last letter, " : "Double last letter") + prefix.substring(1) : ((prefix.length() > 0 && prefix.charAt(0) == '-') ? (prefix.length() > 1 ? "Drop last letter, " : "Drop last letter") + prefix.substring(1) : (prefix.length() > 0 ? "No changes to word, " : "No changes to word") + prefix));
-                    t26.setText(myColour.length() == 0 ? "(After all last letters)" : myColour);
+                    t24.setText((!prefix.isEmpty() && prefix.charAt(0) == '+') ? (prefix.length() > 1 ? "Double last letter, " : "Double last letter") + prefix.substring(1) : ((!prefix.isEmpty() && prefix.charAt(0) == '-') ? (prefix.length() > 1 ? "Drop last letter, " : "Drop last letter") + prefix.substring(1) : (!prefix.isEmpty() ? "No changes to word, " : "No changes to word") + prefix));
+                    t26.setText(myColour.isEmpty() ? "(After all last letters)" : myColour);
 
-                    s6.setSelection((prefix.length() > 0 && prefix.charAt(0) == '-') ? 1 : ((prefix.length() > 0 && prefix.charAt(0) == '+') ? 2 : 0));
-                    e8.setText((prefix.length() > 0 && (prefix.charAt(0) == '+' || prefix.charAt(0) == '-')) ? prefix.substring(1) : prefix);
+                    s6.setSelection((!prefix.isEmpty() && prefix.charAt(0) == '-') ? 1 : ((!prefix.isEmpty() && prefix.charAt(0) == '+') ? 2 : 0));
+                    e8.setText((!prefix.isEmpty() && (prefix.charAt(0) == '+' || prefix.charAt(0) == '-')) ? prefix.substring(1) : prefix);
                 }
                 else
                 {
                     int variables = prefix.length() - 1;
-                    t24.setText((prefix.length() > 0 && prefix.charAt(variables) == '+') ? prefix.substring(0, variables) + (prefix.length() > 1 ? ", double first letter" : "Double first letter") : ((prefix.length() > 0 && prefix.charAt(variables) == '-') ? prefix.substring(0, variables) + (prefix.length() > 1 ? ", drop first letter" : "Drop first letter") : prefix + (prefix.length() > 0 ? ", no changes to word" : "No changes to word")));
-                    t26.setText(myColour.length() == 0 ? "(Before all first letters)" : myColour);
+                    t24.setText((!prefix.isEmpty() && prefix.charAt(variables) == '+') ? prefix.substring(0, variables) + (prefix.length() > 1 ? ", double first letter" : "Double first letter") : ((!prefix.isEmpty() && prefix.charAt(variables) == '-') ? prefix.substring(0, variables) + (prefix.length() > 1 ? ", drop first letter" : "Drop first letter") : prefix + (!prefix.isEmpty() ? ", no changes to word" : "No changes to word")));
+                    t26.setText(myColour.isEmpty() ? "(Before all first letters)" : myColour);
 
-                    s6.setSelection((prefix.length() > 0 && prefix.charAt(variables) == '-') ? 1 : ((prefix.length() > 0 && prefix.charAt(variables) == '+') ? 2 : 0));
-                    e8.setText((prefix.length() > 0 && (prefix.charAt(variables) == '+' || prefix.charAt(variables) == '-')) ? prefix.substring(0, variables) : prefix);
+                    s6.setSelection((!prefix.isEmpty() && prefix.charAt(variables) == '-') ? 1 : ((!prefix.isEmpty() && prefix.charAt(variables) == '+') ? 2 : 0));
+                    e8.setText((!prefix.isEmpty() && (prefix.charAt(variables) == '+' || prefix.charAt(variables) == '-')) ? prefix.substring(0, variables) : prefix);
                 }
             }
 
@@ -2247,14 +2247,14 @@ public class sqliteDB extends SQLiteOpenHelper {
 
                 if (suffix)
                 {
-                    t30.setText((prefix.length() > 0 && prefix.charAt(0) == '+') ? (prefix.length() > 1 ? "Double last letter, " : "Double last letter") + prefix.substring(1) : ((prefix.length() > 0 && prefix.charAt(0) == '-') ? (prefix.length() > 1 ? "Drop last letter, " : "Drop last letter") + prefix.substring(1) : (prefix.length() > 0 ? "No changes to word, " : "No changes to word") + prefix));
-                    t32.setText(myColour.length() == 0 ? "(After all last letters)" : myColour);
+                    t30.setText((!prefix.isEmpty() && prefix.charAt(0) == '+') ? (prefix.length() > 1 ? "Double last letter, " : "Double last letter") + prefix.substring(1) : ((!prefix.isEmpty() && prefix.charAt(0) == '-') ? (prefix.length() > 1 ? "Drop last letter, " : "Drop last letter") + prefix.substring(1) : (!prefix.isEmpty() ? "No changes to word, " : "No changes to word") + prefix));
+                    t32.setText(myColour.isEmpty() ? "(After all last letters)" : myColour);
                 }
                 else
                 {
                     int variables = prefix.length() - 1;
-                    t30.setText((prefix.length() > 0 && prefix.charAt(variables) == '+') ? prefix.substring(0, variables) + (prefix.length() > 1 ? ", double first letter" : "Double first letter") : ((prefix.length() > 0 && prefix.charAt(variables) == '-') ? prefix.substring(0, variables) + (prefix.length() > 1 ? ", drop first letter" : "Drop first letter") : prefix + (prefix.length() > 0 ? ", no changes to word" : "No changes to word")));
-                    t32.setText(myColour.length() == 0 ? "(Before all first letters)" : myColour);
+                    t30.setText((!prefix.isEmpty() && prefix.charAt(variables) == '+') ? prefix.substring(0, variables) + (prefix.length() > 1 ? ", double first letter" : "Double first letter") : ((!prefix.isEmpty() && prefix.charAt(variables) == '-') ? prefix.substring(0, variables) + (prefix.length() > 1 ? ", drop first letter" : "Drop first letter") : prefix + (!prefix.isEmpty() ? ", no changes to word" : "No changes to word")));
+                    t32.setText(myColour.isEmpty() ? "(Before all first letters)" : myColour);
                 }
             }
 
@@ -2365,16 +2365,16 @@ public class sqliteDB extends SQLiteOpenHelper {
         {
             String alpha = rowItem.first;
             String beta = rowItem.second;
-            boolean match = (beta.length() == 0 || beta.contains(Character.toString(myGuess.charAt(0))));
+            boolean match = (beta.isEmpty() || beta.contains(Character.toString(myGuess.charAt(0))));
 
-            if (alpha.length() > 0 && alpha.charAt(alpha.length() - 1) == '+')
+            if (!alpha.isEmpty() && alpha.charAt(alpha.length() - 1) == '+')
             {
                 if (match)
                 {
                     thePrefix.add(alpha.substring(0, alpha.length() - 1) + myGuess.charAt(0) + myGuess);
                 }
             }
-            else if (alpha.length() > 0 && alpha.charAt(alpha.length() - 1) == '-')
+            else if (!alpha.isEmpty() && alpha.charAt(alpha.length() - 1) == '-')
             {
                 if (match)
                 {
@@ -2401,16 +2401,16 @@ public class sqliteDB extends SQLiteOpenHelper {
         {
             String alpha = rowItem.first;
             String beta = rowItem.second;
-            boolean mismatch = (beta.length() == 0 || beta.contains(Character.toString(myGuess.charAt(myGuess.length() - 1))));
+            boolean mismatch = (beta.isEmpty() || beta.contains(Character.toString(myGuess.charAt(myGuess.length() - 1))));
 
-            if (alpha.length() > 0 && alpha.charAt(0) == '+')
+            if (!alpha.isEmpty() && alpha.charAt(0) == '+')
             {
                 if (mismatch)
                 {
                     theSuffix.add(myGuess + myGuess.charAt(myGuess.length() - 1) + alpha.substring(1));
                 }
             }
-            else if (alpha.length() > 0 && alpha.charAt(0) == '-')
+            else if (!alpha.isEmpty() && alpha.charAt(0) == '-')
             {
                 if (mismatch)
                 {
