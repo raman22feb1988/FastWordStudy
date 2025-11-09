@@ -792,7 +792,7 @@ public class MainActivity extends AppCompatActivity {
         b3.setEnabled(true);
         b5.setEnabled(true);
 
-        t1.setText("Page " + (counter + 1) + " out of " + (((words - 1) / (rows * columns)) + 1));
+        t1.setText("Page " + (counter + 1) + " out of " + (((words - 1) / (rows * columns)) + 1) + " (" + words + (words == 1 ? " word)" : " words)"));
         if (ultimate == null) {
             t2.setText("");
         }
@@ -868,7 +868,7 @@ public class MainActivity extends AppCompatActivity {
         b2.setEnabled(true);
         b5.setEnabled(true);
 
-        t1.setText("Page " + (counter + 1) + " out of " + (((words - 1) / (rows * columns)) + 1));
+        t1.setText("Page " + (counter + 1) + " out of " + (((words - 1) / (rows * columns)) + 1) + " (" + words + (words == 1 ? " word)" : " words)"));
         if (ultimate == null) {
             t2.setText("");
         }
