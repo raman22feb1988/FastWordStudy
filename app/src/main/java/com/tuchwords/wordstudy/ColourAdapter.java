@@ -17,8 +17,9 @@ public class ColourAdapter extends ArrayAdapter<Pair<String, String>> {
     LayoutInflater inflater;
     boolean mode;
     String white;
+    int font;
 
-    public ColourAdapter(Context context, int resourceId, int textviewId, List<Pair<String, String>> list, Activity parentActivity, boolean name) {
+    public ColourAdapter(Context context, int resourceId, int textviewId, List<Pair<String, String>> list, Activity parentActivity, boolean name, int combo) {
         super(context, resourceId, textviewId, list);
         inflater = parentActivity.getLayoutInflater();
         mode = name;
@@ -27,6 +28,7 @@ public class ColourAdapter extends ArrayAdapter<Pair<String, String>> {
                 context.getResources().getConfiguration().uiMode &
                         Configuration.UI_MODE_NIGHT_MASK;
         white = (nightModeFlags == Configuration.UI_MODE_NIGHT_YES ? "#000000" : "#FFFFFF");
+        font = combo;
     }
 
     public View getDropDownView(int position, View convertView, ViewGroup parent) {
@@ -39,6 +41,7 @@ public class ColourAdapter extends ArrayAdapter<Pair<String, String>> {
         if (colour != null && !colour.equals(white)) {
             t1.setTextColor(Color.parseColor(colour));
         }
+        t1.setTextSize(font);
 
         return rowview;
     }

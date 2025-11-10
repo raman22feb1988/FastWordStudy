@@ -8,7 +8,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
         <TextView
-            android:text="Rows:"
+            android:text="Number of rows:"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content">
         </TextView>
@@ -25,7 +25,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
         <TextView
-            android:text="Columns:"
+            android:text="Number of columns:"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content">
         </TextView>
@@ -42,12 +42,29 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
         <TextView
-            android:text="Font Size:"
+            android:text="Font size of words:"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content">
         </TextView>
         <EditText
             android:id="@+id/edittext8"
+            android:inputType="number"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@drawable/rectangle">
+        </EditText>
+    </LinearLayout>
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+        <TextView
+            android:text="Font size of tag list:"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content">
+        </TextView>
+        <EditText
+            android:id="@+id/edittext22"
             android:inputType="number"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"

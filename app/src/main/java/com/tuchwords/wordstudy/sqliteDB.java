@@ -70,7 +70,7 @@ public class sqliteDB extends SQLiteOpenHelper {
                 "create table if not exists colours(_tag_ text collate nocase, _colour_ text collate nocase)"
         );
         db.execSQL(
-                "create table if not exists zoom(_activity_ text collate nocase, _rows_ integer, _columns_ integer, _size_ integer)"
+                "create table if not exists zoom(_activity_ text collate nocase, _rows_ integer, _columns_ integer, _size_ integer, _spinner_ integer)"
         );
         db.execSQL(
                 "create table if not exists prefixes(_prefix_ text collate nocase, _before_ text collate nocase)"
@@ -973,10 +973,11 @@ public class sqliteDB extends SQLiteOpenHelper {
                     }
 
                     ContentValues contentValues = new ContentValues();
-                    contentValues.put("_activity_", "Main");
+                    contentValues.put("_activity_", "Study");
                     contentValues.put("_rows_", 25);
                     contentValues.put("_columns_", 4);
                     contentValues.put("_size_", 11);
+                    contentValues.put("_spinner_", 20);
                     db.insert("zoom", null, contentValues);
 
                     ArrayList<Pair<String, String>> myPrefixes = new ArrayList<>();
@@ -1190,7 +1191,7 @@ public class sqliteDB extends SQLiteOpenHelper {
         ArrayList<Integer> zoomList = new ArrayList<>();
 
         SQLiteDatabase db = this.getReadableDatabase();
-        Cursor cursor = db.rawQuery("SELECT _rows_, _columns_, _size_ FROM zoom WHERE _activity_ = \"" + parentActivity + "\"", null);
+        Cursor cursor = db.rawQuery("SELECT _rows_, _columns_, _size_, _spinner_ FROM zoom WHERE _activity_ = \"" + parentActivity + "\"", null);
 
         if (cursor.getCount() > 0) {
             if (cursor.moveToFirst()) {
@@ -1198,10 +1199,12 @@ public class sqliteDB extends SQLiteOpenHelper {
                     int rows = cursor.getInt(0);
                     int dimensions = cursor.getInt(1);
                     int font = cursor.getInt(2);
+                    int combo = cursor.getInt(3);
 
                     zoomList.add(rows);
                     zoomList.add(dimensions);
                     zoomList.add(font);
+                    zoomList.add(combo);
                 } while (cursor.moveToNext());
             }
         }
@@ -1209,13 +1212,14 @@ public class sqliteDB extends SQLiteOpenHelper {
             zoomList.add(25);
             zoomList.add(4);
             zoomList.add(11);
+            zoomList.add(20);
         }
 
         cursor.close();
         return zoomList;
     }
 
-    public void setZoom(String parentActivity, int rows, int dimensions, int font)
+    public void setZoom(String parentActivity, int rows, int dimensions, int font, int combo)
     {
         SQLiteDatabase db = this.getWritableDatabase();
 
@@ -1234,6 +1238,7 @@ public class sqliteDB extends SQLiteOpenHelper {
         values.put("_rows_", rows);
         values.put("_columns_", dimensions);
         values.put("_size_", font);
+        values.put("_spinner_", combo);
 
         if (exists != 0) {
             db.update("zoom", values, "_activity_ = ?",
@@ -1507,8 +1512,10 @@ public class sqliteDB extends SQLiteOpenHelper {
         {
             argumentQuery = argumentQuery.replaceAll(regexList.get(regexLists), tablesList.get(regexLists));
         }
-        argumentQuery = argumentQuery.replace("_time_stamp", "_timestamp_");
-        argumentQuery = argumentQuery.replace("ze_tag_ram", "_zetagram_");
+
+        argumentQuery = (argumentQuery.replace("_time_stamp", "_timestamp_"))
+                .replace("ze_tag_ram", "_zetagram_");
+
         for (String tableName : tablesList)
         {
             String[] columnList = getAllColumns(tableName);
@@ -1663,7 +1670,7 @@ public class sqliteDB extends SQLiteOpenHelper {
         dialog.show();
     }
 
-    public void renameByLabel(Context theContext, boolean name)
+    public void renameByLabel(Context theContext, boolean name, int fontSize)
     {
         LayoutInflater inflater = LayoutInflater.from(theContext);
         final View yourCustomView = inflater.inflate(R.layout.rename, null);
@@ -1701,7 +1708,7 @@ public class sqliteDB extends SQLiteOpenHelper {
         int grey = t10.getCurrentTextColor();
 
         List<Pair<String, String>> spinnerList = (name ? getAllLabels() : getAllColours());
-        ColourAdapter colourAdapter = new ColourAdapter(theContext, R.layout.colour, R.id.textview41, spinnerList, (MainActivity) theContext, name);
+        ColourAdapter colourAdapter = new ColourAdapter(theContext, R.layout.colour, R.id.textview41, spinnerList, (MainActivity) theContext, name, fontSize);
         s1.setAdapter(colourAdapter);
 
         s1.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
@@ -1776,7 +1783,7 @@ public class sqliteDB extends SQLiteOpenHelper {
         dialog.show();
     }
 
-    public void deleteByLabel(Context theContext, boolean name)
+    public void deleteByLabel(Context theContext, boolean name, int fontSize)
     {
         LayoutInflater inflater = LayoutInflater.from(theContext);
         final View yourCustomView = inflater.inflate(R.layout.delete, null);
@@ -1797,7 +1804,7 @@ public class sqliteDB extends SQLiteOpenHelper {
         int grey = t18.getCurrentTextColor();
 
         List<Pair<String, String>> spinnerList = (name ? getAllLabels() : getAllColours());
-        ColourAdapter colourAdapter = new ColourAdapter(theContext, R.layout.colour, R.id.textview41, spinnerList, (MainActivity) theContext, name);
+        ColourAdapter colourAdapter = new ColourAdapter(theContext, R.layout.colour, R.id.textview41, spinnerList, (MainActivity) theContext, name, fontSize);
         s2.setAdapter(colourAdapter);
 
         s2.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {

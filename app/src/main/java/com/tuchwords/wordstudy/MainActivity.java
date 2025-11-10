@@ -86,6 +86,7 @@ public class MainActivity extends AppCompatActivity {
     int rows;
     int columns;
     int font;
+    int combo;
     int maximumWordLength;
 
     // Declare the DrawerLayout, NavigationView and Toolbar
@@ -235,19 +236,19 @@ public class MainActivity extends AppCompatActivity {
                         break;
                     case R.id.button17:
                         // Show a Toast message for the Rename tag by colour item
-                        db.renameByLabel(MainActivity.this, false);
+                        db.renameByLabel(MainActivity.this, false, combo);
                         break;
                     case R.id.button18:
                         // Show a Toast message for the Change tag colour by name item
-                        db.renameByLabel(MainActivity.this, true);
+                        db.renameByLabel(MainActivity.this, true, combo);
                         break;
                     case R.id.button19:
                         // Show a Toast message for the Delete single tag by name item
-                        db.deleteByLabel(MainActivity.this, true);
+                        db.deleteByLabel(MainActivity.this, true, combo);
                         break;
                     case R.id.button20:
                         // Show a Toast message for the Delete single tag by colour item
-                        db.deleteByLabel(MainActivity.this, false);
+                        db.deleteByLabel(MainActivity.this, false, combo);
                         break;
                     case R.id.button21:
                         // Show a Toast message for the Hide and show similar words item
@@ -364,10 +365,11 @@ public class MainActivity extends AppCompatActivity {
             promptDictionary(false);
         }
 
-        ArrayList<Integer> dimensions = db.getZoom("Main");
+        ArrayList<Integer> dimensions = db.getZoom("Study");
         rows = dimensions.get(0);
         columns = dimensions.get(1);
         font = dimensions.get(2);
+        combo = dimensions.get(3);
         maximumWordLength = db.getMaximumWordLength();
 
         refreshSpinner();
@@ -985,10 +987,11 @@ public class MainActivity extends AppCompatActivity {
 
     public void refresh()
     {
-        ArrayList<Integer> dimensions = db.getZoom("Main");
+        ArrayList<Integer> dimensions = db.getZoom("Study");
         rows = dimensions.get(0);
         columns = dimensions.get(1);
         font = dimensions.get(2);
+        combo = dimensions.get(3);
 
         refreshSpinner();
 
@@ -1061,7 +1064,7 @@ public class MainActivity extends AppCompatActivity {
         labelsList.add(0, new Pair<>("(No Action)", null));
         colourList = db.getColours();
 
-        ColourAdapter comboBoxAdapter = new ColourAdapter(MainActivity.this, R.layout.colour, R.id.textview41, labelsList, MainActivity.this, true);
+        ColourAdapter comboBoxAdapter = new ColourAdapter(MainActivity.this, R.layout.colour, R.id.textview41, labelsList, MainActivity.this, true, combo);
         s1.setAdapter(comboBoxAdapter);
 
         s1.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
@@ -1084,36 +1087,58 @@ public class MainActivity extends AppCompatActivity {
         EditText e6 = yourCustomView.findViewById(R.id.edittext6);
         EditText e7 = yourCustomView.findViewById(R.id.edittext7);
         EditText e8 = yourCustomView.findViewById(R.id.edittext8);
+        EditText e14 = yourCustomView.findViewById(R.id.edittext22);
 
         e6.setHint("Enter a value greater than 0");
         e7.setHint("Enter a value greater than 0");
         e8.setHint("Enter a value greater than 11");
+        e14.setHint("Enter a value greater than 11");
 
         e6.setText(Integer.toString(rows));
         e7.setText(Integer.toString(columns));
         e8.setText(Integer.toString(font));
+        e14.setText(Integer.toString(combo));
 
         AlertDialog dialog = new AlertDialog.Builder(MainActivity.this)
-                .setTitle("Change rows, columns and font size")
+                .setTitle("Change rows, columns and font sizes")
                 .setView(yourCustomView)
                 .setPositiveButton("OK", new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int whichButton) {
                         String old_rows = (e6.getText()).toString();
                         String old_columns = (e7.getText()).toString();
                         String old_font = (e8.getText()).toString();
+                        String old_combo = (e14.getText()).toString();
 
                         int new_rows = (old_rows.isEmpty() ? 0 : Integer.parseInt(old_rows));
                         int new_columns = (old_columns.isEmpty() ? 0 : Integer.parseInt(old_columns));
                         int new_font = (old_font.isEmpty() ? 0 : Integer.parseInt(old_font));
+                        int new_combo = (old_combo.isEmpty() ? 0 : Integer.parseInt(old_combo));
 
-                        if (new_rows < 1 || new_columns < 1 || new_font < 11)
+                        StringBuilder sb = new StringBuilder();
+                        if (new_rows < 1 && new_columns < 1) {
+                            sb.append("Rows, columns should be ≥ 1");
+                        }
+                        else if (new_rows < 1) {
+                            sb.append("Rows should be ≥ 1");
+                        }
+                        else if (new_columns < 1) {
+                            sb.append("Columns should be ≥ 1");
+                        }
+                        if (new_font < 11 || new_combo < 11) {
+                            if (sb.length() > 0) {
+                                sb.append("\n");
+                            }
+                            sb.append("Font sizes should be ≥ 11");
+                        }
+
+                        if (sb.length() > 0)
                         {
-                            Toast.makeText(MainActivity.this, "Font size should be greater than 11\nRows and columns should be greater than 0", Toast.LENGTH_LONG).show();
+                            Toast.makeText(MainActivity.this, new String(sb), Toast.LENGTH_LONG).show();
                             zoom();
                         }
                         else
                         {
-                            db.setZoom("Main", new_rows, new_columns, new_font);
+                            db.setZoom("Study", new_rows, new_columns, new_font, new_combo);
                             refresh();
                         }
                     }
@@ -1199,7 +1224,7 @@ public class MainActivity extends AppCompatActivity {
         List<Pair<String, String>> tagsList = new ArrayList<>(labelsList.subList(1, labelsList.size()));;
         tagsList.add(0, new Pair<>("(All Tags)", null));
 
-        ColourAdapter spinnerAdapter = new ColourAdapter(MainActivity.this, R.layout.colour, R.id.textview41, tagsList, MainActivity.this, true);
+        ColourAdapter spinnerAdapter = new ColourAdapter(MainActivity.this, R.layout.colour, R.id.textview41, tagsList, MainActivity.this, true, combo);
         s2.setAdapter(spinnerAdapter);
 
         s2.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
