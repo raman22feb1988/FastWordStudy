@@ -334,7 +334,7 @@ public class sqliteDB extends SQLiteOpenHelper {
                 try {
                     file.createNewFile();
                     CSVWriter csvWrite = new CSVWriter(new FileWriter(file));
-                    Cursor curCSV = db.rawQuery("SELECT _word_, _tag_ FROM words WHERE _tag_ != \"\"", null);
+                    Cursor curCSV = db.rawQuery("SELECT _word_, _tag_, _timestamp_ FROM words WHERE _timestamp_ != \"\" OR _tag_ != \"\"", null);
                     String[] columnsList = curCSV.getColumnNames();
                     for (int number = 0; number < columnsList.length; number++) {
                         columnsList[number] = columnsList[number].substring(1, columnsList[number].length() - 1);
