@@ -5,7 +5,11 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.core.graphics.Insets;
 import androidx.core.view.GravityCompat;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowCompat;
+import androidx.core.view.WindowInsetsCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -95,12 +99,34 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        WindowCompat.setDecorFitsSystemWindows(getWindow(), false); // Enable edge-to-edge
         setContentView(R.layout.activity_main);
+
+        View linearLayout = findViewById(R.id.linearlayout2); // Replace with your root layout ID
+        View mainLayout = findViewById(R.id.app_bar_main); // Replace with your root layout ID
 
         // Initialize the DrawerLayout, NavigationView and Toolbar
         drawerLayout = findViewById(R.id.drawer_layout_main);
         NavigationView navigationView = findViewById(R.id.nav_view_main);
         Toolbar toolbar = findViewById(R.id.toolbar_main);
+
+        ViewCompat.setOnApplyWindowInsetsListener(linearLayout, (v, insets) -> {
+            Insets systemBarsInsets = insets.getInsets(WindowInsetsCompat.Type.systemBars());
+            v.setPadding(systemBarsInsets.left, systemBarsInsets.top, systemBarsInsets.right, systemBarsInsets.bottom);
+            return insets; // Return the insets to allow other listeners to process them
+        });
+
+        ViewCompat.setOnApplyWindowInsetsListener(mainLayout, (v, insets) -> {
+            Insets systemBarsInsets = insets.getInsets(WindowInsetsCompat.Type.systemBars());
+            v.setPadding(systemBarsInsets.left, systemBarsInsets.top, systemBarsInsets.right, systemBarsInsets.bottom);
+            return insets; // Return the insets to allow other listeners to process them
+        });
+
+        ViewCompat.setOnApplyWindowInsetsListener(navigationView, (v, insets) -> {
+            Insets systemBarsInsets = insets.getInsets(WindowInsetsCompat.Type.systemBars());
+            v.setPadding(systemBarsInsets.left, systemBarsInsets.top, systemBarsInsets.right, systemBarsInsets.bottom);
+            return insets; // Return the insets to allow other listeners to process them
+        });
 
         pref = getApplicationContext().getSharedPreferences("AppData", 0);
         boolean prepared = pref.getBoolean("prepared", false);

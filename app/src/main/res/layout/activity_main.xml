@@ -12,7 +12,8 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:orientation="vertical">
+        android:orientation="vertical"
+        android:id="@+id/linearlayout2">
         <androidx.appcompat.widget.Toolbar
             android:id="@+id/toolbar_main"
             android:layout_width="match_parent"
@@ -21,7 +22,8 @@
             android:elevation="4dp"
             android:theme="@style/ThemeOverlay.AppCompat.ActionBar"
             app:popupTheme="@style/ThemeOverlay.AppCompat.Light"
-            app:title="@string/app_name" />
+            app:title="@string/app_name"
+            android:fitsSystemWindows="true" /> <!-- Apply fitsSystemWindows -->
         <FrameLayout
             android:id="@+id/fragment_container_main"
             android:layout_width="match_parent"
