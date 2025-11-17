@@ -190,7 +190,7 @@ public class CSVReader {
             }
         } while (inQuotes);
         tokensOnThisLine.add(sb.toString());
-        return (String[]) tokensOnThisLine.toArray(new String[0]);
+        return tokensOnThisLine.toArray(new String[0]);
 
     }
 

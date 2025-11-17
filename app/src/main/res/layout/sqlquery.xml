@@ -1,34 +1,29 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
-    <EditText
-        android:id="@+id/edittext21"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="@drawable/rectangle">
-    </EditText>
-    <CheckBox
-        android:id="@+id/checkbox3"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:checked="true"
-        android:text="Automatically add underscores before and after column names">
-    </CheckBox>
-    <Button
-        android:id="@+id/button37"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Examples">
-    </Button>
-    <ScrollView
+    android:layout_height="wrap_content">
+    <LinearLayout
+        android:orientation="vertical"
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
-        <TextView
-            android:id="@+id/textview68"
+        <EditText
+            android:id="@+id/edittext21"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content">
-        </TextView>
-    </ScrollView>
-</LinearLayout>
+            android:layout_height="wrap_content"
+            android:hint="Enter your SQL query"
+            android:background="@drawable/rectangle">
+        </EditText>
+        <CheckBox
+            android:id="@+id/checkbox3"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:checked="true"
+            android:text="Automatically add underscores before and after column names">
+        </CheckBox>
+        <FrameLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/framelayout2">
+        </FrameLayout>
+    </LinearLayout>
+</ScrollView>

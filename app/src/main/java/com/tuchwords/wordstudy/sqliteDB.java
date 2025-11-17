@@ -3,7 +3,6 @@ package com.tuchwords.wordstudy;
 import android.app.AlertDialog;
 import android.content.ContentValues;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.res.Configuration;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
@@ -17,12 +16,14 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.ProgressBar;
 import android.widget.Spinner;
 import android.widget.TextView;
+import android.widget.Toast;
 
-import androidx.annotation.NonNull;
 import androidx.core.content.ContextCompat;
 
 import com.google.android.material.slider.Slider;
@@ -48,6 +49,10 @@ public class sqliteDB extends SQLiteOpenHelper {
     ArrayList<String> last;
     boolean recreate;
 
+    ArrayList<String> queryTables;
+    ArrayList<String> comparators;
+    ArrayList<String> comparator;
+
     public sqliteDB(Context context, int version, ArrayList<String> ultimate, boolean create) {
         super(context, DATABASE_NAME, null, version);
         // TODO Auto-generated constructor stub
@@ -55,6 +60,21 @@ public class sqliteDB extends SQLiteOpenHelper {
         DATABASE_VERSION = version;
         last = ultimate;
         recreate = create;
+
+        queryTables = new ArrayList<>();
+        queryTables.add("words");
+
+        comparators = new ArrayList<>();
+        comparators.add("=");
+        comparators.add(">");
+        comparators.add("<");
+        comparators.add(">=");
+        comparators.add("<=");
+        comparators.add("!=");
+
+        comparator = new ArrayList<>();
+        comparator.add("IN");
+        comparator.add("NOT IN");
     }
 
     @Override
@@ -157,50 +177,47 @@ public class sqliteDB extends SQLiteOpenHelper {
 
         SQLiteDatabase db = this.getReadableDatabase();
 
-        Thread thread4 = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                File[] inputDir = ContextCompat.getExternalFilesDirs(situation, Environment.DIRECTORY_DOCUMENTS);
-                File exportDir = inputDir[0];
+        Thread thread4 = new Thread(() -> {
+            File[] inputDir = ContextCompat.getExternalFilesDirs(situation, Environment.DIRECTORY_DOCUMENTS);
+            File exportDir = inputDir[0];
 
-                ArrayList<String> tables = getTableNames();
-                StringBuilder outputDir = new StringBuilder();
-                try {
-                    for (String table : tables) {
-                        File file = new File(exportDir, table + ".csv");
-                        file.createNewFile();
-                        CSVWriter csvWrite = new CSVWriter(new FileWriter(file));
-                        Cursor curCSV = db.rawQuery("SELECT * FROM " + table, null);
-                        String[] columnsList = curCSV.getColumnNames();
-                        for (int number = 0; number < columnsList.length; number++) {
-                            columnsList[number] = columnsList[number].substring(1, columnsList[number].length() - 1);
-                        }
-                        csvWrite.writeNext(columnsList);
-                        double myLine = 0.0;
-                        double myStep = curCSV.getCount() / 100.0;
-                        while (curCSV.moveToNext()) {
-                            String[] arrStr = new String[columnsList.length];
-                            for (int index = 0; index < columnsList.length; index++) {
-                                arrStr[index] = curCSV.getString(index);
-                            }
-                            csvWrite.writeNext(arrStr);
-                            myLine++;
-                            if (myLine % myStep < 1 || myLine == 1.0)
-                            {
-                                updateProgressBar(situation, p4, t40, t41, myDialog, (int) (myLine / myStep), ((int) myLine) + "/" + curCSV.getCount());
-                            }
-                        }
-                        csvWrite.close();
-                        curCSV.close();
-                        outputDir.append("\nSaved ").append(table).append(" table to ").append(file.getAbsolutePath()).append(".");
-                        uiThreadBox("Export CSV", "Export CSV complete." + new String(outputDir), situation);
+            ArrayList<String> tables = getTableNames();
+            StringBuilder outputDir = new StringBuilder();
+            try {
+                for (String table : tables) {
+                    File file = new File(exportDir, table + ".csv");
+                    file.createNewFile();
+                    CSVWriter csvWrite = new CSVWriter(new FileWriter(file));
+                    Cursor curCSV = db.rawQuery("SELECT * FROM " + table, null);
+                    String[] columnsList = curCSV.getColumnNames();
+                    for (int number = 0; number < columnsList.length; number++) {
+                        columnsList[number] = columnsList[number].substring(1, columnsList[number].length() - 1);
                     }
-                } catch (Exception sqlEx) {
-                    myDialog.dismiss();
-                    uiThreadBox("Error", sqlEx.toString(), situation);
-                } finally {
-                    myDialog.dismiss();
+                    csvWrite.writeNext(columnsList);
+                    double myLine = 0.0;
+                    double myStep = curCSV.getCount() / 100.0;
+                    while (curCSV.moveToNext()) {
+                        String[] arrStr = new String[columnsList.length];
+                        for (int index = 0; index < columnsList.length; index++) {
+                            arrStr[index] = curCSV.getString(index);
+                        }
+                        csvWrite.writeNext(arrStr);
+                        myLine++;
+                        if (myLine % myStep < 1 || myLine == 1.0)
+                        {
+                            updateProgressBar(situation, p4, t40, t41, myDialog, (int) (myLine / myStep), ((int) myLine) + "/" + curCSV.getCount());
+                        }
+                    }
+                    csvWrite.close();
+                    curCSV.close();
+                    outputDir.append("\nSaved ").append(table).append(" table to ").append(file.getAbsolutePath()).append(".");
+                    uiThreadBox("Export CSV", "Export CSV complete." + new String(outputDir), situation);
                 }
+            } catch (Exception sqlEx) {
+                myDialog.dismiss();
+                uiThreadBox("Error", sqlEx.toString(), situation);
+            } finally {
+                myDialog.dismiss();
             }
         });
 
@@ -232,77 +249,72 @@ public class sqliteDB extends SQLiteOpenHelper {
         AlertDialog dialog = new AlertDialog.Builder(situation)
                 .setTitle("File name")
                 .setView(yourCustomView)
-                .setPositiveButton("OK", new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int whichButton) {
-                        LayoutInflater myInflater = LayoutInflater.from(situation);
-                        final View myCustomView = myInflater.inflate(R.layout.progressbar, null);
+                .setPositiveButton("OK", (dialog1, whichButton) -> {
+                    LayoutInflater myInflater = LayoutInflater.from(situation);
+                    final View myCustomView = myInflater.inflate(R.layout.progressbar, null);
 
-                        ProgressBar p2 = myCustomView.findViewById(R.id.progressbar1);
-                        TextView t36 = myCustomView.findViewById(R.id.textview57);
-                        TextView t37 = myCustomView.findViewById(R.id.textview58);
+                    ProgressBar p2 = myCustomView.findViewById(R.id.progressbar1);
+                    TextView t36 = myCustomView.findViewById(R.id.textview57);
+                    TextView t37 = myCustomView.findViewById(R.id.textview58);
 
-                        AlertDialog myDialog = new AlertDialog.Builder(situation)
-                                .setTitle("Importing CSV")
-                                .setView(myCustomView)
-                                .create();
-                        myDialog.show();
+                    AlertDialog myDialog = new AlertDialog.Builder(situation)
+                            .setTitle("Importing CSV")
+                            .setView(myCustomView)
+                            .create();
+                    myDialog.show();
 
-                        Thread thread2 = new Thread(new Runnable() {
-                            @Override
-                            public void run() {
-                                String databaseName = (e3.getText()).toString();
-                                ArrayList<String> databases = getTableNames();
-                                if (databases.contains(databaseName)) {
-                                    File file = new File(storageDir, (e2.getText()).toString());
-                                    try {
-                                        CSVReader csvRead = new CSVReader(new FileReader(file));
-                                        db.beginTransaction();
-                                        try {
-                                            String[] columns = csvRead.readNext();
-                                            String[] nextLine = csvRead.readNext();
+                    Thread thread2 = new Thread(() -> {
+                        String databaseName = (e3.getText()).toString();
+                        ArrayList<String> databases = getTableNames();
+                        if (databases.contains(databaseName)) {
+                            File file = new File(storageDir, (e2.getText()).toString());
+                            try {
+                                CSVReader csvRead = new CSVReader(new FileReader(file));
+                                db.beginTransaction();
+                                try {
+                                    String[] columns = csvRead.readNext();
+                                    String[] nextLine = csvRead.readNext();
 
-                                            int lines = -1;
-                                            BufferedReader reader = new BufferedReader(new FileReader(file));
-                                            while (reader.readLine() != null) {
-                                                lines++;
-                                            }
-                                            reader.close();
-
-                                            double myLine = 0.0;
-                                            double myStep = lines / 100.0;
-                                            do {
-                                                ContentValues contentValues = new ContentValues();
-                                                for (int column = 0; column < columns.length; column++) {
-                                                    contentValues.put("_" + columns[column] + "_", nextLine[column]);
-                                                }
-                                                db.insert(databaseName, null, contentValues);
-                                                nextLine = csvRead.readNext();
-                                                myLine++;
-                                                if (myLine % myStep < 1 || myLine == 1.0) {
-                                                    updateProgressBar(situation, p2, t36, t37, myDialog, (int) (myLine / myStep), ((int) myLine) + "/" + lines);
-                                                }
-                                            } while (nextLine != null);
-                                            csvRead.close();
-                                            db.setTransactionSuccessful();
-                                            uiThreadRefresh(situation, true);
-                                            uiThreadBox("Import CSV", "Import CSV complete.", situation);
-                                        } finally {
-                                            db.endTransaction();
-                                        }
-                                    } catch (Exception e) {
-                                        uiThreadBox("Error", e.toString(), situation);
-                                    } finally {
-                                        myDialog.dismiss();
+                                    int lines = -1;
+                                    BufferedReader reader = new BufferedReader(new FileReader(file));
+                                    while (reader.readLine() != null) {
+                                        lines++;
                                     }
-                                } else {
-                                    myDialog.dismiss();
-                                    uiThreadBox("Error", "Table '" + databaseName + "' not found. Create a new table with the name '" + databaseName + "' at first.", situation);
-                                }
-                            }
-                        });
+                                    reader.close();
 
-                        thread2.start();
-                    }
+                                    double myLine = 0.0;
+                                    double myStep = lines / 100.0;
+                                    do {
+                                        ContentValues contentValues = new ContentValues();
+                                        for (int column = 0; column < columns.length; column++) {
+                                            contentValues.put("_" + columns[column] + "_", nextLine[column]);
+                                        }
+                                        db.insert(databaseName, null, contentValues);
+                                        nextLine = csvRead.readNext();
+                                        myLine++;
+                                        if (myLine % myStep < 1 || myLine == 1.0) {
+                                            updateProgressBar(situation, p2, t36, t37, myDialog, (int) (myLine / myStep), ((int) myLine) + "/" + lines);
+                                        }
+                                    } while (nextLine != null);
+                                    csvRead.close();
+                                    db.setTransactionSuccessful();
+                                    uiThreadRefresh(situation, true);
+                                    uiThreadBox("Import CSV", "Import CSV complete.", situation);
+                                } finally {
+                                    db.endTransaction();
+                                }
+                            } catch (Exception e) {
+                                uiThreadBox("Error", e.toString(), situation);
+                            } finally {
+                                myDialog.dismiss();
+                            }
+                        } else {
+                            myDialog.dismiss();
+                            uiThreadBox("Error", "Table '" + databaseName + "' not found. Create a new table with the name '" + databaseName + "' at first.", situation);
+                        }
+                    });
+
+                    thread2.start();
                 }).create();
         dialog.show();
     }
@@ -324,45 +336,42 @@ public class sqliteDB extends SQLiteOpenHelper {
 
         SQLiteDatabase db = this.getReadableDatabase();
 
-        Thread thread3 = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                File[] inputDir = ContextCompat.getExternalFilesDirs(situation, Environment.DIRECTORY_DOCUMENTS);
-                File exportDir = inputDir[0];
+        Thread thread3 = new Thread(() -> {
+            File[] inputDir = ContextCompat.getExternalFilesDirs(situation, Environment.DIRECTORY_DOCUMENTS);
+            File exportDir = inputDir[0];
 
-                File file = new File(exportDir, "tags.csv");
-                try {
-                    file.createNewFile();
-                    CSVWriter csvWrite = new CSVWriter(new FileWriter(file));
-                    Cursor curCSV = db.rawQuery("SELECT _word_, _tag_, _timestamp_ FROM words WHERE _timestamp_ != \"\" OR _tag_ != \"\"", null);
-                    String[] columnsList = curCSV.getColumnNames();
-                    for (int number = 0; number < columnsList.length; number++) {
-                        columnsList[number] = columnsList[number].substring(1, columnsList[number].length() - 1);
-                    }
-                    csvWrite.writeNext(columnsList);
-                    double myLine = 0.0;
-                    double myStep = curCSV.getCount() / 100.0;
-                    while (curCSV.moveToNext()) {
-                        String[] arrStr = new String[columnsList.length];
-                        for (int index = 0; index < columnsList.length; index++) {
-                            arrStr[index] = curCSV.getString(index);
-                        }
-                        csvWrite.writeNext(arrStr);
-                        myLine++;
-                        if (myLine % myStep < 1 || myLine == 1.0)
-                        {
-                            updateProgressBar(situation, p3, t38, t39, myDialog, (int) (myLine / myStep), ((int) myLine) + "/" + curCSV.getCount());
-                        }
-                    }
-                    csvWrite.close();
-                    curCSV.close();
-                    uiThreadBox("Export tags", "Export tags complete.\nSaved tags to " + file.getAbsolutePath() + ".", situation);
-                } catch (Exception sqlEx) {
-                    myDialog.dismiss();
-                    uiThreadBox("Error", sqlEx.toString(), situation);
-                } finally {
-                    myDialog.dismiss();
+            File file = new File(exportDir, "tags.csv");
+            try {
+                file.createNewFile();
+                CSVWriter csvWrite = new CSVWriter(new FileWriter(file));
+                Cursor curCSV = db.rawQuery("SELECT _word_, _tag_, _timestamp_ FROM words WHERE _timestamp_ != \"\" OR _tag_ != \"\"", null);
+                String[] columnsList = curCSV.getColumnNames();
+                for (int number = 0; number < columnsList.length; number++) {
+                    columnsList[number] = columnsList[number].substring(1, columnsList[number].length() - 1);
                 }
+                csvWrite.writeNext(columnsList);
+                double myLine = 0.0;
+                double myStep = curCSV.getCount() / 100.0;
+                while (curCSV.moveToNext()) {
+                    String[] arrStr = new String[columnsList.length];
+                    for (int index = 0; index < columnsList.length; index++) {
+                        arrStr[index] = curCSV.getString(index);
+                    }
+                    csvWrite.writeNext(arrStr);
+                    myLine++;
+                    if (myLine % myStep < 1 || myLine == 1.0)
+                    {
+                        updateProgressBar(situation, p3, t38, t39, myDialog, (int) (myLine / myStep), ((int) myLine) + "/" + curCSV.getCount());
+                    }
+                }
+                csvWrite.close();
+                curCSV.close();
+                uiThreadBox("Export tags", "Export tags complete.\nSaved tags to " + file.getAbsolutePath() + ".", situation);
+            } catch (Exception sqlEx) {
+                myDialog.dismiss();
+                uiThreadBox("Error", sqlEx.toString(), situation);
+            } finally {
+                myDialog.dismiss();
             }
         });
 
@@ -391,76 +400,71 @@ public class sqliteDB extends SQLiteOpenHelper {
         AlertDialog dialog = new AlertDialog.Builder(situation)
                 .setTitle("File name")
                 .setView(yourCustomView)
-                .setPositiveButton("OK", new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int whichButton) {
-                        LayoutInflater myInflater = LayoutInflater.from(situation);
-                        final View myCustomView = myInflater.inflate(R.layout.progressbar, null);
+                .setPositiveButton("OK", (dialog1, whichButton) -> {
+                    LayoutInflater myInflater = LayoutInflater.from(situation);
+                    final View myCustomView = myInflater.inflate(R.layout.progressbar, null);
 
-                        ProgressBar p1 = myCustomView.findViewById(R.id.progressbar1);
-                        TextView t34 = myCustomView.findViewById(R.id.textview57);
-                        TextView t35 = myCustomView.findViewById(R.id.textview58);
+                    ProgressBar p1 = myCustomView.findViewById(R.id.progressbar1);
+                    TextView t34 = myCustomView.findViewById(R.id.textview57);
+                    TextView t35 = myCustomView.findViewById(R.id.textview58);
 
-                        AlertDialog myDialog = new AlertDialog.Builder(situation)
-                                .setTitle("Importing tags")
-                                .setView(myCustomView)
-                                .create();
-                        myDialog.show();
+                    AlertDialog myDialog = new AlertDialog.Builder(situation)
+                            .setTitle("Importing tags")
+                            .setView(myCustomView)
+                            .create();
+                    myDialog.show();
 
-                        Thread thread1 = new Thread(new Runnable() {
-                            @Override
-                            public void run() {
-                                File file = new File(storageDir, (e1.getText()).toString());
-                                try {
-                                    CSVReader csvRead = new CSVReader(new FileReader(file));
-                                    db.beginTransaction();
-                                    try {
-                                        String[] columns = csvRead.readNext();
-                                        String[] nextLine = csvRead.readNext();
+                    Thread thread1 = new Thread(() -> {
+                        File file = new File(storageDir, (e1.getText()).toString());
+                        try {
+                            CSVReader csvRead = new CSVReader(new FileReader(file));
+                            db.beginTransaction();
+                            try {
+                                String[] columns = csvRead.readNext();
+                                String[] nextLine = csvRead.readNext();
 
-                                        int lines = -1;
-                                        BufferedReader reader = new BufferedReader(new FileReader(file));
-                                        while (reader.readLine() != null) {
-                                            lines++;
-                                        }
-                                        reader.close();
-
-                                        double myLine = 0.0;
-                                        double myStep = lines / 100.0;
-                                        do {
-                                            ContentValues contentValues = new ContentValues();
-                                            int wordIndex = 0;
-                                            for (int column = 0; column < columns.length; column++) {
-                                                if (columns[column].equals("word")) {
-                                                    wordIndex = column;
-                                                } else {
-                                                    contentValues.put("_" + columns[column] + "_", nextLine[column]);
-                                                }
-                                            }
-                                            db.update("words", contentValues, "_word_ = ?",
-                                                    new String[] {nextLine[wordIndex]});
-                                            nextLine = csvRead.readNext();
-                                            myLine++;
-                                            if (myLine % myStep < 1 || myLine == 1.0) {
-                                                updateProgressBar(situation, p1, t34, t35, myDialog, (int) (myLine / myStep), ((int) myLine) + "/" + lines);
-                                            }
-                                        } while (nextLine != null);
-                                        csvRead.close();
-                                        db.setTransactionSuccessful();
-                                        uiThreadRefresh(situation, false);
-                                        uiThreadBox("Import tags", "Import tags complete.", situation);
-                                    } finally {
-                                        db.endTransaction();
-                                    }
-                                } catch (Exception e) {
-                                    uiThreadBox("Error", e.toString(), situation);
-                                } finally {
-                                    myDialog.dismiss();
+                                int lines = -1;
+                                BufferedReader reader = new BufferedReader(new FileReader(file));
+                                while (reader.readLine() != null) {
+                                    lines++;
                                 }
-                            }
-                        });
+                                reader.close();
 
-                        thread1.start();
-                    }
+                                double myLine = 0.0;
+                                double myStep = lines / 100.0;
+                                do {
+                                    ContentValues contentValues = new ContentValues();
+                                    int wordIndex = 0;
+                                    for (int column = 0; column < columns.length; column++) {
+                                        if (columns[column].equals("word")) {
+                                            wordIndex = column;
+                                        } else {
+                                            contentValues.put("_" + columns[column] + "_", nextLine[column]);
+                                        }
+                                    }
+                                    db.update("words", contentValues, "_word_ = ?",
+                                            new String[] {nextLine[wordIndex]});
+                                    nextLine = csvRead.readNext();
+                                    myLine++;
+                                    if (myLine % myStep < 1 || myLine == 1.0) {
+                                        updateProgressBar(situation, p1, t34, t35, myDialog, (int) (myLine / myStep), ((int) myLine) + "/" + lines);
+                                    }
+                                } while (nextLine != null);
+                                csvRead.close();
+                                db.setTransactionSuccessful();
+                                uiThreadRefresh(situation, false);
+                                uiThreadBox("Import tags", "Import tags complete.", situation);
+                            } finally {
+                                db.endTransaction();
+                            }
+                        } catch (Exception e) {
+                            uiThreadBox("Error", e.toString(), situation);
+                        } finally {
+                            myDialog.dismiss();
+                        }
+                    });
+
+                    thread1.start();
                 }).create();
         dialog.show();
     }
@@ -653,24 +657,6 @@ public class sqliteDB extends SQLiteOpenHelper {
         return tableList;
     }
 
-    public String getSchema()
-    {
-        StringBuilder schema = new StringBuilder();
-        ArrayList<String> tablesList = getTableNames();
-
-        for (String tableName : tablesList)
-        {
-            String[] columnList = getAllColumns(tableName);
-            ArrayList<String> columnArray = new ArrayList<>();
-            for (String columnName : columnList)
-            {
-                columnArray.add(columnName.substring(1, columnName.length() - 1));
-            }
-            schema.append(schema.length() == 0 ? tableName + "\n" + columnArray : "\n" + tableName + "\n" + columnArray);
-        }
-        return new String(schema);
-    }
-
     public void insertScores(int letters, int counter, String sqlQuery, String orderBy)
     {
         SQLiteDatabase db = this.getWritableDatabase();
@@ -735,451 +721,448 @@ public class sqliteDB extends SQLiteOpenHelper {
 
         SQLiteDatabase db = this.getWritableDatabase();
 
-        Thread thread5 = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                db.beginTransaction();
+        Thread thread5 = new Thread(() -> {
+            db.beginTransaction();
 
-                try {
-                    Iterator<Map.Entry<String, String>> itr = dictionary.entrySet().iterator();
-                    double myLine = 0.0;
-                    double myStep1 = dictionary.size() / 40.0;
-                    while (itr.hasNext()) {
-                        Map.Entry<String, String> entry = itr.next();
-                        String word = entry.getKey();
-                        char[] c = word.toCharArray();
-                        Arrays.sort(c);
-                        String anagram = new String(c);
-                        int solutions = anagramsList.get(anagram);
-                        String definition = entry.getValue();
-                        StringBuilder back = new StringBuilder();
-                        StringBuilder front = new StringBuilder();
-                        for (char letter = 'A'; letter <= 'Z'; letter++) {
-                            if (dictionary.containsKey(word + letter)) {
-                                back.append(letter);
-                            }
-                            if (dictionary.containsKey(letter + word)) {
-                                front.append(letter);
-                            }
+            try {
+                Iterator<Map.Entry<String, String>> itr = dictionary.entrySet().iterator();
+                double myLine = 0.0;
+                double myStep1 = dictionary.size() / 40.0;
+                while (itr.hasNext()) {
+                    Map.Entry<String, String> entry = itr.next();
+                    String word = entry.getKey();
+                    char[] c = word.toCharArray();
+                    Arrays.sort(c);
+                    String anagram = new String(c);
+                    int solutions = anagramsList.get(anagram);
+                    String definition = entry.getValue();
+                    StringBuilder back = new StringBuilder();
+                    StringBuilder front = new StringBuilder();
+                    for (char letter = 'A'; letter <= 'Z'; letter++) {
+                        if (dictionary.containsKey(word + letter)) {
+                            back.append(letter);
                         }
-
-                        String lexiconList = lexicon.get(word);
-                        String[] lexiconsList = lexiconList.split(",");
-
-                        int csw24 = Integer.parseInt(lexiconsList[1]);
-                        int csw21 = Integer.parseInt(lexiconsList[2]);
-                        int csw19 = Integer.parseInt(lexiconsList[3]);
-                        int csw15 = Integer.parseInt(lexiconsList[4]);
-                        int csw12 = Integer.parseInt(lexiconsList[5]);
-                        int csw07 = Integer.parseInt(lexiconsList[6]);
-                        int nwl23 = Integer.parseInt(lexiconsList[7]);
-                        int nwl20 = Integer.parseInt(lexiconsList[8]);
-                        int nwl18 = Integer.parseInt(lexiconsList[9]);
-                        int twl06 = Integer.parseInt(lexiconsList[10]);
-                        int nswl23 = Integer.parseInt(lexiconsList[11]);
-                        int nswl20 = Integer.parseInt(lexiconsList[12]);
-                        int nswl18 = Integer.parseInt(lexiconsList[13]);
-                        int cel21 = Integer.parseInt(lexiconsList[14]);
-                        int wims = Integer.parseInt(lexiconsList[15]);
-
-                        ContentValues contentValues = new ContentValues();
-
-                        contentValues.put("_word_", word);
-                        contentValues.put("_length_", word.length());
-                        contentValues.put("_alphagram_", anagram);
-                        contentValues.put("_definition_", definition);
-                        contentValues.put("_probability_", probability(word));
-                        contentValues.put("_back_", new String(back));
-                        contentValues.put("_front_", new String(front));
-                        contentValues.put("_tag_", (word.length() <= 15 && csw21 == 0) ? "New" : "");
-                        contentValues.put("_page_", 0);
-                        contentValues.put("_answers_", solutions);
-                        contentValues.put("_csw24_", csw24);
-                        contentValues.put("_csw21_", csw21);
-                        contentValues.put("_csw19_", csw19);
-                        contentValues.put("_csw15_", csw15);
-                        contentValues.put("_csw12_", csw12);
-                        contentValues.put("_csw07_", csw07);
-                        contentValues.put("_nwl23_", nwl23);
-                        contentValues.put("_nwl20_", nwl20);
-                        contentValues.put("_nwl18_", nwl18);
-                        contentValues.put("_twl06_", twl06);
-                        contentValues.put("_nswl23_", nswl23);
-                        contentValues.put("_nswl20_", nswl20);
-                        contentValues.put("_nswl18_", nswl18);
-                        contentValues.put("_cel21_", cel21);
-                        contentValues.put("_wims_", wims);
-                        contentValues.put("_serial_", 0);
-                        contentValues.put("_position_", 0);
-                        contentValues.put("_timestamp_", "");
-                        contentValues.put("_reverse_", ((new StringBuilder(word)).reverse()).toString());
-                        contentValues.put("_zetagram_", ((new StringBuilder(anagram)).reverse()).toString());
-
-                        int[] point = {1, 3, 3, 2, 1, 4, 2, 4, 1, 8, 5, 1, 3, 1, 1, 3, 10, 1, 1, 1, 1, 4, 4, 8, 4, 10};
-                        boolean[] vowel = {true, false, false, false, true, false, false, false, true, false, false, false, false, false, true, false, false, false, false, false, true, false, false, false, false, false};
-                        boolean[] power = {false, false, false, false, false, false, false, false, false, true, false, false, false, false, false, false, true, false, false, false, false, false, false, true, false, true};
-
-                        int vowels = 0;
-                        int consonants = 0;
-                        int points = 0;
-                        int powers = 0;
-
-                        int[] occurrence = new int[26];
-                        for (int myRadix = 0; myRadix < word.length(); myRadix++) {
-                            char theCharacter = word.charAt(myRadix);
-                            int positionInAlphabet = theCharacter - 65;
-                            occurrence[positionInAlphabet]++;
-                            points += point[positionInAlphabet];
-
-                            if (vowel[positionInAlphabet]) {
-                                vowels++;
-                            } else {
-                                consonants++;
-                            }
-
-                            if (power[positionInAlphabet]) {
-                                powers++;
-                            }
-                        }
-
-                        for (int theRadix = 0; theRadix < 26; theRadix++) {
-                            char occurrences = (char) (theRadix + 97);
-                            contentValues.put("_no_" + occurrences + "_", occurrence[theRadix]);
-                        }
-
-                        contentValues.put("_vowels_", vowels);
-                        contentValues.put("_consonants_", consonants);
-                        contentValues.put("_points_", points);
-                        contentValues.put("_power_", powers);
-
-                        db.insert("words", null, contentValues);
-
-                        myLine++;
-                        if (myLine % myStep1 < 1 || myLine == 1.0)
-                        {
-                            updateProgressBar(myContext, p5, t42, t43, myDialog, (int) (myLine / myStep1), ((int) myLine) + "/" + dictionary.size());
+                        if (dictionary.containsKey(letter + word)) {
+                            front.append(letter);
                         }
                     }
 
-                    Cursor[] anagramList = new Cursor[getMaximumWordLength() - 1];
-                    int[] wordLength = new int[anagramList.length];
-                    int[] pages = new int[anagramList.length];
-                    int maximumPages = 0;
+                    String lexiconList = lexicon.get(word);
+                    String[] lexiconsList = lexiconList.split(",");
 
-                    for (int lengths = 0; lengths < anagramList.length; lengths++) {
-                        anagramList[lengths] = getAllRegularAnagrams(lengths + 2);
-                        wordLength[lengths] = anagramList[lengths].getCount();
-                        pages[lengths] = (((wordLength[lengths] - 1) / 100) + 1);
-
-                        if (pages[lengths] > maximumPages) {
-                            maximumPages = pages[lengths];
-                        }
-                    }
-
-                    uiThreadTitle("Setting page numbers", myDialog, myContext);
-                    double myStep2 = maximumPages / 50.0;
-                    for (int positionNumber = 1; positionNumber <= maximumPages; positionNumber++) {
-                        ArrayList<String> pageHash = new ArrayList<>();
-
-                        for (int lengths = 0; lengths < anagramList.length; lengths++) {
-                            if (positionNumber <= pages[lengths]) {
-                                int open = (positionNumber - 1) * 100;
-                                int close = Math.min(positionNumber * 100, wordLength[lengths]);
-
-                                if (anagramList[lengths].moveToPosition(open)) {
-                                    do {
-                                        pageHash.add(anagramList[lengths].getString(0));
-                                    } while (anagramList[lengths].moveToNext() && anagramList[lengths].getPosition() < close);
-                                }
-                            }
-                        }
-
-                        String pageString = ((((pageHash).toString()).replace("[", "(\"")).replace("]", "\")")).replace(", ", "\", \"");
-                        ContentValues values = new ContentValues();
-                        values.put("_page_", positionNumber);
-
-                        db.update("words", values, ("_word_ IN") + pageString,
-                                new String[] {});
-
-                        if (positionNumber % myStep2 < 1 || positionNumber == 1)
-                        {
-                            updateProgressBar(myContext, p5, t42, t43, myDialog, 40 + ((int) (positionNumber / myStep2)), positionNumber + "/" + maximumPages);
-                        }
-                    }
-
-                    uiThreadTitle("Setting grid numbers", myDialog, myContext);
-                    double myStep3 = 10.0;
-                    for (int cellNumber = 1; cellNumber <= 100.0; cellNumber++) {
-                        ArrayList<String> cellHash = new ArrayList<>();
-
-                        for (int lengths = 0; lengths < anagramList.length; lengths++) {
-                            if (cellNumber <= wordLength[lengths]) {
-                                if (anagramList[lengths].moveToPosition(cellNumber - 1)) {
-                                    do {
-                                        cellHash.add(anagramList[lengths].getString(0));
-                                    } while (anagramList[lengths].move(100));
-                                }
-                            }
-                        }
-
-                        String cellString = ((((cellHash).toString()).replace("[", "(\"")).replace("]", "\")")).replace(", ", "\", \"");
-                        ContentValues values = new ContentValues();
-                        values.put("_position_", cellNumber);
-
-                        db.update("words", values, ("_word_ IN ") + cellString,
-                                new String[] {});
-
-                        if (cellNumber % myStep3 < 1 || cellNumber == 1)
-                        {
-                            updateProgressBar(myContext, p5, t42, t43, myDialog, 90 + ((int) (cellNumber / myStep3)), cellNumber + "/100");
-                        }
-                    }
-
-                    for (Cursor cursors : anagramList) {
-                        cursors.close();
-                    }
-
-                    int nightModeFlags =
-                            myContext.getResources().getConfiguration().uiMode &
-                                    Configuration.UI_MODE_NIGHT_MASK;
-                    String white = (nightModeFlags == Configuration.UI_MODE_NIGHT_YES ? "#000000" : "#FFFFFF");
-                    String black = (nightModeFlags == Configuration.UI_MODE_NIGHT_YES ? "#FFFFFF" : "#000000");
-
-                    HashMap<String, String> coloursList = new HashMap<>();
-
-                    coloursList.put("Known", "#00C000");
-                    coloursList.put("Unknown", "#FF0000");
-                    coloursList.put("Compound", "#FF00C0");
-                    coloursList.put("Prefix", "#C000FF");
-                    coloursList.put("Suffix", "#8080FF");
-                    coloursList.put("Plural", "#808080");
-                    coloursList.put("Guessable", "#FF8000");
-                    coloursList.put("Past", "#00C0FF");
-                    coloursList.put("Learnt", "#B97A57");
-                    coloursList.put("New", "#FFFF00");
-                    coloursList.put("Removed", black);
-                    coloursList.put("", white);
-
-                    for (Map.Entry<String, String> enter : coloursList.entrySet()) {
-                        String tag = enter.getKey();
-                        String tags = coloursList.get(tag);
-
-                        ContentValues contentValues = new ContentValues();
-
-                        contentValues.put("_tag_", tag);
-                        contentValues.put("_colour_", tags);
-
-                        db.insert("colours", null, contentValues);
-                    }
+                    int csw24 = Integer.parseInt(lexiconsList[1]);
+                    int csw21 = Integer.parseInt(lexiconsList[2]);
+                    int csw19 = Integer.parseInt(lexiconsList[3]);
+                    int csw15 = Integer.parseInt(lexiconsList[4]);
+                    int csw12 = Integer.parseInt(lexiconsList[5]);
+                    int csw07 = Integer.parseInt(lexiconsList[6]);
+                    int nwl23 = Integer.parseInt(lexiconsList[7]);
+                    int nwl20 = Integer.parseInt(lexiconsList[8]);
+                    int nwl18 = Integer.parseInt(lexiconsList[9]);
+                    int twl06 = Integer.parseInt(lexiconsList[10]);
+                    int nswl23 = Integer.parseInt(lexiconsList[11]);
+                    int nswl20 = Integer.parseInt(lexiconsList[12]);
+                    int nswl18 = Integer.parseInt(lexiconsList[13]);
+                    int cel21 = Integer.parseInt(lexiconsList[14]);
+                    int wims = Integer.parseInt(lexiconsList[15]);
 
                     ContentValues contentValues = new ContentValues();
-                    contentValues.put("_activity_", "Study");
-                    contentValues.put("_rows_", 25);
-                    contentValues.put("_columns_", 4);
-                    contentValues.put("_size_", 11);
-                    contentValues.put("_spinner_", 20);
-                    db.insert("zoom", null, contentValues);
 
-                    ArrayList<Pair<String, String>> myPrefixes = new ArrayList<>();
-                    myPrefixes.add(new Pair<>("AB", ""));
-                    myPrefixes.add(new Pair<>("UN", ""));
-                    myPrefixes.add(new Pair<>("DE", ""));
-                    myPrefixes.add(new Pair<>("IN", ""));
-                    myPrefixes.add(new Pair<>("RE", ""));
-                    myPrefixes.add(new Pair<>("IM", ""));
-                    myPrefixes.add(new Pair<>("IL", "L"));
-                    myPrefixes.add(new Pair<>("IR", "R"));
-                    myPrefixes.add(new Pair<>("DIS", ""));
-                    myPrefixes.add(new Pair<>("MIS", ""));
-                    myPrefixes.add(new Pair<>("NON", ""));
-                    myPrefixes.add(new Pair<>("BI", ""));
-                    myPrefixes.add(new Pair<>("DI", ""));
-                    myPrefixes.add(new Pair<>("TRI", ""));
-                    myPrefixes.add(new Pair<>("BE", ""));
-                    myPrefixes.add(new Pair<>("OUT", ""));
-                    myPrefixes.add(new Pair<>("OVER", ""));
-                    myPrefixes.add(new Pair<>("SUB", ""));
-                    myPrefixes.add(new Pair<>("CO", ""));
-                    myPrefixes.add(new Pair<>("UP", ""));
-                    myPrefixes.add(new Pair<>("DOWN", ""));
-                    myPrefixes.add(new Pair<>("OFF", ""));
-                    myPrefixes.add(new Pair<>("ANTI", ""));
-                    myPrefixes.add(new Pair<>("SEMI", ""));
-                    myPrefixes.add(new Pair<>("TRANS", ""));
-                    myPrefixes.add(new Pair<>("GRAND", ""));
-                    myPrefixes.add(new Pair<>("MULTI", ""));
-                    myPrefixes.add(new Pair<>("INTER", ""));
-                    myPrefixes.add(new Pair<>("INTRA", ""));
-                    myPrefixes.add(new Pair<>("SUPER", ""));
-                    myPrefixes.add(new Pair<>("UNDER", ""));
-                    myPrefixes.add(new Pair<>("UNI", ""));
-                    myPrefixes.add(new Pair<>("SOME", ""));
-                    myPrefixes.add(new Pair<>("BACK", ""));
-                    myPrefixes.add(new Pair<>("PRE", ""));
-                    myPrefixes.add(new Pair<>("MID", ""));
-                    myPrefixes.add(new Pair<>("MONO", ""));
-                    myPrefixes.add(new Pair<>("MINI", ""));
-                    myPrefixes.add(new Pair<>("POLY", ""));
-                    myPrefixes.add(new Pair<>("POST", ""));
-                    myPrefixes.add(new Pair<>("FORE", ""));
-                    myPrefixes.add(new Pair<>("SIDE", ""));
-                    myPrefixes.add(new Pair<>("AUTO", ""));
-                    myPrefixes.add(new Pair<>("ORTHO", ""));
-                    myPrefixes.add(new Pair<>("PARA", ""));
-                    myPrefixes.add(new Pair<>("META", ""));
-                    myPrefixes.add(new Pair<>("ISO", ""));
-                    myPrefixes.add(new Pair<>("HOMO", ""));
-                    myPrefixes.add(new Pair<>("HOMEO", ""));
-                    myPrefixes.add(new Pair<>("HETERO", ""));
+                    contentValues.put("_word_", word);
+                    contentValues.put("_length_", word.length());
+                    contentValues.put("_alphagram_", anagram);
+                    contentValues.put("_definition_", definition);
+                    contentValues.put("_probability_", probability(word));
+                    contentValues.put("_back_", new String(back));
+                    contentValues.put("_front_", new String(front));
+                    contentValues.put("_tag_", (word.length() <= 15 && csw21 == 0) ? "New" : "");
+                    contentValues.put("_page_", 0);
+                    contentValues.put("_answers_", solutions);
+                    contentValues.put("_csw24_", csw24);
+                    contentValues.put("_csw21_", csw21);
+                    contentValues.put("_csw19_", csw19);
+                    contentValues.put("_csw15_", csw15);
+                    contentValues.put("_csw12_", csw12);
+                    contentValues.put("_csw07_", csw07);
+                    contentValues.put("_nwl23_", nwl23);
+                    contentValues.put("_nwl20_", nwl20);
+                    contentValues.put("_nwl18_", nwl18);
+                    contentValues.put("_twl06_", twl06);
+                    contentValues.put("_nswl23_", nswl23);
+                    contentValues.put("_nswl20_", nswl20);
+                    contentValues.put("_nswl18_", nswl18);
+                    contentValues.put("_cel21_", cel21);
+                    contentValues.put("_wims_", wims);
+                    contentValues.put("_serial_", 0);
+                    contentValues.put("_position_", 0);
+                    contentValues.put("_timestamp_", "");
+                    contentValues.put("_reverse_", ((new StringBuilder(word)).reverse()).toString());
+                    contentValues.put("_zetagram_", ((new StringBuilder(anagram)).reverse()).toString());
 
-                    for (Pair<String, String> columnItem : myPrefixes) {
-                        ContentValues prefixValues = new ContentValues();
-                        prefixValues.put("_prefix_", columnItem.first);
-                        prefixValues.put("_before_", columnItem.second);
-                        db.insert("prefixes", null, prefixValues);
+                    int[] point = {1, 3, 3, 2, 1, 4, 2, 4, 1, 8, 5, 1, 3, 1, 1, 3, 10, 1, 1, 1, 1, 4, 4, 8, 4, 10};
+                    boolean[] vowel = {true, false, false, false, true, false, false, false, true, false, false, false, false, false, true, false, false, false, false, false, true, false, false, false, false, false};
+                    boolean[] power = {false, false, false, false, false, false, false, false, false, true, false, false, false, false, false, false, true, false, false, false, false, false, false, true, false, true};
+
+                    int vowels = 0;
+                    int consonants = 0;
+                    int points = 0;
+                    int powers = 0;
+
+                    int[] occurrence = new int[26];
+                    for (int myRadix = 0; myRadix < word.length(); myRadix++) {
+                        char theCharacter = word.charAt(myRadix);
+                        int positionInAlphabet = theCharacter - 65;
+                        occurrence[positionInAlphabet]++;
+                        points += point[positionInAlphabet];
+
+                        if (vowel[positionInAlphabet]) {
+                            vowels++;
+                        } else {
+                            consonants++;
+                        }
+
+                        if (power[positionInAlphabet]) {
+                            powers++;
+                        }
                     }
 
-                    ArrayList<Pair<String, String>> mySuffixes = new ArrayList<>();
-                    mySuffixes.add(new Pair<>("S", ""));
-                    mySuffixes.add(new Pair<>("ES", ""));
-                    mySuffixes.add(new Pair<>("-IES", "Y"));
-                    mySuffixes.add(new Pair<>("+IES", ""));
-                    mySuffixes.add(new Pair<>("ED", ""));
-                    mySuffixes.add(new Pair<>("-ED", "E"));
-                    mySuffixes.add(new Pair<>("-IED", "Y"));
-                    mySuffixes.add(new Pair<>("+IED", ""));
-                    mySuffixes.add(new Pair<>("+ED", ""));
-                    mySuffixes.add(new Pair<>("ING", ""));
-                    mySuffixes.add(new Pair<>("-ING", "E"));
-                    mySuffixes.add(new Pair<>("+ING", ""));
-                    mySuffixes.add(new Pair<>("ION", ""));
-                    mySuffixes.add(new Pair<>("-ION", "EY"));
-                    mySuffixes.add(new Pair<>("+ION", ""));
-                    mySuffixes.add(new Pair<>("Y", ""));
-                    mySuffixes.add(new Pair<>("-Y", "E"));
-                    mySuffixes.add(new Pair<>("+Y", ""));
-                    mySuffixes.add(new Pair<>("LY", ""));
-                    mySuffixes.add(new Pair<>("-ILY", "Y"));
-                    mySuffixes.add(new Pair<>("ER", ""));
-                    mySuffixes.add(new Pair<>("-ER", "E"));
-                    mySuffixes.add(new Pair<>("+ER", ""));
-                    mySuffixes.add(new Pair<>("EST", ""));
-                    mySuffixes.add(new Pair<>("-EST", "E"));
-                    mySuffixes.add(new Pair<>("+EST", ""));
-                    mySuffixes.add(new Pair<>("IER", ""));
-                    mySuffixes.add(new Pair<>("-IER", "EY"));
-                    mySuffixes.add(new Pair<>("+IER", ""));
-                    mySuffixes.add(new Pair<>("IEST", ""));
-                    mySuffixes.add(new Pair<>("-IEST", "EY"));
-                    mySuffixes.add(new Pair<>("+IEST", ""));
-                    mySuffixes.add(new Pair<>("FUL", ""));
-                    mySuffixes.add(new Pair<>("-FUL", ""));
-                    mySuffixes.add(new Pair<>("-IFUL", "Y"));
-                    mySuffixes.add(new Pair<>("FULLY", ""));
-                    mySuffixes.add(new Pair<>("-FULLY", ""));
-                    mySuffixes.add(new Pair<>("-IFULLY", "Y"));
-                    mySuffixes.add(new Pair<>("LESS", ""));
-                    mySuffixes.add(new Pair<>("-ILESS", "Y"));
-                    mySuffixes.add(new Pair<>("NESS", ""));
-                    mySuffixes.add(new Pair<>("-INESS", "Y"));
-                    mySuffixes.add(new Pair<>("ABLE", ""));
-                    mySuffixes.add(new Pair<>("-ABLE", "E"));
-                    mySuffixes.add(new Pair<>("-IABLE", "Y"));
-                    mySuffixes.add(new Pair<>("ABLY", ""));
-                    mySuffixes.add(new Pair<>("-ABLY", "E"));
-                    mySuffixes.add(new Pair<>("-IABLY", "Y"));
-                    mySuffixes.add(new Pair<>("LIKE", ""));
-                    mySuffixes.add(new Pair<>("AGE", ""));
-                    mySuffixes.add(new Pair<>("LET", ""));
-                    mySuffixes.add(new Pair<>("ISH", ""));
-                    mySuffixes.add(new Pair<>("-ISH", "E"));
-                    mySuffixes.add(new Pair<>("+ISH", ""));
-                    mySuffixes.add(new Pair<>("IST", ""));
-                    mySuffixes.add(new Pair<>("-IST", "EO"));
-                    mySuffixes.add(new Pair<>("+IST", ""));
-                    mySuffixes.add(new Pair<>("ISM", ""));
-                    mySuffixes.add(new Pair<>("-ISM", "EO"));
-                    mySuffixes.add(new Pair<>("+ISM", ""));
-                    mySuffixes.add(new Pair<>("DOM", ""));
-                    mySuffixes.add(new Pair<>("SHIP", ""));
-                    mySuffixes.add(new Pair<>("HOOD", ""));
-                    mySuffixes.add(new Pair<>("UP", ""));
-                    mySuffixes.add(new Pair<>("DOWN", ""));
-                    mySuffixes.add(new Pair<>("OFF", ""));
-                    mySuffixes.add(new Pair<>("WARD", ""));
-                    mySuffixes.add(new Pair<>("SOME", ""));
-                    mySuffixes.add(new Pair<>("MAN", ""));
-                    mySuffixes.add(new Pair<>("WOMAN", ""));
-                    mySuffixes.add(new Pair<>("MEN", ""));
-                    mySuffixes.add(new Pair<>("WOMEN", ""));
-                    mySuffixes.add(new Pair<>("MENT", ""));
-                    mySuffixes.add(new Pair<>("-MENT", "E"));
-                    mySuffixes.add(new Pair<>("-IMENT", "Y"));
-                    mySuffixes.add(new Pair<>("BACK", ""));
-                    mySuffixes.add(new Pair<>("FOLD", ""));
-                    mySuffixes.add(new Pair<>("OUT", ""));
-                    mySuffixes.add(new Pair<>("OVER", ""));
-                    mySuffixes.add(new Pair<>("UNDER", ""));
-                    mySuffixes.add(new Pair<>("BOY", ""));
-                    mySuffixes.add(new Pair<>("SIDE", ""));
-                    mySuffixes.add(new Pair<>("WISE", ""));
-                    mySuffixes.add(new Pair<>("AL", ""));
-                    mySuffixes.add(new Pair<>("UAL", ""));
-                    mySuffixes.add(new Pair<>("+AL", ""));
-                    mySuffixes.add(new Pair<>("-AL", "AE"));
-                    mySuffixes.add(new Pair<>("-IAL", "Y"));
-                    mySuffixes.add(new Pair<>("ALLY", ""));
-                    mySuffixes.add(new Pair<>("UALLY", ""));
-                    mySuffixes.add(new Pair<>("+ALLY", ""));
-                    mySuffixes.add(new Pair<>("-ALLY", "AE"));
-                    mySuffixes.add(new Pair<>("-IALLY", "Y"));
-                    mySuffixes.add(new Pair<>("IC", ""));
-                    mySuffixes.add(new Pair<>("+IC", ""));
-                    mySuffixes.add(new Pair<>("-IC", "EY"));
-                    mySuffixes.add(new Pair<>("ICAL", ""));
-                    mySuffixes.add(new Pair<>("+ICAL", ""));
-                    mySuffixes.add(new Pair<>("-ICAL", "EY"));
-                    mySuffixes.add(new Pair<>("ICALLY", ""));
-                    mySuffixes.add(new Pair<>("+ICALLY", ""));
-                    mySuffixes.add(new Pair<>("-ICALLY", "EY"));
-                    mySuffixes.add(new Pair<>("+IFUL", ""));
-                    mySuffixes.add(new Pair<>("+IFULLY", ""));
-                    mySuffixes.add(new Pair<>("+ILESS", ""));
-                    mySuffixes.add(new Pair<>("+INESS", ""));
-                    mySuffixes.add(new Pair<>("+IABLE", ""));
-                    mySuffixes.add(new Pair<>("+IABLY", ""));
-                    mySuffixes.add(new Pair<>("+IMENT", ""));
-                    mySuffixes.add(new Pair<>("+IAL", ""));
-                    mySuffixes.add(new Pair<>("OR", ""));
-                    mySuffixes.add(new Pair<>("+OR", ""));
-                    mySuffixes.add(new Pair<>("-OR", "E"));
-                    mySuffixes.add(new Pair<>("IOR", ""));
-                    mySuffixes.add(new Pair<>("+IOR", ""));
-                    mySuffixes.add(new Pair<>("-IOR", "EY"));
-                    mySuffixes.add(new Pair<>("OUR", ""));
-                    mySuffixes.add(new Pair<>("+OUR", ""));
-                    mySuffixes.add(new Pair<>("-OUR", "E"));
-                    mySuffixes.add(new Pair<>("IOUR", ""));
-                    mySuffixes.add(new Pair<>("+IOUR", ""));
-                    mySuffixes.add(new Pair<>("-IOUR", "EY"));
-
-                    for (Pair<String, String> columnItem : mySuffixes) {
-                        ContentValues suffixValues = new ContentValues();
-                        suffixValues.put("_suffix_", columnItem.first);
-                        suffixValues.put("_after_", columnItem.second);
-                        db.insert("suffixes", null, suffixValues);
+                    for (int theRadix = 0; theRadix < 26; theRadix++) {
+                        char occurrences = (char) (theRadix + 97);
+                        contentValues.put("_no_" + occurrences + "_", occurrence[theRadix]);
                     }
 
-                    db.execSQL("UPDATE words SET _serial_ = ((_page_ - 1) * 100) + _position_");
-                    uiThreadRefresh(myContext, true);
-                    uiThreadBox("Prepare database", "Database preparation complete.", myContext);
-                    db.setTransactionSuccessful();
-                } catch (Exception e) {
-                    myDialog.dismiss();
-                } finally {
-                    myDialog.dismiss();
-                    db.endTransaction();
+                    contentValues.put("_vowels_", vowels);
+                    contentValues.put("_consonants_", consonants);
+                    contentValues.put("_points_", points);
+                    contentValues.put("_power_", powers);
+
+                    db.insert("words", null, contentValues);
+
+                    myLine++;
+                    if (myLine % myStep1 < 1 || myLine == 1.0)
+                    {
+                        updateProgressBar(myContext, p5, t42, t43, myDialog, (int) (myLine / myStep1), ((int) myLine) + "/" + dictionary.size());
+                    }
                 }
+
+                Cursor[] anagramList = new Cursor[getMaximumWordLength() - 1];
+                int[] wordLength = new int[anagramList.length];
+                int[] pages = new int[anagramList.length];
+                int maximumPages = 0;
+
+                for (int lengths = 0; lengths < anagramList.length; lengths++) {
+                    anagramList[lengths] = getAllRegularAnagrams(lengths + 2);
+                    wordLength[lengths] = anagramList[lengths].getCount();
+                    pages[lengths] = (((wordLength[lengths] - 1) / 100) + 1);
+
+                    if (pages[lengths] > maximumPages) {
+                        maximumPages = pages[lengths];
+                    }
+                }
+
+                uiThreadTitle("Setting page numbers", myDialog, myContext);
+                double myStep2 = maximumPages / 50.0;
+                for (int positionNumber = 1; positionNumber <= maximumPages; positionNumber++) {
+                    ArrayList<String> pageHash = new ArrayList<>();
+
+                    for (int lengths = 0; lengths < anagramList.length; lengths++) {
+                        if (positionNumber <= pages[lengths]) {
+                            int open = (positionNumber - 1) * 100;
+                            int close = Math.min(positionNumber * 100, wordLength[lengths]);
+
+                            if (anagramList[lengths].moveToPosition(open)) {
+                                do {
+                                    pageHash.add(anagramList[lengths].getString(0));
+                                } while (anagramList[lengths].moveToNext() && anagramList[lengths].getPosition() < close);
+                            }
+                        }
+                    }
+
+                    String pageString = ((((pageHash).toString()).replace("[", "(\"")).replace("]", "\")")).replace(", ", "\", \"");
+                    ContentValues values = new ContentValues();
+                    values.put("_page_", positionNumber);
+
+                    db.update("words", values, ("_word_ IN") + pageString,
+                            new String[] {});
+
+                    if (positionNumber % myStep2 < 1 || positionNumber == 1)
+                    {
+                        updateProgressBar(myContext, p5, t42, t43, myDialog, 40 + ((int) (positionNumber / myStep2)), positionNumber + "/" + maximumPages);
+                    }
+                }
+
+                uiThreadTitle("Setting grid numbers", myDialog, myContext);
+                double myStep3 = 10.0;
+                for (int cellNumber = 1; cellNumber <= 100.0; cellNumber++) {
+                    ArrayList<String> cellHash = new ArrayList<>();
+
+                    for (int lengths = 0; lengths < anagramList.length; lengths++) {
+                        if (cellNumber <= wordLength[lengths]) {
+                            if (anagramList[lengths].moveToPosition(cellNumber - 1)) {
+                                do {
+                                    cellHash.add(anagramList[lengths].getString(0));
+                                } while (anagramList[lengths].move(100));
+                            }
+                        }
+                    }
+
+                    String cellString = ((((cellHash).toString()).replace("[", "(\"")).replace("]", "\")")).replace(", ", "\", \"");
+                    ContentValues values = new ContentValues();
+                    values.put("_position_", cellNumber);
+
+                    db.update("words", values, ("_word_ IN ") + cellString,
+                            new String[] {});
+
+                    if (cellNumber % myStep3 < 1 || cellNumber == 1)
+                    {
+                        updateProgressBar(myContext, p5, t42, t43, myDialog, 90 + ((int) (cellNumber / myStep3)), cellNumber + "/100");
+                    }
+                }
+
+                for (Cursor cursors : anagramList) {
+                    cursors.close();
+                }
+
+                int nightModeFlags =
+                        myContext.getResources().getConfiguration().uiMode &
+                                Configuration.UI_MODE_NIGHT_MASK;
+                String white = (nightModeFlags == Configuration.UI_MODE_NIGHT_YES ? "#000000" : "#FFFFFF");
+                String black = (nightModeFlags == Configuration.UI_MODE_NIGHT_YES ? "#FFFFFF" : "#000000");
+
+                HashMap<String, String> coloursList = new HashMap<>();
+
+                coloursList.put("Known", "#00C000");
+                coloursList.put("Unknown", "#FF0000");
+                coloursList.put("Compound", "#FF00C0");
+                coloursList.put("Prefix", "#C000FF");
+                coloursList.put("Suffix", "#8080FF");
+                coloursList.put("Plural", "#808080");
+                coloursList.put("Guessable", "#FF8000");
+                coloursList.put("Past", "#00C0FF");
+                coloursList.put("Learnt", "#B97A57");
+                coloursList.put("New", "#FFFF00");
+                coloursList.put("Removed", black);
+                coloursList.put("", white);
+
+                for (Map.Entry<String, String> enter : coloursList.entrySet()) {
+                    String tag = enter.getKey();
+                    String tags = coloursList.get(tag);
+
+                    ContentValues contentValues = new ContentValues();
+
+                    contentValues.put("_tag_", tag);
+                    contentValues.put("_colour_", tags);
+
+                    db.insert("colours", null, contentValues);
+                }
+
+                ContentValues contentValues = new ContentValues();
+                contentValues.put("_activity_", "Study");
+                contentValues.put("_rows_", 25);
+                contentValues.put("_columns_", 4);
+                contentValues.put("_size_", 11);
+                contentValues.put("_spinner_", 20);
+                db.insert("zoom", null, contentValues);
+
+                ArrayList<Pair<String, String>> myPrefixes = new ArrayList<>();
+                myPrefixes.add(new Pair<>("AB", ""));
+                myPrefixes.add(new Pair<>("UN", ""));
+                myPrefixes.add(new Pair<>("DE", ""));
+                myPrefixes.add(new Pair<>("IN", ""));
+                myPrefixes.add(new Pair<>("RE", ""));
+                myPrefixes.add(new Pair<>("IM", ""));
+                myPrefixes.add(new Pair<>("IL", "L"));
+                myPrefixes.add(new Pair<>("IR", "R"));
+                myPrefixes.add(new Pair<>("DIS", ""));
+                myPrefixes.add(new Pair<>("MIS", ""));
+                myPrefixes.add(new Pair<>("NON", ""));
+                myPrefixes.add(new Pair<>("BI", ""));
+                myPrefixes.add(new Pair<>("DI", ""));
+                myPrefixes.add(new Pair<>("TRI", ""));
+                myPrefixes.add(new Pair<>("BE", ""));
+                myPrefixes.add(new Pair<>("OUT", ""));
+                myPrefixes.add(new Pair<>("OVER", ""));
+                myPrefixes.add(new Pair<>("SUB", ""));
+                myPrefixes.add(new Pair<>("CO", ""));
+                myPrefixes.add(new Pair<>("UP", ""));
+                myPrefixes.add(new Pair<>("DOWN", ""));
+                myPrefixes.add(new Pair<>("OFF", ""));
+                myPrefixes.add(new Pair<>("ANTI", ""));
+                myPrefixes.add(new Pair<>("SEMI", ""));
+                myPrefixes.add(new Pair<>("TRANS", ""));
+                myPrefixes.add(new Pair<>("GRAND", ""));
+                myPrefixes.add(new Pair<>("MULTI", ""));
+                myPrefixes.add(new Pair<>("INTER", ""));
+                myPrefixes.add(new Pair<>("INTRA", ""));
+                myPrefixes.add(new Pair<>("SUPER", ""));
+                myPrefixes.add(new Pair<>("UNDER", ""));
+                myPrefixes.add(new Pair<>("UNI", ""));
+                myPrefixes.add(new Pair<>("SOME", ""));
+                myPrefixes.add(new Pair<>("BACK", ""));
+                myPrefixes.add(new Pair<>("PRE", ""));
+                myPrefixes.add(new Pair<>("MID", ""));
+                myPrefixes.add(new Pair<>("MONO", ""));
+                myPrefixes.add(new Pair<>("MINI", ""));
+                myPrefixes.add(new Pair<>("POLY", ""));
+                myPrefixes.add(new Pair<>("POST", ""));
+                myPrefixes.add(new Pair<>("FORE", ""));
+                myPrefixes.add(new Pair<>("SIDE", ""));
+                myPrefixes.add(new Pair<>("AUTO", ""));
+                myPrefixes.add(new Pair<>("ORTHO", ""));
+                myPrefixes.add(new Pair<>("PARA", ""));
+                myPrefixes.add(new Pair<>("META", ""));
+                myPrefixes.add(new Pair<>("ISO", ""));
+                myPrefixes.add(new Pair<>("HOMO", ""));
+                myPrefixes.add(new Pair<>("HOMEO", ""));
+                myPrefixes.add(new Pair<>("HETERO", ""));
+
+                for (Pair<String, String> columnItem : myPrefixes) {
+                    ContentValues prefixValues = new ContentValues();
+                    prefixValues.put("_prefix_", columnItem.first);
+                    prefixValues.put("_before_", columnItem.second);
+                    db.insert("prefixes", null, prefixValues);
+                }
+
+                ArrayList<Pair<String, String>> mySuffixes = new ArrayList<>();
+                mySuffixes.add(new Pair<>("S", ""));
+                mySuffixes.add(new Pair<>("ES", ""));
+                mySuffixes.add(new Pair<>("-IES", "Y"));
+                mySuffixes.add(new Pair<>("+IES", ""));
+                mySuffixes.add(new Pair<>("ED", ""));
+                mySuffixes.add(new Pair<>("-ED", "E"));
+                mySuffixes.add(new Pair<>("-IED", "Y"));
+                mySuffixes.add(new Pair<>("+IED", ""));
+                mySuffixes.add(new Pair<>("+ED", ""));
+                mySuffixes.add(new Pair<>("ING", ""));
+                mySuffixes.add(new Pair<>("-ING", "E"));
+                mySuffixes.add(new Pair<>("+ING", ""));
+                mySuffixes.add(new Pair<>("ION", ""));
+                mySuffixes.add(new Pair<>("-ION", "EY"));
+                mySuffixes.add(new Pair<>("+ION", ""));
+                mySuffixes.add(new Pair<>("Y", ""));
+                mySuffixes.add(new Pair<>("-Y", "E"));
+                mySuffixes.add(new Pair<>("+Y", ""));
+                mySuffixes.add(new Pair<>("LY", ""));
+                mySuffixes.add(new Pair<>("-ILY", "Y"));
+                mySuffixes.add(new Pair<>("ER", ""));
+                mySuffixes.add(new Pair<>("-ER", "E"));
+                mySuffixes.add(new Pair<>("+ER", ""));
+                mySuffixes.add(new Pair<>("EST", ""));
+                mySuffixes.add(new Pair<>("-EST", "E"));
+                mySuffixes.add(new Pair<>("+EST", ""));
+                mySuffixes.add(new Pair<>("IER", ""));
+                mySuffixes.add(new Pair<>("-IER", "EY"));
+                mySuffixes.add(new Pair<>("+IER", ""));
+                mySuffixes.add(new Pair<>("IEST", ""));
+                mySuffixes.add(new Pair<>("-IEST", "EY"));
+                mySuffixes.add(new Pair<>("+IEST", ""));
+                mySuffixes.add(new Pair<>("FUL", ""));
+                mySuffixes.add(new Pair<>("-FUL", ""));
+                mySuffixes.add(new Pair<>("-IFUL", "Y"));
+                mySuffixes.add(new Pair<>("FULLY", ""));
+                mySuffixes.add(new Pair<>("-FULLY", ""));
+                mySuffixes.add(new Pair<>("-IFULLY", "Y"));
+                mySuffixes.add(new Pair<>("LESS", ""));
+                mySuffixes.add(new Pair<>("-ILESS", "Y"));
+                mySuffixes.add(new Pair<>("NESS", ""));
+                mySuffixes.add(new Pair<>("-INESS", "Y"));
+                mySuffixes.add(new Pair<>("ABLE", ""));
+                mySuffixes.add(new Pair<>("-ABLE", "E"));
+                mySuffixes.add(new Pair<>("-IABLE", "Y"));
+                mySuffixes.add(new Pair<>("ABLY", ""));
+                mySuffixes.add(new Pair<>("-ABLY", "E"));
+                mySuffixes.add(new Pair<>("-IABLY", "Y"));
+                mySuffixes.add(new Pair<>("LIKE", ""));
+                mySuffixes.add(new Pair<>("AGE", ""));
+                mySuffixes.add(new Pair<>("LET", ""));
+                mySuffixes.add(new Pair<>("ISH", ""));
+                mySuffixes.add(new Pair<>("-ISH", "E"));
+                mySuffixes.add(new Pair<>("+ISH", ""));
+                mySuffixes.add(new Pair<>("IST", ""));
+                mySuffixes.add(new Pair<>("-IST", "EO"));
+                mySuffixes.add(new Pair<>("+IST", ""));
+                mySuffixes.add(new Pair<>("ISM", ""));
+                mySuffixes.add(new Pair<>("-ISM", "EO"));
+                mySuffixes.add(new Pair<>("+ISM", ""));
+                mySuffixes.add(new Pair<>("DOM", ""));
+                mySuffixes.add(new Pair<>("SHIP", ""));
+                mySuffixes.add(new Pair<>("HOOD", ""));
+                mySuffixes.add(new Pair<>("UP", ""));
+                mySuffixes.add(new Pair<>("DOWN", ""));
+                mySuffixes.add(new Pair<>("OFF", ""));
+                mySuffixes.add(new Pair<>("WARD", ""));
+                mySuffixes.add(new Pair<>("SOME", ""));
+                mySuffixes.add(new Pair<>("MAN", ""));
+                mySuffixes.add(new Pair<>("WOMAN", ""));
+                mySuffixes.add(new Pair<>("MEN", ""));
+                mySuffixes.add(new Pair<>("WOMEN", ""));
+                mySuffixes.add(new Pair<>("MENT", ""));
+                mySuffixes.add(new Pair<>("-MENT", "E"));
+                mySuffixes.add(new Pair<>("-IMENT", "Y"));
+                mySuffixes.add(new Pair<>("BACK", ""));
+                mySuffixes.add(new Pair<>("FOLD", ""));
+                mySuffixes.add(new Pair<>("OUT", ""));
+                mySuffixes.add(new Pair<>("OVER", ""));
+                mySuffixes.add(new Pair<>("UNDER", ""));
+                mySuffixes.add(new Pair<>("BOY", ""));
+                mySuffixes.add(new Pair<>("SIDE", ""));
+                mySuffixes.add(new Pair<>("WISE", ""));
+                mySuffixes.add(new Pair<>("AL", ""));
+                mySuffixes.add(new Pair<>("UAL", ""));
+                mySuffixes.add(new Pair<>("+AL", ""));
+                mySuffixes.add(new Pair<>("-AL", "AE"));
+                mySuffixes.add(new Pair<>("-IAL", "Y"));
+                mySuffixes.add(new Pair<>("ALLY", ""));
+                mySuffixes.add(new Pair<>("UALLY", ""));
+                mySuffixes.add(new Pair<>("+ALLY", ""));
+                mySuffixes.add(new Pair<>("-ALLY", "AE"));
+                mySuffixes.add(new Pair<>("-IALLY", "Y"));
+                mySuffixes.add(new Pair<>("IC", ""));
+                mySuffixes.add(new Pair<>("+IC", ""));
+                mySuffixes.add(new Pair<>("-IC", "EY"));
+                mySuffixes.add(new Pair<>("ICAL", ""));
+                mySuffixes.add(new Pair<>("+ICAL", ""));
+                mySuffixes.add(new Pair<>("-ICAL", "EY"));
+                mySuffixes.add(new Pair<>("ICALLY", ""));
+                mySuffixes.add(new Pair<>("+ICALLY", ""));
+                mySuffixes.add(new Pair<>("-ICALLY", "EY"));
+                mySuffixes.add(new Pair<>("+IFUL", ""));
+                mySuffixes.add(new Pair<>("+IFULLY", ""));
+                mySuffixes.add(new Pair<>("+ILESS", ""));
+                mySuffixes.add(new Pair<>("+INESS", ""));
+                mySuffixes.add(new Pair<>("+IABLE", ""));
+                mySuffixes.add(new Pair<>("+IABLY", ""));
+                mySuffixes.add(new Pair<>("+IMENT", ""));
+                mySuffixes.add(new Pair<>("+IAL", ""));
+                mySuffixes.add(new Pair<>("OR", ""));
+                mySuffixes.add(new Pair<>("+OR", ""));
+                mySuffixes.add(new Pair<>("-OR", "E"));
+                mySuffixes.add(new Pair<>("IOR", ""));
+                mySuffixes.add(new Pair<>("+IOR", ""));
+                mySuffixes.add(new Pair<>("-IOR", "EY"));
+                mySuffixes.add(new Pair<>("OUR", ""));
+                mySuffixes.add(new Pair<>("+OUR", ""));
+                mySuffixes.add(new Pair<>("-OUR", "E"));
+                mySuffixes.add(new Pair<>("IOUR", ""));
+                mySuffixes.add(new Pair<>("+IOUR", ""));
+                mySuffixes.add(new Pair<>("-IOUR", "EY"));
+
+                for (Pair<String, String> columnItem : mySuffixes) {
+                    ContentValues suffixValues = new ContentValues();
+                    suffixValues.put("_suffix_", columnItem.first);
+                    suffixValues.put("_after_", columnItem.second);
+                    db.insert("suffixes", null, suffixValues);
+                }
+
+                db.execSQL("UPDATE words SET _serial_ = ((_page_ - 1) * 100) + _position_");
+                uiThreadRefresh(myContext, true);
+                uiThreadBox("Prepare database", "Database preparation complete.", myContext);
+                db.setTransactionSuccessful();
+            } catch (Exception e) {
+                myDialog.dismiss();
+            } finally {
+                myDialog.dismiss();
+                db.endTransaction();
             }
         });
 
@@ -1424,9 +1407,7 @@ public class sqliteDB extends SQLiteOpenHelper {
         AlertDialog dialog = new AlertDialog.Builder(location)
                 .setTitle(title)
                 .setView(yourCustomView)
-                .setPositiveButton("OK", new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int whichButton) {
-                    }
+                .setPositiveButton("OK", (dialog1, whichButton) -> {
                 }).create();
         dialog.show();
     }
@@ -1435,24 +1416,19 @@ public class sqliteDB extends SQLiteOpenHelper {
     {
         MainActivity homeActivity = (MainActivity) location;
 
-        homeActivity.runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                LayoutInflater inflater = LayoutInflater.from(location);
-                final View yourCustomView = inflater.inflate(R.layout.display, null);
+        homeActivity.runOnUiThread(() -> {
+            LayoutInflater inflater = LayoutInflater.from(location);
+            final View yourCustomView = inflater.inflate(R.layout.display, null);
 
-                TextView t1 = yourCustomView.findViewById(R.id.textview4);
-                t1.setText(message);
+            TextView t1 = yourCustomView.findViewById(R.id.textview4);
+            t1.setText(message);
 
-                AlertDialog dialog = new AlertDialog.Builder(location)
-                        .setTitle(title)
-                        .setView(yourCustomView)
-                        .setPositiveButton("OK", new DialogInterface.OnClickListener() {
-                            public void onClick(DialogInterface dialog, int whichButton) {
-                            }
-                        }).create();
-                dialog.show();
-            }
+            AlertDialog dialog = new AlertDialog.Builder(location)
+                    .setTitle(title)
+                    .setView(yourCustomView)
+                    .setPositiveButton("OK", (dialog1, whichButton) -> {
+                    }).create();
+            dialog.show();
         });
     }
 
@@ -1467,9 +1443,7 @@ public class sqliteDB extends SQLiteOpenHelper {
         AlertDialog dialog = new AlertDialog.Builder(location)
                 .setTitle(title)
                 .setView(yourCustomView)
-                .setPositiveButton("OK", new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int whichButton) {
-                    }
+                .setPositiveButton("OK", (dialog1, whichButton) -> {
                 }).create();
         dialog.show();
     }
@@ -1478,12 +1452,7 @@ public class sqliteDB extends SQLiteOpenHelper {
     {
         MainActivity homeActivity = (MainActivity) location;
 
-        homeActivity.runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                theDialog.setTitle(title);
-            }
-        });
+        homeActivity.runOnUiThread(() -> theDialog.setTitle(title));
     }
 
     public String addUnderscores(String argumentQuery)
@@ -1552,13 +1521,10 @@ public class sqliteDB extends SQLiteOpenHelper {
     {
         MainActivity mainActivity = (MainActivity) theContext;
 
-        mainActivity.runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                mainActivity.refresh();
-                if (prepared) {
-                    mainActivity.setPrepared();
-                }
+        mainActivity.runOnUiThread(() -> {
+            mainActivity.refresh();
+            if (prepared) {
+                mainActivity.setPrepared();
             }
         });
     }
@@ -1622,50 +1588,39 @@ public class sqliteDB extends SQLiteOpenHelper {
         String white = (nightModeFlags == Configuration.UI_MODE_NIGHT_YES ? "#000000" : "#FFFFFF");
         int grey = t6.getCurrentTextColor();
 
-        z1.addOnChangeListener(new Slider.OnChangeListener() {
-            @Override
-            public void onValueChange(@NonNull Slider slider, float value, boolean fromUser) {
-                rgb[0] = (int) value;
-                t6.setText(Integer.toString(rgb[0]));
-                hexValue[0] = String.format("#%02X%02X%02X", rgb[0], rgb[1], rgb[2]);
-                t5.setText(hexValue[0]);
-                t5.setTextColor(hexValue[0].equals(white) ? grey : Color.rgb(rgb[0], rgb[1], rgb[2]));
-                t9.setBackgroundColor(Color.rgb(rgb[0], rgb[1], rgb[2]));
-            }
+        z1.addOnChangeListener((slider, value, fromUser) -> {
+            rgb[0] = (int) value;
+            t6.setText(Integer.toString(rgb[0]));
+            hexValue[0] = String.format("#%02X%02X%02X", rgb[0], rgb[1], rgb[2]);
+            t5.setText(hexValue[0]);
+            t5.setTextColor(hexValue[0].equals(white) ? grey : Color.rgb(rgb[0], rgb[1], rgb[2]));
+            t9.setBackgroundColor(Color.rgb(rgb[0], rgb[1], rgb[2]));
         });
 
-        z2.addOnChangeListener(new Slider.OnChangeListener() {
-            @Override
-            public void onValueChange(@NonNull Slider slider, float value, boolean fromUser) {
-                rgb[1] = (int) value;
-                t7.setText(Integer.toString(rgb[1]));
-                hexValue[0] = String.format("#%02X%02X%02X", rgb[0], rgb[1], rgb[2]);
-                t5.setText(hexValue[0]);
-                t5.setTextColor(hexValue[0].equals(white) ? grey : Color.rgb(rgb[0], rgb[1], rgb[2]));
-                t9.setBackgroundColor(Color.rgb(rgb[0], rgb[1], rgb[2]));
-            }
+        z2.addOnChangeListener((slider, value, fromUser) -> {
+            rgb[1] = (int) value;
+            t7.setText(Integer.toString(rgb[1]));
+            hexValue[0] = String.format("#%02X%02X%02X", rgb[0], rgb[1], rgb[2]);
+            t5.setText(hexValue[0]);
+            t5.setTextColor(hexValue[0].equals(white) ? grey : Color.rgb(rgb[0], rgb[1], rgb[2]));
+            t9.setBackgroundColor(Color.rgb(rgb[0], rgb[1], rgb[2]));
         });
 
-        z3.addOnChangeListener(new Slider.OnChangeListener() {
-            @Override
-            public void onValueChange(@NonNull Slider slider, float value, boolean fromUser) {
-                rgb[2] = (int) value;
-                t8.setText(Integer.toString(rgb[2]));
-                hexValue[0] = String.format("#%02X%02X%02X", rgb[0], rgb[1], rgb[2]);
-                t5.setText(hexValue[0]);
-                t5.setTextColor(hexValue[0].equals(white) ? grey : Color.rgb(rgb[0], rgb[1], rgb[2]));
-                t9.setBackgroundColor(Color.rgb(rgb[0], rgb[1], rgb[2]));
-            }
+        z3.addOnChangeListener((slider, value, fromUser) -> {
+            rgb[2] = (int) value;
+            t8.setText(Integer.toString(rgb[2]));
+            hexValue[0] = String.format("#%02X%02X%02X", rgb[0], rgb[1], rgb[2]);
+            t5.setText(hexValue[0]);
+            t5.setTextColor(hexValue[0].equals(white) ? grey : Color.rgb(rgb[0], rgb[1], rgb[2]));
+            t9.setBackgroundColor(Color.rgb(rgb[0], rgb[1], rgb[2]));
         });
 
         AlertDialog dialog = new AlertDialog.Builder(theContext)
                 .setTitle("Add new tag")
                 .setView(yourCustomView)
-                .setPositiveButton("OK", new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int whichButton) {
-                        addLabel((e4.getText()).toString(), hexValue[0]);
-                        refresh(theContext);
-                    }
+                .setPositiveButton("OK", (dialog1, whichButton) -> {
+                    addLabel((e4.getText()).toString(), hexValue[0]);
+                    refresh(theContext);
                 }).create();
         dialog.show();
     }
@@ -1735,50 +1690,39 @@ public class sqliteDB extends SQLiteOpenHelper {
             }
         });
 
-        z4.addOnChangeListener(new Slider.OnChangeListener() {
-            @Override
-            public void onValueChange(@NonNull Slider slider, float value, boolean fromUser) {
-                rgb[0] = (int) value;
-                t14.setText(Integer.toString(rgb[0]));
-                hexValue[0] = String.format("#%02X%02X%02X", rgb[0], rgb[1], rgb[2]);
-                t13.setText(hexValue[0]);
-                t13.setTextColor(hexValue[0].equals(white) ? grey : Color.rgb(rgb[0], rgb[1], rgb[2]));
-                t17.setBackgroundColor(Color.rgb(rgb[0], rgb[1], rgb[2]));
-            }
+        z4.addOnChangeListener((slider, value, fromUser) -> {
+            rgb[0] = (int) value;
+            t14.setText(Integer.toString(rgb[0]));
+            hexValue[0] = String.format("#%02X%02X%02X", rgb[0], rgb[1], rgb[2]);
+            t13.setText(hexValue[0]);
+            t13.setTextColor(hexValue[0].equals(white) ? grey : Color.rgb(rgb[0], rgb[1], rgb[2]));
+            t17.setBackgroundColor(Color.rgb(rgb[0], rgb[1], rgb[2]));
         });
 
-        z5.addOnChangeListener(new Slider.OnChangeListener() {
-            @Override
-            public void onValueChange(@NonNull Slider slider, float value, boolean fromUser) {
-                rgb[1] = (int) value;
-                t15.setText(Integer.toString(rgb[1]));
-                hexValue[0] = String.format("#%02X%02X%02X", rgb[0], rgb[1], rgb[2]);
-                t13.setText(hexValue[0]);
-                t13.setTextColor(hexValue[0].equals(white) ? grey : Color.rgb(rgb[0], rgb[1], rgb[2]));
-                t17.setBackgroundColor(Color.rgb(rgb[0], rgb[1], rgb[2]));
-            }
+        z5.addOnChangeListener((slider, value, fromUser) -> {
+            rgb[1] = (int) value;
+            t15.setText(Integer.toString(rgb[1]));
+            hexValue[0] = String.format("#%02X%02X%02X", rgb[0], rgb[1], rgb[2]);
+            t13.setText(hexValue[0]);
+            t13.setTextColor(hexValue[0].equals(white) ? grey : Color.rgb(rgb[0], rgb[1], rgb[2]));
+            t17.setBackgroundColor(Color.rgb(rgb[0], rgb[1], rgb[2]));
         });
 
-        z6.addOnChangeListener(new Slider.OnChangeListener() {
-            @Override
-            public void onValueChange(@NonNull Slider slider, float value, boolean fromUser) {
-                rgb[2] = (int) value;
-                t16.setText(Integer.toString(rgb[2]));
-                hexValue[0] = String.format("#%02X%02X%02X", rgb[0], rgb[1], rgb[2]);
-                t13.setText(hexValue[0]);
-                t13.setTextColor(hexValue[0].equals(white) ? grey : Color.rgb(rgb[0], rgb[1], rgb[2]));
-                t17.setBackgroundColor(Color.rgb(rgb[0], rgb[1], rgb[2]));
-            }
+        z6.addOnChangeListener((slider, value, fromUser) -> {
+            rgb[2] = (int) value;
+            t16.setText(Integer.toString(rgb[2]));
+            hexValue[0] = String.format("#%02X%02X%02X", rgb[0], rgb[1], rgb[2]);
+            t13.setText(hexValue[0]);
+            t13.setTextColor(hexValue[0].equals(white) ? grey : Color.rgb(rgb[0], rgb[1], rgb[2]));
+            t17.setBackgroundColor(Color.rgb(rgb[0], rgb[1], rgb[2]));
         });
 
         AlertDialog dialog = new AlertDialog.Builder(theContext)
                 .setTitle(name ? "Change tag colour by name" : "Rename tag by colour")
                 .setView(yourCustomView)
-                .setPositiveButton("OK", new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int whichButton) {
-                        int result = renameLabel(old[0], (e5.getText()).toString(), hexValue[0], name);
-                        refresh(theContext);
-                    }
+                .setPositiveButton("OK", (dialog1, whichButton) -> {
+                    int result = renameLabel(old[0], (e5.getText()).toString(), hexValue[0], name);
+                    refresh(theContext);
                 }).create();
         dialog.show();
     }
@@ -1825,11 +1769,9 @@ public class sqliteDB extends SQLiteOpenHelper {
         AlertDialog dialog = new AlertDialog.Builder(theContext)
                 .setTitle(name ? "Delete tag by name" : "Delete tag by colour")
                 .setView(yourCustomView)
-                .setPositiveButton("OK", new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int whichButton) {
-                        deleteLabel(old[0], name);
-                        refresh(theContext);
-                    }
+                .setPositiveButton("OK", (dialog1, whichButton) -> {
+                    deleteLabel(old[0], name);
+                    refresh(theContext);
                 }).create();
         dialog.show();
     }
@@ -2024,21 +1966,19 @@ public class sqliteDB extends SQLiteOpenHelper {
         AlertDialog dialog = new AlertDialog.Builder(theContext)
                 .setTitle(suffix ? "Add new suffix" : "Add new prefix")
                 .setView(yourCustomView)
-                .setPositiveButton("OK", new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int whichButton) {
-                        if (suffix)
-                        {
-                            addPrefix((variable[0] == 0 ? "" : (variable[0] == 1 ? "-" : "+")) + ((e6.getText()).toString()).toUpperCase(), variable[1] == 0 ? "" : ((e7.getText()).toString()).toUpperCase(), suffix);
-                        }
-                        else
-                        {
-                            addPrefix(((e6.getText()).toString()).toUpperCase() + (variable[0] == 0 ? "" : (variable[0] == 1 ? "-" : "+")), variable[1] == 0 ? "" : ((e7.getText()).toString()).toUpperCase(), suffix);
-                        }
+                .setPositiveButton("OK", (dialog1, whichButton) -> {
+                    if (suffix)
+                    {
+                        addPrefix((variable[0] == 0 ? "" : (variable[0] == 1 ? "-" : "+")) + ((e6.getText()).toString()).toUpperCase(), variable[1] == 0 ? "" : ((e7.getText()).toString()).toUpperCase(), suffix);
+                    }
+                    else
+                    {
+                        addPrefix(((e6.getText()).toString()).toUpperCase() + (variable[0] == 0 ? "" : (variable[0] == 1 ? "-" : "+")), variable[1] == 0 ? "" : ((e7.getText()).toString()).toUpperCase(), suffix);
+                    }
 
-                        if (mode != null) {
-                            MainActivity home = (MainActivity) theContext;
-                            home.refreshDefinition();
-                        }
+                    if (mode != null) {
+                        MainActivity home = (MainActivity) theContext;
+                        home.refreshDefinition();
                     }
                 }).create();
         dialog.show();
@@ -2185,21 +2125,19 @@ public class sqliteDB extends SQLiteOpenHelper {
         AlertDialog dialog = new AlertDialog.Builder(theContext)
                 .setTitle(suffix ? "Change suffix" : "Change prefix")
                 .setView(yourCustomView)
-                .setPositiveButton("OK", new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int whichButton) {
-                        if (suffix)
-                        {
-                            changePrefix((insertList.get(variable[0])).first, (insertList.get(variable[0])).second, (variable[1] == 0 ? "" : (variable[1] == 1 ? "-" : "+")) + ((e8.getText()).toString()).toUpperCase(), variable[2] == 0 ? "" : ((e9.getText()).toString()).toUpperCase(), suffix);
-                        }
-                        else
-                        {
-                            changePrefix((insertList.get(variable[0])).first, (insertList.get(variable[0])).second, ((e8.getText()).toString()).toUpperCase() + (variable[1] == 0 ? "" : (variable[1] == 1 ? "-" : "+")), variable[2] == 0 ? "" : ((e9.getText()).toString()).toUpperCase(), suffix);
-                        }
+                .setPositiveButton("OK", (dialog1, whichButton) -> {
+                    if (suffix)
+                    {
+                        changePrefix((insertList.get(variable[0])).first, (insertList.get(variable[0])).second, (variable[1] == 0 ? "" : (variable[1] == 1 ? "-" : "+")) + ((e8.getText()).toString()).toUpperCase(), variable[2] == 0 ? "" : ((e9.getText()).toString()).toUpperCase(), suffix);
+                    }
+                    else
+                    {
+                        changePrefix((insertList.get(variable[0])).first, (insertList.get(variable[0])).second, ((e8.getText()).toString()).toUpperCase() + (variable[1] == 0 ? "" : (variable[1] == 1 ? "-" : "+")), variable[2] == 0 ? "" : ((e9.getText()).toString()).toUpperCase(), suffix);
+                    }
 
-                        if (mode != null) {
-                            MainActivity home = (MainActivity) theContext;
-                            home.refreshDefinition();
-                        }
+                    if (mode != null) {
+                        MainActivity home = (MainActivity) theContext;
+                        home.refreshDefinition();
                     }
                 }).create();
         dialog.show();
@@ -2273,21 +2211,19 @@ public class sqliteDB extends SQLiteOpenHelper {
         AlertDialog dialog = new AlertDialog.Builder(theContext)
                 .setTitle(suffix ? "Delete suffix" : "Delete prefix")
                 .setView(yourCustomView)
-                .setPositiveButton("OK", new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int whichButton) {
-                        if (suffix)
-                        {
-                            deletePrefix((insertList.get(variable[0])).first, (insertList.get(variable[0])).second, suffix);
-                        }
-                        else
-                        {
-                            deletePrefix((insertList.get(variable[0])).first, (insertList.get(variable[0])).second, suffix);
-                        }
+                .setPositiveButton("OK", (dialog1, whichButton) -> {
+                    if (suffix)
+                    {
+                        deletePrefix((insertList.get(variable[0])).first, (insertList.get(variable[0])).second, suffix);
+                    }
+                    else
+                    {
+                        deletePrefix((insertList.get(variable[0])).first, (insertList.get(variable[0])).second, suffix);
+                    }
 
-                        if (mode != null) {
-                            MainActivity home = (MainActivity) theContext;
-                            home.refreshDefinition();
-                        }
+                    if (mode != null) {
+                        MainActivity home = (MainActivity) theContext;
+                        home.refreshDefinition();
                     }
                 }).create();
         dialog.show();
@@ -2332,22 +2268,18 @@ public class sqliteDB extends SQLiteOpenHelper {
         AlertDialog dialog = new AlertDialog.Builder(theContext)
                 .setTitle("Are you sure?")
                 .setView(yourCustomView)
-                .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int whichButton) {
-                        deleteTable(theTable);
-                        if (theTable.equals("colours")) {
-                            refresh(theContext);
-                        } else {
-                            if (mode != null) {
-                                MainActivity home = (MainActivity) theContext;
-                                home.refreshDefinition();
-                            }
+                .setPositiveButton("Yes", (dialog1, whichButton) -> {
+                    deleteTable(theTable);
+                    if (theTable.equals("colours")) {
+                        refresh(theContext);
+                    } else {
+                        if (mode != null) {
+                            MainActivity home = (MainActivity) theContext;
+                            home.refreshDefinition();
                         }
                     }
                 })
-                .setNegativeButton("No", new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int whichButton) {
-                    }
+                .setNegativeButton("No", (dialog2, whichButton) -> {
                 }).create();
         dialog.show();
     }
@@ -2603,17 +2535,14 @@ public class sqliteDB extends SQLiteOpenHelper {
     {
         MainActivity homeActivity = (MainActivity) yourContext;
 
-        homeActivity.runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                if (!theDialog.isShowing()) {
-                    theDialog.show();
-                }
-
-                progressBar.setProgress(percentage);
-                leftText.setText(percentage + "%");
-                rightText.setText(fraction);
+        homeActivity.runOnUiThread(() -> {
+            if (!theDialog.isShowing()) {
+                theDialog.show();
             }
+
+            progressBar.setProgress(percentage);
+            leftText.setText(percentage + "%");
+            rightText.setText(fraction);
         });
     }
 
@@ -2624,6 +2553,165 @@ public class sqliteDB extends SQLiteOpenHelper {
         String[] allColumns = myCursor.getColumnNames();
         myCursor.close();
         return allColumns;
+    }
+
+    public ArrayList<Column> getTableInformation(boolean allTables) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        ArrayList<Column> tableInfo = new ArrayList<>();
+        HashSet<String> covered = new HashSet<>();
+
+        for (String myTables : (allTables ? getTableNames() : queryTables)) {
+            Cursor theCursor = db.rawQuery("PRAGMA table_info(\"" + myTables + "\")", null);
+            if (theCursor.moveToFirst()) {
+                do {
+                    String theColumn = theCursor.getString(1);
+                    if (!covered.contains(theColumn)) {
+                        covered.add(theColumn);
+                        String theType = theCursor.getString(2);
+
+                        Column myColumn = new Column(theColumn, theType);
+                        tableInfo.add(myColumn);
+                    }
+                } while (theCursor.moveToNext());
+            }
+            theCursor.close();
+        }
+
+        return tableInfo;
+    }
+
+    public void addFunctionalities(Context con, EditText editText, CheckBox autoUnderscores, boolean allTables, View subCustomView) {
+        ArrayList<Column> tableInformation = getTableInformation(allTables);
+        ArrayAdapter<Column> columnAdapter = new ArrayAdapter<>(con, android.R.layout.simple_spinner_item, tableInformation);
+        columnAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+
+        Button b1 = subCustomView.findViewById(R.id.button48);
+        Button b2 = subCustomView.findViewById(R.id.button37);
+        Button b3 = subCustomView.findViewById(R.id.button36);
+        Button b4 = subCustomView.findViewById(R.id.button38);
+        Button b5 = subCustomView.findViewById(R.id.button32);
+        Button b6 = subCustomView.findViewById(R.id.button43);
+        Button b7 = subCustomView.findViewById(R.id.button44);
+        Button b8 = subCustomView.findViewById(R.id.button45);
+        Button b9 = subCustomView.findViewById(R.id.button46);
+        Button b10 = subCustomView.findViewById(R.id.button47);
+        Button b11 = subCustomView.findViewById(R.id.button39);
+        Button b12 = subCustomView.findViewById(R.id.button40);
+        Button b13 = subCustomView.findViewById(R.id.button41);
+        Button b14 = subCustomView.findViewById(R.id.button42);
+
+        EditText e10 = subCustomView.findViewById(R.id.edittext23);
+        EditText e11 = subCustomView.findViewById(R.id.edittext24);
+        EditText e12 = subCustomView.findViewById(R.id.edittext25);
+        EditText e13 = subCustomView.findViewById(R.id.edittext26);
+        EditText e14 = subCustomView.findViewById(R.id.edittext27);
+
+        Spinner s9 = subCustomView.findViewById(R.id.spinner21);
+        Spinner s10 = subCustomView.findViewById(R.id.spinner22);
+        Spinner s11 = subCustomView.findViewById(R.id.spinner23);
+        Spinner s12 = subCustomView.findViewById(R.id.spinner24);
+        Spinner s13 = subCustomView.findViewById(R.id.spinner25);
+        Spinner s14 = subCustomView.findViewById(R.id.spinner26);
+
+        b1.setOnClickListener(v -> {
+            Help help = new Help();
+            if (allTables) {
+                messageBox("Example SQL queries", help.getSqlHelp(), con);
+            }
+            else {
+                messageBox("Example custom queries", help.getCustomHelp(), con);
+            }
+        });
+
+        b2.setOnClickListener(v -> {
+            String originalString = (editText.getText()).toString();
+            boolean space = (originalString.isEmpty() || originalString.charAt(originalString.length() - 1) == ' ');
+            editText.append(space ? "AND" : " AND");
+        });
+
+        b3.setOnClickListener(v -> {
+            String originalString = (editText.getText()).toString();
+            boolean space = (originalString.isEmpty() || originalString.charAt(originalString.length() - 1) == ' ');
+            editText.append(space ? "OR" : " OR");
+        });
+
+        b4.setOnClickListener(v -> {
+            String originalString = (editText.getText()).toString();
+            boolean space = (originalString.isEmpty() || originalString.charAt(originalString.length() - 1) == ' ');
+            editText.append(space ? "NOT" : " NOT");
+        });
+
+        b5.setOnClickListener(v -> {
+            editText.setText("");
+        });
+
+        b6.setOnClickListener(v -> {
+            e10.setText("");
+        });
+
+        b7.setOnClickListener(v -> {
+            e11.setText("");
+        });
+
+        b8.setOnClickListener(v -> {
+            e12.setText("");
+        });
+
+        b9.setOnClickListener(v -> {
+            e13.setText("");
+        });
+
+        b10.setOnClickListener(v -> {
+            e14.setText("");
+        });
+
+        b11.setOnClickListener(v -> {
+            String originalString = (editText.getText()).toString();
+            boolean space = (originalString.isEmpty() || originalString.charAt(originalString.length() - 1) == ' ');
+            Column columnName = tableInformation.get(s9.getSelectedItemPosition());
+            String conditions = ((e10.getText()).toString()).toUpperCase();
+            editText.append((space ? "" : " ") + columnName.getColumn(autoUnderscores.isChecked()) + " " + (s10.getSelectedItem()).toString() + " " + ((columnName.getType()).equalsIgnoreCase("text") ? "'" + conditions + "'" : conditions));
+        });
+
+        b12.setOnClickListener(v -> {
+            String originalString = (editText.getText()).toString();
+            boolean space = (originalString.isEmpty() || originalString.charAt(originalString.length() - 1) == ' ');
+            Column columnName = tableInformation.get(s11.getSelectedItemPosition());
+            String conditions = ((e11.getText()).toString()).toUpperCase();
+            String[] conditionList = conditions.split(",\\s*");
+            String conditionsList = ((columnName.getType()).equalsIgnoreCase("text") ? "('" + String.join("', '", conditionList) + "')" : "(" + String.join(", ", conditionList) + ")");
+            editText.append((space ? "" : " ") + columnName.getColumn(autoUnderscores.isChecked()) + " " + (s12.getSelectedItem()).toString() + " " + conditionsList);
+        });
+
+        b13.setOnClickListener(v -> {
+            String originalString = (editText.getText()).toString();
+            boolean space = (originalString.isEmpty() || originalString.charAt(originalString.length() - 1) == ' ');
+            Column columnName = tableInformation.get(s13.getSelectedItemPosition());
+            String conditions = ((e12.getText()).toString()).toUpperCase();
+            editText.append((space ? "" : " ") + columnName.getColumn(autoUnderscores.isChecked()) + " LIKE " + ((columnName.getType()).equalsIgnoreCase("text") ? "'" + conditions + "'" : conditions));
+        });
+
+        b14.setOnClickListener(v -> {
+            String originalString = (editText.getText()).toString();
+            boolean space = (originalString.isEmpty() || originalString.charAt(originalString.length() - 1) == ' ');
+            Column columnName = tableInformation.get(s14.getSelectedItemPosition());
+            String firstCondition = ((e13.getText()).toString()).toUpperCase();
+            String secondCondition = ((e14.getText()).toString()).toUpperCase();
+            editText.append((space ? "" : " ") + columnName.getColumn(autoUnderscores.isChecked()) + " BETWEEN " + ((columnName.getType()).equalsIgnoreCase("text") ? "'" + firstCondition + "'" : firstCondition) + " AND " + ((columnName.getType()).equalsIgnoreCase("text") ? "'" + secondCondition + "'" : secondCondition));
+        });
+
+        s9.setAdapter(columnAdapter);
+        s11.setAdapter(columnAdapter);
+        s13.setAdapter(columnAdapter);
+        s14.setAdapter(columnAdapter);
+
+        ArrayAdapter<String> comparatorsAdapter = new ArrayAdapter<>(con, android.R.layout.simple_spinner_item, comparators);
+        comparatorsAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        s10.setAdapter(comparatorsAdapter);
+
+        ArrayAdapter<String> comparatorAdapter = new ArrayAdapter<>(con, android.R.layout.simple_spinner_item, comparator);
+        comparatorAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        s12.setAdapter(comparatorAdapter);
     }
 
     public static void main(String[] args) {

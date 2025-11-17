@@ -5,12 +5,12 @@
     <LinearLayout
         android:orientation="vertical"
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="wrap_content">
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Order by:"
-            android:id="@+id/textview67">
+            android:id="@+id/textview62">
         </TextView>
         <LinearLayout
             android:orientation="horizontal"
@@ -49,7 +49,7 @@
                 android:id="@+id/edittext17"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:hint="Use full stops for blanks"
+                android:hint="Use dots for blanks"
                 android:background="@drawable/rectangle">
             </EditText>
         </LinearLayout>
@@ -81,6 +81,7 @@
             android:id="@+id/edittext19"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:hint="Enter your word filters"
             android:background="@drawable/rectangle">
         </EditText>
         <CheckBox
@@ -90,16 +91,10 @@
             android:checked="true"
             android:text="Automatically add underscores before and after column names">
         </CheckBox>
-        <Button
-            android:id="@+id/button36"
+        <FrameLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Examples">
-        </Button>
-        <TextView
-            android:id="@+id/textview62"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content">
-        </TextView>
+            android:id="@+id/framelayout3">
+        </FrameLayout>
     </LinearLayout>
 </ScrollView>
