@@ -10,7 +10,6 @@ import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.app.AlertDialog;
-import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.database.Cursor;
@@ -316,7 +315,11 @@ public class MainActivity extends AppCompatActivity {
                     break;
                 case R.id.button50:
                     // Show a Toast message for the View all tables and columns item
-                    db.alertBox("View all tables and columns", db.getSchema(), MainActivity.this);
+                    db.messageBox("View all tables and columns", db.getSchema(), MainActivity.this);
+                    break;
+                case R.id.button51:
+                    // Show a Toast message for the Letter distribution item
+                    db.letterDistribution(MainActivity.this);
                     break;
             }
 
@@ -353,7 +356,6 @@ public class MainActivity extends AppCompatActivity {
         b6 = findViewById(R.id.button49);
 
         db = new sqliteDB(MainActivity.this, version, null, false);
-        db.initialize();
 
         g1 = findViewById(R.id.gridview1);
         s1 = findViewById(R.id.spinner1);

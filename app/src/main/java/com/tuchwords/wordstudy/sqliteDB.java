@@ -22,9 +22,10 @@ import android.widget.EditText;
 import android.widget.ProgressBar;
 import android.widget.Spinner;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.core.content.ContextCompat;
+import androidx.recyclerview.widget.GridLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.slider.Slider;
 
@@ -101,78 +102,6 @@ public class sqliteDB extends SQLiteOpenHelper {
         db.execSQL(
                 "create table if not exists letters(_letter_ text collate nocase, _frequency_ integer, _points_ integer, _is_vowel_ integer, _is_consonant_ integer, _is_power_ integer)"
         );
-    }
-
-    public void initialize() {
-        SQLiteDatabase db = this.getWritableDatabase();
-        db.execSQL(
-                "DROP TABLE if exists filters"
-        );
-        db.execSQL(
-                "create table if not exists filters(_length_ integer, _query_ text collate nocase, _counter_ integer, _sort_ text collate nocase, _name_ text collate nocase, _serial_ integer primary key)"
-        );
-        db.execSQL(
-                "UPDATE zoom SET _activity_ = \"Grid\" WHERE _activity_ = \"Study\""
-        );
-        ContentValues contentValues = new ContentValues();
-        contentValues.put("_activity_", "List");
-        contentValues.put("_rows_", 100);
-        contentValues.put("_columns_", 0);
-        contentValues.put("_size_", 11);
-        contentValues.put("_spinner_", 20);
-        db.insert("zoom", null, contentValues);
-
-        db.execSQL(
-                "create table if not exists letters(_letter_ text collate nocase, _frequency_ integer, _points_ integer, _is_vowel_ integer, _is_consonant_ integer, _is_power_ integer)"
-        );
-
-        String[] alphabetList = {"A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z"};
-        int[] frequency = {9, 2, 2, 4, 12, 2, 3, 2, 9, 1, 1, 4, 2, 6, 8, 2, 1, 6, 4, 6, 4, 2, 2, 1, 2, 1};
-        int[] point = {1, 3, 3, 2, 1, 4, 2, 4, 1, 8, 5, 1, 3, 1, 1, 3, 10, 1, 1, 1, 1, 4, 4, 8, 4, 10};
-        boolean[] vowel = {true, false, false, false, true, false, false, false, true, false, false, false, false, false, true, false, false, false, false, false, true, false, false, false, false, false};
-        boolean[] consonant = {false, true, true, true, false, true, true, true, false, true, true, true, true, true, false, true, true, true, true, true, false, true, true, true, true, true};
-        boolean[] power = {false, false, false, false, false, false, false, false, false, true, false, false, false, false, false, false, true, false, false, false, false, false, false, true, false, true};
-
-        for (int alphabetPosition = 0; alphabetPosition < alphabetList.length; alphabetPosition++) {
-            ContentValues letterValues = new ContentValues();
-            letterValues.put("_letter_", alphabetList[alphabetPosition]);
-            letterValues.put("_frequency_", frequency[alphabetPosition]);
-            letterValues.put("_points_", point[alphabetPosition]);
-            letterValues.put("_is_vowel_", vowel[alphabetPosition]);
-            letterValues.put("_is_consonant_", consonant[alphabetPosition]);
-            letterValues.put("_is_power_", power[alphabetPosition]);
-            db.insert("letters", null, letterValues);
-        }
-
-        db.execSQL(
-                "DELETE FROM prefixes"
-        );
-
-        db.execSQL(
-                "DELETE FROM suffixes"
-        );
-
-        ArrayList<Pair<String, String>> myPrefixes = new ArrayList<>();
-        myPrefixes.add(new Pair<>("", ""));
-
-        for (Pair<String, String> columnItem : myPrefixes) {
-            ContentValues prefixValues = new ContentValues();
-            prefixValues.put("_prefix_", columnItem.first);
-            prefixValues.put("_before_", columnItem.second);
-            db.insert("prefixes", null, prefixValues);
-        }
-
-        ArrayList<Pair<String, String>> mySuffixes = new ArrayList<>();
-        mySuffixes.add(new Pair<>("", ""));
-        mySuffixes.add(new Pair<>("-", "E"));
-        mySuffixes.add(new Pair<>("-I", "Y"));
-
-        for (Pair<String, String> columnItem : mySuffixes) {
-            ContentValues suffixValues = new ContentValues();
-            suffixValues.put("_suffix_", columnItem.first);
-            suffixValues.put("_after_", columnItem.second);
-            db.insert("suffixes", null, suffixValues);
-        }
     }
 
     @Override
@@ -746,7 +675,7 @@ public class sqliteDB extends SQLiteOpenHelper {
             {
                 columnArray.add(columnName.substring(1, columnName.length() - 1));
             }
-            schema.append(schema.length() == 0 ? tableName + "\n" + columnArray : "\n" + tableName + "\n" + columnArray);
+            schema.append(schema.length() == 0 ? "<b><u>Table '" + tableName + "'</u></b>:<br>" + columnArray : "<br><b><u>Table '" + tableName + "'</u></b>:<br>" + columnArray);
         }
         return new String(schema);
     }
@@ -1105,6 +1034,15 @@ public class sqliteDB extends SQLiteOpenHelper {
                     letterValues.put("_is_power_", power[alphabetPosition]);
                     db.insert("letters", null, letterValues);
                 }
+
+                ContentValues alphabetValues = new ContentValues();
+                alphabetValues.put("_letter_", "?");
+                alphabetValues.put("_frequency_", 2);
+                alphabetValues.put("_points_", 0);
+                alphabetValues.put("_is_vowel_", 0);
+                alphabetValues.put("_is_consonant_", 0);
+                alphabetValues.put("_is_power_", 0);
+                db.insert("letters", null, alphabetValues);
 
                 uiThreadRefresh(myContext, true);
                 uiThreadBox("Prepare database", "Database preparation complete.", myContext);
@@ -1808,32 +1746,34 @@ public class sqliteDB extends SQLiteOpenHelper {
         ArrayList<String> suffixList = new ArrayList<>();
 
         SQLiteDatabase db = this.getReadableDatabase();
-        Cursor cursor1 = db.rawQuery("SELECT _prefix_ FROM prefixes ORDER BY _prefix_", null);
+        Cursor cursor1 = db.rawQuery("SELECT _prefix_, _before_ FROM prefixes ORDER BY _prefix_", null);
 
         if (cursor1.moveToFirst()) {
             do {
                 String thePrefix = cursor1.getString(0);
-                prefixList.add(thePrefix.isEmpty() ? "(None)" : cursor1.getString(0));
+                String theBefore = cursor1.getString(1);
+                prefixList.add((thePrefix.isEmpty() ? "(None)" : cursor1.getString(0)) + " before " + (theBefore.isEmpty() ? "(All)" : String.join(", ", Arrays.asList((cursor1.getString(1)).split("\\s*")))));
             } while (cursor1.moveToNext());
         }
 
         cursor1.close();
 
-        Cursor cursor2 = db.rawQuery("SELECT _suffix_ FROM suffixes ORDER BY _suffix_", null);
+        Cursor cursor2 = db.rawQuery("SELECT _suffix_, _after_ FROM suffixes ORDER BY _suffix_", null);
 
         if (cursor2.moveToFirst()) {
             do {
                 String theSuffix = cursor2.getString(0);
-                suffixList.add(theSuffix.isEmpty() ? "(None)" : cursor2.getString(0));
+                String theAfter = cursor2.getString(1);
+                suffixList.add((theSuffix.isEmpty() ? "(None)" : cursor2.getString(0)) + " after " + (theAfter.isEmpty() ? "(All)" : String.join(", ", Arrays.asList((cursor2.getString(1)).split("\\s*")))));
             } while (cursor2.moveToNext());
         }
 
         cursor2.close();
 
-        String prefixes = prefixList.toString();
-        String suffixes = suffixList.toString();
+        String prefixes = String.join("<br>", prefixList);
+        String suffixes = String.join("<br>", suffixList);
 
-        messageBox("View all prefixes and suffixes", "<b>Prefixes:</b> " + prefixes.substring(1, prefixes.length() - 1) + "<br><b>Suffixes:</b> " + suffixes.substring(1, suffixes.length() - 1), theContext);
+        messageBox("View all prefixes and suffixes", "<b>Prefixes:</b><br>" + prefixes + "<br><br><b>Suffixes:</b><br>" + suffixes, theContext);
     }
 
     public void addSuffix(Context theContext, boolean suffix, String mode)
@@ -2664,6 +2604,49 @@ public class sqliteDB extends SQLiteOpenHelper {
         ArrayAdapter<String> comparatorAdapter = new ArrayAdapter<>(con, android.R.layout.simple_spinner_item, comparator);
         comparatorAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         s12.setAdapter(comparatorAdapter);
+    }
+
+    public void tileDistribution(RecyclerView recyclerView, Context theParentContext) {
+        ArrayList<String> letterList = new ArrayList<>();
+        String[] tileList = getAllColumns("letters");
+
+        for (String tile : tileList) {
+            letterList.add("<b>" + tile.substring(1, tile.length() - 1) + "</b>");
+        }
+
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor letterCursor = db.rawQuery("SELECT * FROM letters", null);
+
+        if (letterCursor.moveToFirst()) {
+            do {
+                for (int tileCursor = 0; tileCursor < tileList.length; tileCursor++) {
+                    letterList.add(letterCursor.getString(tileCursor));
+                }
+            } while (letterCursor.moveToNext());
+        }
+
+        letterCursor.close();
+
+        RecyclerView.LayoutManager layoutManager = new GridLayoutManager(theParentContext, tileList.length);
+        recyclerView.setLayoutManager(layoutManager);
+
+        GridAdapter gridAdapter = new GridAdapter(theParentContext, R.layout.colour, letterList);
+        recyclerView.setAdapter(gridAdapter);
+    }
+
+    public void letterDistribution(Context parentContext) {
+        LayoutInflater inflater = LayoutInflater.from(parentContext);
+        final View yourCustomView = inflater.inflate(R.layout.grid, null);
+
+        RecyclerView g1 = yourCustomView.findViewById(R.id.gridview2);
+        tileDistribution(g1, parentContext);
+
+        AlertDialog dialog = new AlertDialog.Builder(parentContext)
+                .setTitle("Letter distribution")
+                .setView(yourCustomView)
+                .setPositiveButton("OK", (dialog1, whichButton) -> {
+                }).create();
+        dialog.show();
     }
 
     public static void main(String[] args) {
