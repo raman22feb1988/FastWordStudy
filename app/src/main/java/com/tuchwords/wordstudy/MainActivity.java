@@ -10,6 +10,7 @@ import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.app.AlertDialog;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.database.Cursor;
@@ -74,6 +75,7 @@ public class MainActivity extends AppCompatActivity {
     Button b3;
     Button b4;
     Button b5;
+    Button b6;
 
     RecyclerView g1;
     Spinner s1;
@@ -312,6 +314,10 @@ public class MainActivity extends AppCompatActivity {
                     // Show a Toast message for the Search for subanagrams item
                     getAllSubanagrams(true);
                     break;
+                case R.id.button50:
+                    // Show a Toast message for the View all tables and columns item
+                    db.alertBox("View all tables and columns", db.getSchema(), MainActivity.this);
+                    break;
             }
 
             // Close the drawer after selection
@@ -344,8 +350,10 @@ public class MainActivity extends AppCompatActivity {
         b3 = findViewById(R.id.button3);
         b4 = findViewById(R.id.button12);
         b5 = findViewById(R.id.button5);
+        b6 = findViewById(R.id.button49);
 
         db = new sqliteDB(MainActivity.this, version, null, false);
+        db.initialize();
 
         g1 = findViewById(R.id.gridview1);
         s1 = findViewById(R.id.spinner1);
@@ -354,7 +362,7 @@ public class MainActivity extends AppCompatActivity {
             promptDictionary(false);
         }
 
-        ArrayList<Integer> dimensions = db.getZoom("Study");
+        ArrayList<Integer> dimensions = db.getZoom("Grid");
         rows = dimensions.get(0);
         columns = dimensions.get(1);
         font = dimensions.get(2);
@@ -377,7 +385,7 @@ public class MainActivity extends AppCompatActivity {
 
         b3.setOnClickListener(view -> getWordLength());
 
-        b4.setOnClickListener(v -> {
+        b4.setOnClickListener(view -> {
             closeCursor();
             finish();
         });
@@ -759,8 +767,8 @@ public class MainActivity extends AppCompatActivity {
     {
         b1.setEnabled(true);
         b2.setEnabled(true);
-        b3.setEnabled(true);
         b5.setEnabled(true);
+        b6.setEnabled(true);
 
         t1.setText("Page " + (counter + 1) + " out of " + (((words - 1) / (rows * columns)) + 1) + " (" + words + (words == 1 ? " word)" : " words)"));
         if (ultimate == null) {
@@ -826,6 +834,7 @@ public class MainActivity extends AppCompatActivity {
         b1.setEnabled(true);
         b2.setEnabled(true);
         b5.setEnabled(true);
+        b6.setEnabled(true);
 
         t1.setText("Page " + (counter + 1) + " out of " + (((words - 1) / (rows * columns)) + 1) + " (" + words + (words == 1 ? " word)" : " words)"));
         if (ultimate == null) {
@@ -933,7 +942,7 @@ public class MainActivity extends AppCompatActivity {
 
     public void refresh()
     {
-        ArrayList<Integer> dimensions = db.getZoom("Study");
+        ArrayList<Integer> dimensions = db.getZoom("Grid");
         rows = dimensions.get(0);
         columns = dimensions.get(1);
         font = dimensions.get(2);
@@ -1083,7 +1092,7 @@ public class MainActivity extends AppCompatActivity {
                     }
                     else
                     {
-                        db.setZoom("Study", new_rows, new_columns, new_font, new_combo);
+                        db.setZoom("Grid", new_rows, new_columns, new_font, new_combo);
                         refresh();
                     }
                 }).create();

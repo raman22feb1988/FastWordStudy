@@ -84,7 +84,7 @@ public class sqliteDB extends SQLiteOpenHelper {
                 "create table if not exists words(_word_ text collate nocase primary key, _length_ integer, _alphagram_ text collate nocase, _definition_ text collate nocase, _probability_ real, _back_ text collate nocase, _front_ text collate nocase, _tag_ text collate nocase, _page_ integer, _answers_ integer, _csw24_ integer, _csw21_ integer, _csw19_ integer, _csw15_ integer, _csw12_ integer, _csw07_ integer, _nwl23_ integer, _nwl20_ integer, _nwl18_ integer, _twl06_ integer, _nswl23_ integer, _nswl20_ integer, _nswl18_ integer, _wims_ integer, _cel21_ integer, _serial_ integer, _position_ integer, _timestamp_ text collate nocase, _reverse_ text collate nocase, _zetagram_ text collate nocase, _no_a_ integer, _no_b_ integer, _no_c_ integer, _no_d_ integer, _no_e_ integer, _no_f_ integer, _no_g_ integer, _no_h_ integer, _no_i_ integer, _no_j_ integer, _no_k_ integer, _no_l_ integer, _no_m_ integer, _no_n_ integer, _no_o_ integer, _no_p_ integer, _no_q_ integer, _no_r_ integer, _no_s_ integer, _no_t_ integer, _no_u_ integer, _no_v_ integer, _no_w_ integer, _no_x_ integer, _no_y_ integer, _no_z_ integer, _vowels_ integer, _consonants_ integer, _points_ integer, _power_ integer)"
         );
         db.execSQL(
-                "create table if not exists scores(_length_ integer, _query_ text collate nocase, _counter_ integer, _sort_ text collate nocase)"
+                "create table if not exists filters(_length_ integer, _query_ text collate nocase, _counter_ integer, _sort_ text collate nocase, _name_ text collate nocase, _serial_ integer primary key)"
         );
         db.execSQL(
                 "create table if not exists colours(_tag_ text collate nocase, _colour_ text collate nocase)"
@@ -98,6 +98,81 @@ public class sqliteDB extends SQLiteOpenHelper {
         db.execSQL(
                 "create table if not exists suffixes(_suffix_ text collate nocase, _after_ text collate nocase)"
         );
+        db.execSQL(
+                "create table if not exists letters(_letter_ text collate nocase, _frequency_ integer, _points_ integer, _is_vowel_ integer, _is_consonant_ integer, _is_power_ integer)"
+        );
+    }
+
+    public void initialize() {
+        SQLiteDatabase db = this.getWritableDatabase();
+        db.execSQL(
+                "DROP TABLE if exists filters"
+        );
+        db.execSQL(
+                "create table if not exists filters(_length_ integer, _query_ text collate nocase, _counter_ integer, _sort_ text collate nocase, _name_ text collate nocase, _serial_ integer primary key)"
+        );
+        db.execSQL(
+                "UPDATE zoom SET _activity_ = \"Grid\" WHERE _activity_ = \"Study\""
+        );
+        ContentValues contentValues = new ContentValues();
+        contentValues.put("_activity_", "List");
+        contentValues.put("_rows_", 100);
+        contentValues.put("_columns_", 0);
+        contentValues.put("_size_", 11);
+        contentValues.put("_spinner_", 20);
+        db.insert("zoom", null, contentValues);
+
+        db.execSQL(
+                "create table if not exists letters(_letter_ text collate nocase, _frequency_ integer, _points_ integer, _is_vowel_ integer, _is_consonant_ integer, _is_power_ integer)"
+        );
+
+        String[] alphabetList = {"A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z"};
+        int[] frequency = {9, 2, 2, 4, 12, 2, 3, 2, 9, 1, 1, 4, 2, 6, 8, 2, 1, 6, 4, 6, 4, 2, 2, 1, 2, 1};
+        int[] point = {1, 3, 3, 2, 1, 4, 2, 4, 1, 8, 5, 1, 3, 1, 1, 3, 10, 1, 1, 1, 1, 4, 4, 8, 4, 10};
+        boolean[] vowel = {true, false, false, false, true, false, false, false, true, false, false, false, false, false, true, false, false, false, false, false, true, false, false, false, false, false};
+        boolean[] consonant = {false, true, true, true, false, true, true, true, false, true, true, true, true, true, false, true, true, true, true, true, false, true, true, true, true, true};
+        boolean[] power = {false, false, false, false, false, false, false, false, false, true, false, false, false, false, false, false, true, false, false, false, false, false, false, true, false, true};
+
+        for (int alphabetPosition = 0; alphabetPosition < alphabetList.length; alphabetPosition++) {
+            ContentValues letterValues = new ContentValues();
+            letterValues.put("_letter_", alphabetList[alphabetPosition]);
+            letterValues.put("_frequency_", frequency[alphabetPosition]);
+            letterValues.put("_points_", point[alphabetPosition]);
+            letterValues.put("_is_vowel_", vowel[alphabetPosition]);
+            letterValues.put("_is_consonant_", consonant[alphabetPosition]);
+            letterValues.put("_is_power_", power[alphabetPosition]);
+            db.insert("letters", null, letterValues);
+        }
+
+        db.execSQL(
+                "DELETE FROM prefixes"
+        );
+
+        db.execSQL(
+                "DELETE FROM suffixes"
+        );
+
+        ArrayList<Pair<String, String>> myPrefixes = new ArrayList<>();
+        myPrefixes.add(new Pair<>("", ""));
+
+        for (Pair<String, String> columnItem : myPrefixes) {
+            ContentValues prefixValues = new ContentValues();
+            prefixValues.put("_prefix_", columnItem.first);
+            prefixValues.put("_before_", columnItem.second);
+            db.insert("prefixes", null, prefixValues);
+        }
+
+        ArrayList<Pair<String, String>> mySuffixes = new ArrayList<>();
+        mySuffixes.add(new Pair<>("", ""));
+        mySuffixes.add(new Pair<>("-", "E"));
+        mySuffixes.add(new Pair<>("-I", "Y"));
+
+        for (Pair<String, String> columnItem : mySuffixes) {
+            ContentValues suffixValues = new ContentValues();
+            suffixValues.put("_suffix_", columnItem.first);
+            suffixValues.put("_after_", columnItem.second);
+            db.insert("suffixes", null, suffixValues);
+        }
     }
 
     @Override
@@ -130,6 +205,7 @@ public class sqliteDB extends SQLiteOpenHelper {
         dropStatements.add("DROP TABLE if exists zoom");
         dropStatements.add("DROP TABLE if exists prefixes");
         dropStatements.add("DROP TABLE if exists suffixes");
+        dropStatements.add("DROP TABLE if exists letters");
 
         MainActivity myActivity = (MainActivity) activity;
         myActivity.reload(dropStatements, DATABASE_VERSION, true);
@@ -657,6 +733,24 @@ public class sqliteDB extends SQLiteOpenHelper {
         return tableList;
     }
 
+    public String getSchema()
+    {
+        StringBuilder schema = new StringBuilder();
+        ArrayList<String> tablesList = getTableNames();
+
+        for (String tableName : tablesList)
+        {
+            String[] columnList = getAllColumns(tableName);
+            ArrayList<String> columnArray = new ArrayList<>();
+            for (String columnName : columnList)
+            {
+                columnArray.add(columnName.substring(1, columnName.length() - 1));
+            }
+            schema.append(schema.length() == 0 ? tableName + "\n" + columnArray : "\n" + tableName + "\n" + columnArray);
+        }
+        return new String(schema);
+    }
+
     public void insertScores(int letters, int counter, String sqlQuery, String orderBy)
     {
         SQLiteDatabase db = this.getWritableDatabase();
@@ -706,6 +800,13 @@ public class sqliteDB extends SQLiteOpenHelper {
 
     public void insertWord(Context myContext, HashMap<String, String> dictionary, HashMap<String, Integer> anagramsList, HashMap<String, String> lexicon)
     {
+        String[] alphabetList = {"A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z"};
+        int[] frequency = {9, 2, 2, 4, 12, 2, 3, 2, 9, 1, 1, 4, 2, 6, 8, 2, 1, 6, 4, 6, 4, 2, 2, 1, 2, 1};
+        int[] point = {1, 3, 3, 2, 1, 4, 2, 4, 1, 8, 5, 1, 3, 1, 1, 3, 10, 1, 1, 1, 1, 4, 4, 8, 4, 10};
+        boolean[] vowel = {true, false, false, false, true, false, false, false, true, false, false, false, false, false, true, false, false, false, false, false, true, false, false, false, false, false};
+        boolean[] consonant = {false, true, true, true, false, true, true, true, false, true, true, true, true, true, false, true, true, true, true, true, false, true, true, true, true, true};
+        boolean[] power = {false, false, false, false, false, false, false, false, false, true, false, false, false, false, false, false, true, false, false, false, false, false, false, true, false, true};
+
         LayoutInflater myInflater = LayoutInflater.from(myContext);
         final View myCustomView = myInflater.inflate(R.layout.progressbar, null);
 
@@ -799,10 +900,6 @@ public class sqliteDB extends SQLiteOpenHelper {
                     contentValues.put("_reverse_", ((new StringBuilder(word)).reverse()).toString());
                     contentValues.put("_zetagram_", ((new StringBuilder(anagram)).reverse()).toString());
 
-                    int[] point = {1, 3, 3, 2, 1, 4, 2, 4, 1, 8, 5, 1, 3, 1, 1, 3, 10, 1, 1, 1, 1, 4, 4, 8, 4, 10};
-                    boolean[] vowel = {true, false, false, false, true, false, false, false, true, false, false, false, false, false, true, false, false, false, false, false, true, false, false, false, false, false};
-                    boolean[] power = {false, false, false, false, false, false, false, false, false, true, false, false, false, false, false, false, true, false, false, false, false, false, false, true, false, true};
-
                     int vowels = 0;
                     int consonants = 0;
                     int points = 0;
@@ -817,7 +914,9 @@ public class sqliteDB extends SQLiteOpenHelper {
 
                         if (vowel[positionInAlphabet]) {
                             vowels++;
-                        } else {
+                        }
+
+                        if (consonant[positionInAlphabet]) {
                             consonants++;
                         }
 
@@ -957,64 +1056,23 @@ public class sqliteDB extends SQLiteOpenHelper {
                 }
 
                 ContentValues contentValues = new ContentValues();
-                contentValues.put("_activity_", "Study");
+                contentValues.put("_activity_", "Grid");
                 contentValues.put("_rows_", 25);
                 contentValues.put("_columns_", 4);
                 contentValues.put("_size_", 11);
                 contentValues.put("_spinner_", 20);
                 db.insert("zoom", null, contentValues);
 
+                contentValues = new ContentValues();
+                contentValues.put("_activity_", "List");
+                contentValues.put("_rows_", 100);
+                contentValues.put("_columns_", 0);
+                contentValues.put("_size_", 11);
+                contentValues.put("_spinner_", 20);
+                db.insert("zoom", null, contentValues);
+
                 ArrayList<Pair<String, String>> myPrefixes = new ArrayList<>();
-                myPrefixes.add(new Pair<>("AB", ""));
-                myPrefixes.add(new Pair<>("UN", ""));
-                myPrefixes.add(new Pair<>("DE", ""));
-                myPrefixes.add(new Pair<>("IN", ""));
-                myPrefixes.add(new Pair<>("RE", ""));
-                myPrefixes.add(new Pair<>("IM", ""));
-                myPrefixes.add(new Pair<>("IL", "L"));
-                myPrefixes.add(new Pair<>("IR", "R"));
-                myPrefixes.add(new Pair<>("DIS", ""));
-                myPrefixes.add(new Pair<>("MIS", ""));
-                myPrefixes.add(new Pair<>("NON", ""));
-                myPrefixes.add(new Pair<>("BI", ""));
-                myPrefixes.add(new Pair<>("DI", ""));
-                myPrefixes.add(new Pair<>("TRI", ""));
-                myPrefixes.add(new Pair<>("BE", ""));
-                myPrefixes.add(new Pair<>("OUT", ""));
-                myPrefixes.add(new Pair<>("OVER", ""));
-                myPrefixes.add(new Pair<>("SUB", ""));
-                myPrefixes.add(new Pair<>("CO", ""));
-                myPrefixes.add(new Pair<>("UP", ""));
-                myPrefixes.add(new Pair<>("DOWN", ""));
-                myPrefixes.add(new Pair<>("OFF", ""));
-                myPrefixes.add(new Pair<>("ANTI", ""));
-                myPrefixes.add(new Pair<>("SEMI", ""));
-                myPrefixes.add(new Pair<>("TRANS", ""));
-                myPrefixes.add(new Pair<>("GRAND", ""));
-                myPrefixes.add(new Pair<>("MULTI", ""));
-                myPrefixes.add(new Pair<>("INTER", ""));
-                myPrefixes.add(new Pair<>("INTRA", ""));
-                myPrefixes.add(new Pair<>("SUPER", ""));
-                myPrefixes.add(new Pair<>("UNDER", ""));
-                myPrefixes.add(new Pair<>("UNI", ""));
-                myPrefixes.add(new Pair<>("SOME", ""));
-                myPrefixes.add(new Pair<>("BACK", ""));
-                myPrefixes.add(new Pair<>("PRE", ""));
-                myPrefixes.add(new Pair<>("MID", ""));
-                myPrefixes.add(new Pair<>("MONO", ""));
-                myPrefixes.add(new Pair<>("MINI", ""));
-                myPrefixes.add(new Pair<>("POLY", ""));
-                myPrefixes.add(new Pair<>("POST", ""));
-                myPrefixes.add(new Pair<>("FORE", ""));
-                myPrefixes.add(new Pair<>("SIDE", ""));
-                myPrefixes.add(new Pair<>("AUTO", ""));
-                myPrefixes.add(new Pair<>("ORTHO", ""));
-                myPrefixes.add(new Pair<>("PARA", ""));
-                myPrefixes.add(new Pair<>("META", ""));
-                myPrefixes.add(new Pair<>("ISO", ""));
-                myPrefixes.add(new Pair<>("HOMO", ""));
-                myPrefixes.add(new Pair<>("HOMEO", ""));
-                myPrefixes.add(new Pair<>("HETERO", ""));
+                myPrefixes.add(new Pair<>("", ""));
 
                 for (Pair<String, String> columnItem : myPrefixes) {
                     ContentValues prefixValues = new ContentValues();
@@ -1024,128 +1082,9 @@ public class sqliteDB extends SQLiteOpenHelper {
                 }
 
                 ArrayList<Pair<String, String>> mySuffixes = new ArrayList<>();
-                mySuffixes.add(new Pair<>("S", ""));
-                mySuffixes.add(new Pair<>("ES", ""));
-                mySuffixes.add(new Pair<>("-IES", "Y"));
-                mySuffixes.add(new Pair<>("+IES", ""));
-                mySuffixes.add(new Pair<>("ED", ""));
-                mySuffixes.add(new Pair<>("-ED", "E"));
-                mySuffixes.add(new Pair<>("-IED", "Y"));
-                mySuffixes.add(new Pair<>("+IED", ""));
-                mySuffixes.add(new Pair<>("+ED", ""));
-                mySuffixes.add(new Pair<>("ING", ""));
-                mySuffixes.add(new Pair<>("-ING", "E"));
-                mySuffixes.add(new Pair<>("+ING", ""));
-                mySuffixes.add(new Pair<>("ION", ""));
-                mySuffixes.add(new Pair<>("-ION", "EY"));
-                mySuffixes.add(new Pair<>("+ION", ""));
-                mySuffixes.add(new Pair<>("Y", ""));
-                mySuffixes.add(new Pair<>("-Y", "E"));
-                mySuffixes.add(new Pair<>("+Y", ""));
-                mySuffixes.add(new Pair<>("LY", ""));
-                mySuffixes.add(new Pair<>("-ILY", "Y"));
-                mySuffixes.add(new Pair<>("ER", ""));
-                mySuffixes.add(new Pair<>("-ER", "E"));
-                mySuffixes.add(new Pair<>("+ER", ""));
-                mySuffixes.add(new Pair<>("EST", ""));
-                mySuffixes.add(new Pair<>("-EST", "E"));
-                mySuffixes.add(new Pair<>("+EST", ""));
-                mySuffixes.add(new Pair<>("IER", ""));
-                mySuffixes.add(new Pair<>("-IER", "EY"));
-                mySuffixes.add(new Pair<>("+IER", ""));
-                mySuffixes.add(new Pair<>("IEST", ""));
-                mySuffixes.add(new Pair<>("-IEST", "EY"));
-                mySuffixes.add(new Pair<>("+IEST", ""));
-                mySuffixes.add(new Pair<>("FUL", ""));
-                mySuffixes.add(new Pair<>("-FUL", ""));
-                mySuffixes.add(new Pair<>("-IFUL", "Y"));
-                mySuffixes.add(new Pair<>("FULLY", ""));
-                mySuffixes.add(new Pair<>("-FULLY", ""));
-                mySuffixes.add(new Pair<>("-IFULLY", "Y"));
-                mySuffixes.add(new Pair<>("LESS", ""));
-                mySuffixes.add(new Pair<>("-ILESS", "Y"));
-                mySuffixes.add(new Pair<>("NESS", ""));
-                mySuffixes.add(new Pair<>("-INESS", "Y"));
-                mySuffixes.add(new Pair<>("ABLE", ""));
-                mySuffixes.add(new Pair<>("-ABLE", "E"));
-                mySuffixes.add(new Pair<>("-IABLE", "Y"));
-                mySuffixes.add(new Pair<>("ABLY", ""));
-                mySuffixes.add(new Pair<>("-ABLY", "E"));
-                mySuffixes.add(new Pair<>("-IABLY", "Y"));
-                mySuffixes.add(new Pair<>("LIKE", ""));
-                mySuffixes.add(new Pair<>("AGE", ""));
-                mySuffixes.add(new Pair<>("LET", ""));
-                mySuffixes.add(new Pair<>("ISH", ""));
-                mySuffixes.add(new Pair<>("-ISH", "E"));
-                mySuffixes.add(new Pair<>("+ISH", ""));
-                mySuffixes.add(new Pair<>("IST", ""));
-                mySuffixes.add(new Pair<>("-IST", "EO"));
-                mySuffixes.add(new Pair<>("+IST", ""));
-                mySuffixes.add(new Pair<>("ISM", ""));
-                mySuffixes.add(new Pair<>("-ISM", "EO"));
-                mySuffixes.add(new Pair<>("+ISM", ""));
-                mySuffixes.add(new Pair<>("DOM", ""));
-                mySuffixes.add(new Pair<>("SHIP", ""));
-                mySuffixes.add(new Pair<>("HOOD", ""));
-                mySuffixes.add(new Pair<>("UP", ""));
-                mySuffixes.add(new Pair<>("DOWN", ""));
-                mySuffixes.add(new Pair<>("OFF", ""));
-                mySuffixes.add(new Pair<>("WARD", ""));
-                mySuffixes.add(new Pair<>("SOME", ""));
-                mySuffixes.add(new Pair<>("MAN", ""));
-                mySuffixes.add(new Pair<>("WOMAN", ""));
-                mySuffixes.add(new Pair<>("MEN", ""));
-                mySuffixes.add(new Pair<>("WOMEN", ""));
-                mySuffixes.add(new Pair<>("MENT", ""));
-                mySuffixes.add(new Pair<>("-MENT", "E"));
-                mySuffixes.add(new Pair<>("-IMENT", "Y"));
-                mySuffixes.add(new Pair<>("BACK", ""));
-                mySuffixes.add(new Pair<>("FOLD", ""));
-                mySuffixes.add(new Pair<>("OUT", ""));
-                mySuffixes.add(new Pair<>("OVER", ""));
-                mySuffixes.add(new Pair<>("UNDER", ""));
-                mySuffixes.add(new Pair<>("BOY", ""));
-                mySuffixes.add(new Pair<>("SIDE", ""));
-                mySuffixes.add(new Pair<>("WISE", ""));
-                mySuffixes.add(new Pair<>("AL", ""));
-                mySuffixes.add(new Pair<>("UAL", ""));
-                mySuffixes.add(new Pair<>("+AL", ""));
-                mySuffixes.add(new Pair<>("-AL", "AE"));
-                mySuffixes.add(new Pair<>("-IAL", "Y"));
-                mySuffixes.add(new Pair<>("ALLY", ""));
-                mySuffixes.add(new Pair<>("UALLY", ""));
-                mySuffixes.add(new Pair<>("+ALLY", ""));
-                mySuffixes.add(new Pair<>("-ALLY", "AE"));
-                mySuffixes.add(new Pair<>("-IALLY", "Y"));
-                mySuffixes.add(new Pair<>("IC", ""));
-                mySuffixes.add(new Pair<>("+IC", ""));
-                mySuffixes.add(new Pair<>("-IC", "EY"));
-                mySuffixes.add(new Pair<>("ICAL", ""));
-                mySuffixes.add(new Pair<>("+ICAL", ""));
-                mySuffixes.add(new Pair<>("-ICAL", "EY"));
-                mySuffixes.add(new Pair<>("ICALLY", ""));
-                mySuffixes.add(new Pair<>("+ICALLY", ""));
-                mySuffixes.add(new Pair<>("-ICALLY", "EY"));
-                mySuffixes.add(new Pair<>("+IFUL", ""));
-                mySuffixes.add(new Pair<>("+IFULLY", ""));
-                mySuffixes.add(new Pair<>("+ILESS", ""));
-                mySuffixes.add(new Pair<>("+INESS", ""));
-                mySuffixes.add(new Pair<>("+IABLE", ""));
-                mySuffixes.add(new Pair<>("+IABLY", ""));
-                mySuffixes.add(new Pair<>("+IMENT", ""));
-                mySuffixes.add(new Pair<>("+IAL", ""));
-                mySuffixes.add(new Pair<>("OR", ""));
-                mySuffixes.add(new Pair<>("+OR", ""));
-                mySuffixes.add(new Pair<>("-OR", "E"));
-                mySuffixes.add(new Pair<>("IOR", ""));
-                mySuffixes.add(new Pair<>("+IOR", ""));
-                mySuffixes.add(new Pair<>("-IOR", "EY"));
-                mySuffixes.add(new Pair<>("OUR", ""));
-                mySuffixes.add(new Pair<>("+OUR", ""));
-                mySuffixes.add(new Pair<>("-OUR", "E"));
-                mySuffixes.add(new Pair<>("IOUR", ""));
-                mySuffixes.add(new Pair<>("+IOUR", ""));
-                mySuffixes.add(new Pair<>("-IOUR", "EY"));
+                mySuffixes.add(new Pair<>("", ""));
+                mySuffixes.add(new Pair<>("-", "E"));
+                mySuffixes.add(new Pair<>("-I", "Y"));
 
                 for (Pair<String, String> columnItem : mySuffixes) {
                     ContentValues suffixValues = new ContentValues();
@@ -1155,6 +1094,18 @@ public class sqliteDB extends SQLiteOpenHelper {
                 }
 
                 db.execSQL("UPDATE words SET _serial_ = ((_page_ - 1) * 100) + _position_");
+
+                for (int alphabetPosition = 0; alphabetPosition < alphabetList.length; alphabetPosition++) {
+                    ContentValues letterValues = new ContentValues();
+                    letterValues.put("_letter_", alphabetList[alphabetPosition]);
+                    letterValues.put("_frequency_", frequency[alphabetPosition]);
+                    letterValues.put("_points_", point[alphabetPosition]);
+                    letterValues.put("_is_vowel_", vowel[alphabetPosition]);
+                    letterValues.put("_is_consonant_", consonant[alphabetPosition]);
+                    letterValues.put("_is_power_", power[alphabetPosition]);
+                    db.insert("letters", null, letterValues);
+                }
+
                 uiThreadRefresh(myContext, true);
                 uiThreadBox("Prepare database", "Database preparation complete.", myContext);
                 db.setTransactionSuccessful();
@@ -1483,7 +1434,8 @@ public class sqliteDB extends SQLiteOpenHelper {
         }
 
         argumentQuery = (argumentQuery.replace("_time_stamp", "_timestamp_"))
-                .replace("ze_tag_ram", "_zetagram_");
+                .replace("ze_tag_ram", "_zetagram_")
+                .replace("is__power_", "_is_power_");
 
         for (String tableName : tablesList)
         {
