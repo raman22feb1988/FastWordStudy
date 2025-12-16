@@ -2606,12 +2606,25 @@ public class sqliteDB extends SQLiteOpenHelper {
         s12.setAdapter(comparatorAdapter);
     }
 
+    public String myFormat(String theJoin) {
+        String[] mySplit = theJoin.split("_");
+        ArrayList<String> myJoin = new ArrayList<>();
+
+        for (String theSplit : mySplit) {
+            if (!theSplit.isEmpty()) {
+                myJoin.add(theSplit.substring(0, 1).toUpperCase() + theSplit.substring(1).toLowerCase());
+            }
+        }
+
+        return String.join(" ", myJoin);
+    }
+
     public void tileDistribution(RecyclerView recyclerView, Context theParentContext) {
         ArrayList<String> letterList = new ArrayList<>();
         String[] tileList = getAllColumns("letters");
 
         for (String tile : tileList) {
-            letterList.add("<b>" + tile.substring(1, tile.length() - 1) + "</b>");
+            letterList.add("<b>" + myFormat(tile) + "</b>");
         }
 
         SQLiteDatabase db = this.getReadableDatabase();
@@ -2630,7 +2643,7 @@ public class sqliteDB extends SQLiteOpenHelper {
         RecyclerView.LayoutManager layoutManager = new GridLayoutManager(theParentContext, tileList.length);
         recyclerView.setLayoutManager(layoutManager);
 
-        GridAdapter gridAdapter = new GridAdapter(theParentContext, R.layout.colour, letterList);
+        GridAdapter gridAdapter = new GridAdapter(theParentContext, R.layout.text, letterList);
         recyclerView.setAdapter(gridAdapter);
     }
 

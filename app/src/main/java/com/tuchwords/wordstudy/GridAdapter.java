@@ -51,7 +51,7 @@ public class GridAdapter extends RecyclerView.Adapter<GridAdapter.ViewHolder> {
     public GridAdapter.ViewHolder onCreateViewHolder(ViewGroup viewGroup, int viewType) {
         // Create a new view, which defines the UI of the list item
         View view = LayoutInflater.from(viewGroup.getContext())
-                .inflate(R.layout.cell, viewGroup, false);
+                .inflate(R.layout.text, viewGroup, false);
         return new GridAdapter.ViewHolder(view);
     }
 
@@ -62,7 +62,7 @@ public class GridAdapter extends RecyclerView.Adapter<GridAdapter.ViewHolder> {
         // contents of the view with that element
         View v = viewHolder.getView();
 
-        TextView t1 = v.findViewById(R.id.textview41);
+        TextView t1 = v.findViewById(R.id.textview67);
         t1.setText(Html.fromHtml(lival1.get(position)));
     }
 
