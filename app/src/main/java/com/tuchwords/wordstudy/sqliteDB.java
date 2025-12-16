@@ -2606,41 +2606,38 @@ public class sqliteDB extends SQLiteOpenHelper {
         s12.setAdapter(comparatorAdapter);
     }
 
-    public String myFormat(String theJoin) {
-        String[] mySplit = theJoin.split("_");
-        ArrayList<String> myJoin = new ArrayList<>();
+    public String myFormat(String myString) {
+        String[] mySplit = myString.split("_");
 
-        for (String theSplit : mySplit) {
-            if (!theSplit.isEmpty()) {
-                myJoin.add(theSplit.substring(0, 1).toUpperCase() + theSplit.substring(1).toLowerCase());
+        for (int theSplit = mySplit.length - 1; theSplit >= 0; theSplit--) {
+            if (!mySplit[theSplit].isEmpty()) {
+                return (mySplit[theSplit].substring(0, 1)).toUpperCase() + (mySplit[theSplit].substring(1)).toLowerCase();
             }
         }
 
-        return String.join(" ", myJoin);
+        return myString;
     }
 
     public void tileDistribution(RecyclerView recyclerView, Context theParentContext) {
         ArrayList<String> letterList = new ArrayList<>();
         String[] tileList = getAllColumns("letters");
 
-        for (String tile : tileList) {
-            letterList.add("<b>" + myFormat(tile) + "</b>");
-        }
-
         SQLiteDatabase db = this.getReadableDatabase();
         Cursor letterCursor = db.rawQuery("SELECT * FROM letters", null);
 
-        if (letterCursor.moveToFirst()) {
-            do {
-                for (int tileCursor = 0; tileCursor < tileList.length; tileCursor++) {
+        for (int tileCursor = 0; tileCursor < tileList.length; tileCursor++) {
+            letterList.add("<b>" + myFormat(tileList[tileCursor]) + "</b>");
+
+            if (letterCursor.moveToFirst()) {
+                do {
                     letterList.add(letterCursor.getString(tileCursor));
-                }
-            } while (letterCursor.moveToNext());
+                } while (letterCursor.moveToNext());
+            }
         }
 
         letterCursor.close();
 
-        RecyclerView.LayoutManager layoutManager = new GridLayoutManager(theParentContext, tileList.length);
+        RecyclerView.LayoutManager layoutManager = new GridLayoutManager(theParentContext, letterList.size() / tileList.length, GridLayoutManager.HORIZONTAL, false);
         recyclerView.setLayoutManager(layoutManager);
 
         GridAdapter gridAdapter = new GridAdapter(theParentContext, R.layout.text, letterList);
