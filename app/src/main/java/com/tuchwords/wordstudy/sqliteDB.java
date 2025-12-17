@@ -129,7 +129,7 @@ public class sqliteDB extends SQLiteOpenHelper {
 
         ArrayList<String> dropStatements = new ArrayList<>();
         dropStatements.add("DROP TABLE if exists words");
-        dropStatements.add("DROP TABLE if exists scores");
+        dropStatements.add("DROP TABLE if exists filters");
         dropStatements.add("DROP TABLE if exists colours");
         dropStatements.add("DROP TABLE if exists zoom");
         dropStatements.add("DROP TABLE if exists prefixes");
@@ -213,6 +213,7 @@ public class sqliteDB extends SQLiteOpenHelper {
                             updateProgressBar(situation, p4, t40, t41, myDialog, (int) (myLine / myStep), ((int) myLine) + "/" + curCSV.getCount());
                         }
                     }
+
                     csvWrite.close();
                     curCSV.close();
                     outputDir.append("\nSaved ").append(table).append(" table to ").append(file.getAbsolutePath()).append(".");
@@ -285,6 +286,7 @@ public class sqliteDB extends SQLiteOpenHelper {
                                     while (reader.readLine() != null) {
                                         lines++;
                                     }
+
                                     reader.close();
 
                                     double myLine = 0.0;
@@ -301,6 +303,7 @@ public class sqliteDB extends SQLiteOpenHelper {
                                             updateProgressBar(situation, p2, t36, t37, myDialog, (int) (myLine / myStep), ((int) myLine) + "/" + lines);
                                         }
                                     } while (nextLine != null);
+
                                     csvRead.close();
                                     db.setTransactionSuccessful();
                                     uiThreadRefresh(situation, true);
@@ -369,6 +372,7 @@ public class sqliteDB extends SQLiteOpenHelper {
                         updateProgressBar(situation, p3, t38, t39, myDialog, (int) (myLine / myStep), ((int) myLine) + "/" + curCSV.getCount());
                     }
                 }
+
                 csvWrite.close();
                 curCSV.close();
                 uiThreadBox("Export tags", "Export tags complete.\nSaved tags to " + file.getAbsolutePath() + ".", situation);
@@ -433,6 +437,7 @@ public class sqliteDB extends SQLiteOpenHelper {
                                 while (reader.readLine() != null) {
                                     lines++;
                                 }
+
                                 reader.close();
 
                                 double myLine = 0.0;
@@ -455,6 +460,7 @@ public class sqliteDB extends SQLiteOpenHelper {
                                         updateProgressBar(situation, p1, t34, t35, myDialog, (int) (myLine / myStep), ((int) myLine) + "/" + lines);
                                     }
                                 } while (nextLine != null);
+
                                 csvRead.close();
                                 db.setTransactionSuccessful();
                                 uiThreadRefresh(situation, false);
@@ -493,6 +499,7 @@ public class sqliteDB extends SQLiteOpenHelper {
                 }
             } while (cursor.moveToPrevious());
         }
+
         cursor.close();
         Collections.sort(columnItemList, (o1, o2) -> (o1.first).compareTo(o2.first));
         return columnItemList;
@@ -517,6 +524,7 @@ public class sqliteDB extends SQLiteOpenHelper {
                 }
             } while (cursor.moveToPrevious());
         }
+
         cursor.close();
         Collections.sort(rowItemList, (o1, o2) -> (o1.second).compareTo(o2.second));
         return rowItemList;
@@ -537,6 +545,7 @@ public class sqliteDB extends SQLiteOpenHelper {
                 colourList.put(label, colour);
             } while (cursor.moveToNext());
         }
+
         cursor.close();
         return colourList;
     }
@@ -596,6 +605,7 @@ public class sqliteDB extends SQLiteOpenHelper {
                 total++;
             } while (cursor.moveToNext());
         }
+
         cursor.close();
         return new String(unsolvedAnswers);
     }
@@ -635,6 +645,7 @@ public class sqliteDB extends SQLiteOpenHelper {
                 line++;
             } while (cursor.moveToNext());
         }
+
         cursor.close();
         labelColours.append("</b>");
         return new String(labelColours);
@@ -658,6 +669,7 @@ public class sqliteDB extends SQLiteOpenHelper {
                 idx++;
             } while (cursor.moveToNext());
         }
+
         cursor.close();
         return tableList;
     }
@@ -680,17 +692,21 @@ public class sqliteDB extends SQLiteOpenHelper {
         return new String(schema);
     }
 
-    public void insertScores(int letters, int counter, String sqlQuery, String orderBy)
+    public int insertScores(int letters, int counter, String sqlQuery, String orderBy)
     {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues contentValues = new ContentValues();
+        int filterSerial = getFilterSerial();
 
         contentValues.put("_length_", letters);
         contentValues.put("_counter_", counter);
         contentValues.put("_query_", sqlQuery);
         contentValues.put("_sort_", orderBy);
+        contentValues.put("_name_", "");
+        contentValues.put("_serial_", filterSerial);
 
-        db.insert("scores", null, contentValues);
+        db.insert("filters", null, contentValues);
+        return filterSerial;
     }
 
     public int getMaximumWordLength()
@@ -704,6 +720,7 @@ public class sqliteDB extends SQLiteOpenHelper {
                 maximumWordLength = cursor.getInt(0);
             } while (cursor.moveToNext());
         }
+
         cursor.close();
         return maximumWordLength;
     }
@@ -1104,6 +1121,7 @@ public class sqliteDB extends SQLiteOpenHelper {
                 exists = cursor.getInt(0);
             } while (cursor.moveToNext());
         }
+
         cursor.close();
 
         ContentValues values = new ContentValues();
@@ -1125,7 +1143,7 @@ public class sqliteDB extends SQLiteOpenHelper {
     public int getCounter(int letters, String sqlQuery, String orderBy)
     {
         SQLiteDatabase db = this.getReadableDatabase();
-        Cursor cursor = db.rawQuery("SELECT _counter_ FROM scores WHERE _length_ = " + letters + " AND _query_ = \"" + sqlQuery + "\" AND _sort_ = \"" + orderBy + "\"", null);
+        Cursor cursor = db.rawQuery("SELECT _counter_ FROM filters WHERE _length_ = " + letters + " AND _query_ = \"" + sqlQuery + "\" AND _sort_ = \"" + orderBy + "\"", null);
 
         String data = null;
 
@@ -1145,21 +1163,23 @@ public class sqliteDB extends SQLiteOpenHelper {
         }
     }
 
-    public boolean getExist(int letters, String sqlQuery, String orderBy)
+    public int getExist(int letters, String sqlQuery, String orderBy)
     {
         SQLiteDatabase db = this.getReadableDatabase();
-        Cursor cursor = db.rawQuery("SELECT EXISTS(SELECT 1 FROM scores WHERE _length_ = " + letters + " AND _query_ = \"" + sqlQuery + "\" AND _sort_ = \"" + orderBy + "\")", null);
+        Cursor cursor = db.rawQuery("SELECT _serial_ FROM filters WHERE _length_ = " + letters + " AND _query_ = \"" + sqlQuery + "\" AND _sort_ = \"" + orderBy + "\"", null);
 
         int exist = 0;
 
-        if (cursor.moveToFirst()) {
-            do {
-                exist = cursor.getInt(0);
-            } while (cursor.moveToNext());
+        if (cursor.getCount() > 0) {
+            if (cursor.moveToFirst()) {
+                do {
+                    exist = cursor.getInt(0);
+                } while (cursor.moveToNext());
+            }
         }
 
         cursor.close();
-        return (exist != 0);
+        return exist;
     }
 
     public Cursor getAllAnagrams(int letters, String sqlQuery, String orderBy)
@@ -1281,7 +1301,7 @@ public class sqliteDB extends SQLiteOpenHelper {
         ContentValues values = new ContentValues();
         values.put("_counter_", counter);
 
-        db.update("scores", values, "_length_ = ? AND _query_ = ? AND _sort_ = ?",
+        db.update("filters", values, "_length_ = ? AND _query_ = ? AND _sort_ = ?",
                 new String[] {Integer.toString(letters), sqlQuery, orderBy});
     }
 
@@ -2466,6 +2486,7 @@ public class sqliteDB extends SQLiteOpenHelper {
                     }
                 } while (theCursor.moveToNext());
             }
+
             theCursor.close();
         }
 
@@ -2657,6 +2678,76 @@ public class sqliteDB extends SQLiteOpenHelper {
                 .setPositiveButton("OK", (dialog1, whichButton) -> {
                 }).create();
         dialog.show();
+    }
+
+    public int getFilterSerial() {
+        SQLiteDatabase db = this.getWritableDatabase();
+        db.execSQL(
+                "UPDATE zoom SET _columns_ = _columns_ + 1 WHERE _activity_ = \"List\""
+        );
+
+        Cursor cursor = db.rawQuery("SELECT _columns_ FROM zoom WHERE _activity_ = \"List\"", null);
+        int filterSerial = 0;
+
+        if (cursor.moveToFirst()) {
+            do {
+                filterSerial = cursor.getInt(0);
+            } while (cursor.moveToNext());
+        }
+
+        cursor.close();
+        return filterSerial;
+    }
+
+    public String getFilterName(int filterNumber) {
+        SQLiteDatabase db = this.getReadableDatabase();
+
+        Cursor cursor = db.rawQuery("SELECT _name_ FROM filters WHERE _serial_ = " + filterNumber, null);
+        String filterIdentity = "";
+
+        if (cursor.getCount() > 0) {
+            if (cursor.moveToFirst()) {
+                do {
+                    filterIdentity = cursor.getString(0);
+                } while (cursor.moveToNext());
+            }
+        }
+
+        cursor.close();
+        return filterIdentity;
+    }
+
+    public void saveFilter(int filterNumber, String filterName) {
+        SQLiteDatabase db = this.getWritableDatabase();
+
+        ContentValues filterValues = new ContentValues();
+        filterValues.put("_name_", filterName);
+
+        db.update("filters", filterValues, "_serial_ = ?",
+                new String[] {Integer.toString(filterNumber)});
+    }
+
+    public ArrayList<Filter> loadFilter() {
+        SQLiteDatabase db = this.getReadableDatabase();
+
+        ArrayList<Filter> filterList = new ArrayList<>();
+        Cursor cursor = db.rawQuery("SELECT _length_, _query_, _sort_, _name_, _serial_ FROM filters WHERE _name_ != \"\"", null);
+
+        if (cursor.moveToFirst()) {
+            do {
+                int length = cursor.getInt(0);
+                String query = cursor.getString(1);
+                String sort = cursor.getString(2);
+                String name = cursor.getString(3);
+                int serial = cursor.getInt(4);
+
+                Filter myFilter = new Filter(length, query, sort, name, serial);
+                filterList.add(myFilter);
+            } while (cursor.moveToNext());
+        }
+
+        cursor.close();
+        return filterList;
     }
 
     public static void main(String[] args) {

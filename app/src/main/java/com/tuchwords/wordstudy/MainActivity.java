@@ -7,6 +7,7 @@ import androidx.appcompat.widget.Toolbar;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.recyclerview.widget.GridLayoutManager;
+import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.app.AlertDialog;
@@ -88,6 +89,7 @@ public class MainActivity extends AppCompatActivity {
     int font;
     int combo;
     int maximumWordLength;
+    int filterSerial;
 
     // Declare the DrawerLayout, NavigationView and Toolbar
     private DrawerLayout drawerLayout;
@@ -321,6 +323,26 @@ public class MainActivity extends AppCompatActivity {
                     // Show a Toast message for the Letter distribution item
                     db.letterDistribution(MainActivity.this);
                     break;
+                case R.id.button52:
+                    // Show a Toast message for the Load saved word list item
+                    LayoutInflater inflater3 = LayoutInflater.from(MainActivity.this);
+                    final View yourCustomView5 = inflater3.inflate(R.layout.list, null);
+
+                    RecyclerView g2 = yourCustomView5.findViewById(R.id.gridview3);
+                    RecyclerView.LayoutManager listManager = new LinearLayoutManager(MainActivity.this, LinearLayoutManager.VERTICAL, false);
+                    g2.setLayoutManager(listManager);
+
+                    FilterAdapter filterAdapter = new FilterAdapter(MainActivity.this, R.layout.list, db.loadFilter());
+                    g2.setAdapter(filterAdapter);
+
+                    AlertDialog dialog5 = new AlertDialog.Builder(MainActivity.this)
+                            .setTitle("Load saved word list")
+                            .setView(yourCustomView5)
+                            .setPositiveButton("OK", (dialog6, whichButton3) -> {
+
+                            }).create();
+                    dialog5.show();
+                    break;
             }
 
             // Close the drawer after selection
@@ -390,6 +412,22 @@ public class MainActivity extends AppCompatActivity {
         b4.setOnClickListener(view -> {
             closeCursor();
             finish();
+        });
+
+        b6.setOnClickListener(view2 -> {
+            LayoutInflater inflater2 = LayoutInflater.from(MainActivity.this);
+            final View yourCustomView4 = inflater2.inflate(R.layout.edit, null);
+
+            EditText e15 = yourCustomView4.findViewById(R.id.edittext28);
+            e15.setText(db.getFilterName(filterSerial));
+
+            AlertDialog dialog3 = new AlertDialog.Builder(MainActivity.this)
+                    .setTitle("List name")
+                    .setView(yourCustomView4)
+                    .setPositiveButton("OK", (dialog4, whichButton2) -> {
+                        db.saveFilter(filterSerial, ((e15.getText()).toString()).replace("\"", "'"));
+                    }).create();
+            dialog3.show();
         });
     }
 
@@ -711,11 +749,8 @@ public class MainActivity extends AppCompatActivity {
     {
         closeCursor();
 
-        boolean exist = db.getExist(letters, sqlQuery, orderBy);
-
-        if (!exist) {
-            db.insertScores(letters, 0, sqlQuery, orderBy);
-        }
+        int exist = db.getExist(letters, sqlQuery, orderBy);
+        filterSerial = (exist == 0 ? db.insertScores(letters, 0, sqlQuery, orderBy) : exist);
 
         anagrams = db.getAllAnagrams(letters, sqlQuery, orderBy);
         words = anagrams.getCount();
@@ -745,14 +780,10 @@ public class MainActivity extends AppCompatActivity {
             anagrams = resultSet;
             words = anagrams.getCount();
             letters = 1;
-            boolean exist = db.getExist(letters, sqlQuery, orderBy);
 
-            if (!exist) {
-                counter = 0;
-                db.insertScores(letters, counter, sqlQuery, orderBy);
-            } else {
-                counter = db.getCounter(letters, sqlQuery, orderBy);
-            }
+            int exist = db.getExist(letters, sqlQuery, orderBy);
+            filterSerial = (exist == 0 ? db.insertScores(letters, counter, sqlQuery, orderBy) : exist);
+            counter = (exist == 0 ? 0 : db.getCounter(letters, sqlQuery, orderBy));
 
             int highest = (words - 1) / (rows * columns);
             if (counter > highest && words > 0) {
