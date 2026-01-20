@@ -18,4 +18,16 @@ public class Filter {
     public String getName() {
         return name;
     }
+
+    public int getLength() {
+        return length;
+    }
+
+    public String getQuery() {
+        return query;
+    }
+
+    public String getSort() {
+        return sort;
+    }
 }

@@ -94,12 +94,12 @@ public class CustomAdapter extends RecyclerView.Adapter<CustomAdapter.ViewHolder
 
         v.setOnClickListener(v1 -> {
             MainActivity mainActivity = (MainActivity) con;
-            mainActivity.onItemClick(viewHolder.getAdapterPosition(), l1);
+            mainActivity.onItemClick(viewHolder.getBindingAdapterPosition(), l1);
         });
 
         v.setOnLongClickListener(v2 -> {
             MainActivity mainActivity = (MainActivity) con;
-            mainActivity.onItemLongClick(viewHolder.getAdapterPosition());
+            mainActivity.onItemLongClick(viewHolder.getBindingAdapterPosition());
             return true;
         });
 

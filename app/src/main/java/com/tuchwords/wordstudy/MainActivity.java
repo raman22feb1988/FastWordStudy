@@ -88,6 +88,7 @@ public class MainActivity extends AppCompatActivity {
     int columns;
     int font;
     int combo;
+    int loader;
     int maximumWordLength;
     int filterSerial;
 
@@ -332,14 +333,29 @@ public class MainActivity extends AppCompatActivity {
                     RecyclerView.LayoutManager listManager = new LinearLayoutManager(MainActivity.this, LinearLayoutManager.VERTICAL, false);
                     g2.setLayoutManager(listManager);
 
-                    FilterAdapter filterAdapter = new FilterAdapter(MainActivity.this, R.layout.list, db.loadFilter());
+                    FilterAdapter filterAdapter = new FilterAdapter(MainActivity.this, R.layout.list, db.loadFilter(), loader);
                     g2.setAdapter(filterAdapter);
 
                     AlertDialog dialog5 = new AlertDialog.Builder(MainActivity.this)
                             .setTitle("Load saved word list")
                             .setView(yourCustomView5)
                             .setPositiveButton("OK", (dialog6, whichButton3) -> {
-
+                                Filter filterObject = filterAdapter.getSelection();
+                                if (filterObject == null) {
+                                    db.alertBox("Load saved word list", "No item selected.", MainActivity.this);
+                                }
+                                else {
+                                    int numberOfLetters = filterObject.getLength();
+                                    if (numberOfLetters == 0) {
+                                        execute(false, filterObject.getQuery(), filterObject.getSort());
+                                    } else {
+                                        mode = 1;
+                                        letters = numberOfLetters;
+                                        sqlQuery = filterObject.getQuery();
+                                        orderBy = filterObject.getSort();
+                                        start();
+                                    }
+                                }
                             }).create();
                     dialog5.show();
                     break;
@@ -391,6 +407,7 @@ public class MainActivity extends AppCompatActivity {
         columns = dimensions.get(1);
         font = dimensions.get(2);
         combo = dimensions.get(3);
+        loader = dimensions.get(4);
         maximumWordLength = db.getMaximumWordLength();
 
         refreshSpinner();
@@ -664,7 +681,7 @@ public class MainActivity extends AppCompatActivity {
                 .setTitle("Change word length")
                 .setView(yourCustomView)
                 .setPositiveButton("OK", (dialog1, whichButton) -> {
-                    String alphabet = (lengthIndex[0] == 0 ? (e1.getText()).toString() : "-1");
+                    String alphabet = (lengthIndex[0] == 0 ? (e1.getText()).toString() : "1");
                     int precursor = (alphabet.isEmpty() ? 0 : Integer.parseInt(alphabet));
 
                     if (lengthIndex[0] == 0 && precursor < 2)
@@ -779,7 +796,7 @@ public class MainActivity extends AppCompatActivity {
             closeCursor();
             anagrams = resultSet;
             words = anagrams.getCount();
-            letters = 1;
+            letters = 0;
 
             int exist = db.getExist(letters, sqlQuery, orderBy);
             filterSerial = (exist == 0 ? db.insertScores(letters, counter, sqlQuery, orderBy) : exist);
@@ -980,6 +997,7 @@ public class MainActivity extends AppCompatActivity {
         columns = dimensions.get(1);
         font = dimensions.get(2);
         combo = dimensions.get(3);
+        loader = dimensions.get(4);
 
         refreshSpinner();
 
@@ -1076,16 +1094,19 @@ public class MainActivity extends AppCompatActivity {
         EditText e7 = yourCustomView.findViewById(R.id.edittext7);
         EditText e8 = yourCustomView.findViewById(R.id.edittext8);
         EditText e14 = yourCustomView.findViewById(R.id.edittext22);
+        EditText e16 = yourCustomView.findViewById(R.id.edittext29);
 
         e6.setHint("Enter a value greater than 0");
         e7.setHint("Enter a value greater than 0");
         e8.setHint("Enter a value greater than 11");
         e14.setHint("Enter a value greater than 11");
+        e16.setHint("Enter a value greater than 11");
 
         e6.setText(Integer.toString(rows));
         e7.setText(Integer.toString(columns));
         e8.setText(Integer.toString(font));
         e14.setText(Integer.toString(combo));
+        e16.setText(Integer.toString(loader));
 
         AlertDialog dialog = new AlertDialog.Builder(MainActivity.this)
                 .setTitle("Change rows, columns and font sizes")
@@ -1095,11 +1116,13 @@ public class MainActivity extends AppCompatActivity {
                     String old_columns = (e7.getText()).toString();
                     String old_font = (e8.getText()).toString();
                     String old_combo = (e14.getText()).toString();
+                    String old_loader = (e16.getText()).toString();
 
                     int new_rows = (old_rows.isEmpty() ? 0 : Integer.parseInt(old_rows));
                     int new_columns = (old_columns.isEmpty() ? 0 : Integer.parseInt(old_columns));
                     int new_font = (old_font.isEmpty() ? 0 : Integer.parseInt(old_font));
                     int new_combo = (old_combo.isEmpty() ? 0 : Integer.parseInt(old_combo));
+                    int new_loader = (old_loader.isEmpty() ? 0 : Integer.parseInt(old_loader));
 
                     StringBuilder sb = new StringBuilder();
                     if (new_rows < 1 && new_columns < 1) {
@@ -1111,7 +1134,7 @@ public class MainActivity extends AppCompatActivity {
                     else if (new_columns < 1) {
                         sb.append("Columns should be ≥ 1");
                     }
-                    if (new_font < 11 || new_combo < 11) {
+                    if (new_font < 11 || new_combo < 11 || new_loader < 11) {
                         if (sb.length() > 0) {
                             sb.append("\n");
                         }
@@ -1125,7 +1148,7 @@ public class MainActivity extends AppCompatActivity {
                     }
                     else
                     {
-                        db.setZoom("Grid", new_rows, new_columns, new_font, new_combo);
+                        db.setZoom("Grid", new_rows, new_columns, new_font, new_combo, new_loader);
                         refresh();
                     }
                 }).create();
@@ -1264,7 +1287,7 @@ public class MainActivity extends AppCompatActivity {
                 .setView(yourCustomView)
                 .setPositiveButton("OK", (dialog1, whichButton) -> {
                     String intermediate = (e9.getText()).toString();
-                    String alphabets = (lengthIndex[0] == 0 ? (e10.getText()).toString() : "0");
+                    String alphabets = (lengthIndex[0] == 0 ? (e10.getText()).toString() : "1");
                     int temporary = (alphabets.isEmpty() ? 0 : Integer.parseInt(alphabets));
 
                     if (lengthIndex[0] == 0 && temporary < 2)

@@ -91,7 +91,7 @@ public class sqliteDB extends SQLiteOpenHelper {
                 "create table if not exists colours(_tag_ text collate nocase, _colour_ text collate nocase)"
         );
         db.execSQL(
-                "create table if not exists zoom(_activity_ text collate nocase, _rows_ integer, _columns_ integer, _size_ integer, _spinner_ integer)"
+                "create table if not exists zoom(_activity_ text collate nocase, _rows_ integer, _columns_ integer, _size_ integer, _spinner_ integer, _loader_ integer)"
         );
         db.execSQL(
                 "create table if not exists prefixes(_prefix_ text collate nocase, _before_ text collate nocase)"
@@ -1007,6 +1007,7 @@ public class sqliteDB extends SQLiteOpenHelper {
                 contentValues.put("_columns_", 4);
                 contentValues.put("_size_", 11);
                 contentValues.put("_spinner_", 20);
+                contentValues.put("_loader_", 20);
                 db.insert("zoom", null, contentValues);
 
                 contentValues = new ContentValues();
@@ -1015,6 +1016,7 @@ public class sqliteDB extends SQLiteOpenHelper {
                 contentValues.put("_columns_", 0);
                 contentValues.put("_size_", 11);
                 contentValues.put("_spinner_", 20);
+                contentValues.put("_loader_", 20);
                 db.insert("zoom", null, contentValues);
 
                 ArrayList<Pair<String, String>> myPrefixes = new ArrayList<>();
@@ -1080,7 +1082,7 @@ public class sqliteDB extends SQLiteOpenHelper {
         ArrayList<Integer> zoomList = new ArrayList<>();
 
         SQLiteDatabase db = this.getReadableDatabase();
-        Cursor cursor = db.rawQuery("SELECT _rows_, _columns_, _size_, _spinner_ FROM zoom WHERE _activity_ = \"" + parentActivity + "\"", null);
+        Cursor cursor = db.rawQuery("SELECT _rows_, _columns_, _size_, _spinner_, _loader_ FROM zoom WHERE _activity_ = \"" + parentActivity + "\"", null);
 
         if (cursor.getCount() > 0) {
             if (cursor.moveToFirst()) {
@@ -1089,11 +1091,13 @@ public class sqliteDB extends SQLiteOpenHelper {
                     int dimensions = cursor.getInt(1);
                     int font = cursor.getInt(2);
                     int combo = cursor.getInt(3);
+                    int loader = cursor.getInt(4);
 
                     zoomList.add(rows);
                     zoomList.add(dimensions);
                     zoomList.add(font);
                     zoomList.add(combo);
+                    zoomList.add(loader);
                 } while (cursor.moveToNext());
             }
         }
@@ -1102,13 +1106,14 @@ public class sqliteDB extends SQLiteOpenHelper {
             zoomList.add(4);
             zoomList.add(11);
             zoomList.add(20);
+            zoomList.add(20);
         }
 
         cursor.close();
         return zoomList;
     }
 
-    public void setZoom(String parentActivity, int rows, int dimensions, int font, int combo)
+    public void setZoom(String parentActivity, int rows, int dimensions, int font, int combo, int loader)
     {
         SQLiteDatabase db = this.getWritableDatabase();
 
@@ -1129,6 +1134,7 @@ public class sqliteDB extends SQLiteOpenHelper {
         values.put("_columns_", dimensions);
         values.put("_size_", font);
         values.put("_spinner_", combo);
+        values.put("_loader_", loader);
 
         if (exists != 0) {
             db.update("zoom", values, "_activity_ = ?",
