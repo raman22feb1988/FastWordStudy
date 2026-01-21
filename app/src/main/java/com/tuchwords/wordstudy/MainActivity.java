@@ -16,7 +16,9 @@ import android.content.res.Configuration;
 import android.database.Cursor;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.text.Editable;
 import android.text.Html;
+import android.text.TextWatcher;
 import android.util.Pair;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -328,21 +330,38 @@ public class MainActivity extends AppCompatActivity {
                     // Show a Toast message for the Load saved word list item
                     LayoutInflater inflater3 = LayoutInflater.from(MainActivity.this);
                     final View yourCustomView5 = inflater3.inflate(R.layout.list, null);
+                    EditText e17 = yourCustomView5.findViewById(R.id.edittext30);
 
                     RecyclerView g2 = yourCustomView5.findViewById(R.id.gridview3);
                     RecyclerView.LayoutManager listManager = new LinearLayoutManager(MainActivity.this, LinearLayoutManager.VERTICAL, false);
                     g2.setLayoutManager(listManager);
 
-                    FilterAdapter filterAdapter = new FilterAdapter(MainActivity.this, R.layout.list, db.loadFilter(), loader);
-                    g2.setAdapter(filterAdapter);
+                    final FilterAdapter[] filterAdapter = {new FilterAdapter(MainActivity.this, R.layout.list, db.loadFilter(""), loader, db)};
+                    g2.setAdapter(filterAdapter[0]);
+
+                    e17.addTextChangedListener(new TextWatcher() {
+                        @Override
+                        public void afterTextChanged(Editable s) {
+                        }
+
+                        @Override
+                        public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+                        }
+
+                        @Override
+                        public void onTextChanged(CharSequence s, int start, int before, int count) {
+                            filterAdapter[0] = new FilterAdapter(MainActivity.this, R.layout.list, db.loadFilter(s.toString()), loader, db);
+                            g2.setAdapter(filterAdapter[0]);
+                        }
+                    });
 
                     AlertDialog dialog5 = new AlertDialog.Builder(MainActivity.this)
                             .setTitle("Load saved word list")
                             .setView(yourCustomView5)
                             .setPositiveButton("OK", (dialog6, whichButton3) -> {
-                                Filter filterObject = filterAdapter.getSelection();
+                                Filter filterObject = filterAdapter[0].getSelection();
                                 if (filterObject == null) {
-                                    db.alertBox("Load saved word list", "No item selected.", MainActivity.this);
+                                    db.alertBox("Load saved word list", "No item had been selected.", MainActivity.this);
                                 }
                                 else {
                                     int numberOfLetters = filterObject.getLength();
@@ -439,7 +458,7 @@ public class MainActivity extends AppCompatActivity {
             e15.setText(db.getFilterName(filterSerial));
 
             AlertDialog dialog3 = new AlertDialog.Builder(MainActivity.this)
-                    .setTitle("List name")
+                    .setTitle("Save word list")
                     .setView(yourCustomView4)
                     .setPositiveButton("OK", (dialog4, whichButton2) -> {
                         db.saveFilter(filterSerial, ((e15.getText()).toString()).replace("\"", "'"));
@@ -609,7 +628,7 @@ public class MainActivity extends AppCompatActivity {
 
         EditText e1 = yourCustomView.findViewById(R.id.edittext20);
         TextView t4 = yourCustomView.findViewById(R.id.textview63);
-        e1.setHint("Enter a value between 2 and " + db.getMaximumWordLength());
+        e1.setHint("Enter a value between 2 and " + maximumWordLength);
 
         final int[] sortIndex = new int[2];
         Spinner s5 = yourCustomView.findViewById(R.id.spinner13);
@@ -686,7 +705,7 @@ public class MainActivity extends AppCompatActivity {
 
                     if (lengthIndex[0] == 0 && precursor < 2)
                     {
-                        Toast.makeText(MainActivity.this, "Enter a value between 2 and " + db.getMaximumWordLength() + " for word length", Toast.LENGTH_LONG).show();
+                        Toast.makeText(MainActivity.this, "Enter a value between 2 and " + maximumWordLength + " for word length", Toast.LENGTH_LONG).show();
                         getWordLength();
                     }
                     else
@@ -780,6 +799,7 @@ public class MainActivity extends AppCompatActivity {
         }
 
         ultimate = null;
+        db.emptyTable(MainActivity.this);
         nextWord();
     }
 
@@ -809,6 +829,7 @@ public class MainActivity extends AppCompatActivity {
             }
 
             ultimate = null;
+            db.emptyTable(MainActivity.this);
             executeSqlQuery();
         }
     }
@@ -998,6 +1019,7 @@ public class MainActivity extends AppCompatActivity {
         font = dimensions.get(2);
         combo = dimensions.get(3);
         loader = dimensions.get(4);
+        maximumWordLength = db.getMaximumWordLength();
 
         refreshSpinner();
 
@@ -1191,7 +1213,7 @@ public class MainActivity extends AppCompatActivity {
         EditText e9 = yourCustomView.findViewById(R.id.edittext9);
         EditText e10 = yourCustomView.findViewById(R.id.edittext10);
         TextView t5 = yourCustomView.findViewById(R.id.textview15);
-        e10.setHint("Enter a value between 2 and " + db.getMaximumWordLength());
+        e10.setHint("Enter a value between 2 and " + maximumWordLength);
 
         final int[] sortIndex = new int[2];
         Spinner s7 = yourCustomView.findViewById(R.id.spinner15);
@@ -1292,7 +1314,7 @@ public class MainActivity extends AppCompatActivity {
 
                     if (lengthIndex[0] == 0 && temporary < 2)
                     {
-                        Toast.makeText(MainActivity.this, "Enter a value between 2 and " + db.getMaximumWordLength() + " for word length", Toast.LENGTH_LONG).show();
+                        Toast.makeText(MainActivity.this, "Enter a value between 2 and " + maximumWordLength + " for word length", Toast.LENGTH_LONG).show();
                         filterByLabel();
                     }
                     else

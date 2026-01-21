@@ -3,6 +3,16 @@
     android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Either rename this saved word list with the current name or with a new name or leave the new name field blank to remove this saved word list from the list of all the saved word lists.">
+    </TextView>
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/textview69">
+    </TextView>
     <LinearLayout
         android:orientation="horizontal"
         android:layout_width="match_parent"
@@ -10,13 +20,13 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Word list name:">
+            android:text="New name:">
         </TextView>
         <EditText
-            android:id="@+id/edittext28"
+            android:id="@+id/edittext31"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Word list name"
+            android:hint="New word list name"
             android:background="@drawable/rectangle">
         </EditText>
     </LinearLayout>

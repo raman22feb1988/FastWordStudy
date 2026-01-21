@@ -722,7 +722,7 @@ public class sqliteDB extends SQLiteOpenHelper {
         }
 
         cursor.close();
-        return maximumWordLength;
+        return ((maximumWordLength < 2) ? 58 : maximumWordLength);
     }
 
     public double probability(String st)
@@ -2733,11 +2733,11 @@ public class sqliteDB extends SQLiteOpenHelper {
                 new String[] {Integer.toString(filterNumber)});
     }
 
-    public ArrayList<Filter> loadFilter() {
+    public ArrayList<Filter> loadFilter(String filterString) {
         SQLiteDatabase db = this.getReadableDatabase();
 
         ArrayList<Filter> filterList = new ArrayList<>();
-        Cursor cursor = db.rawQuery("SELECT _length_, _query_, _sort_, _name_, _serial_ FROM filters WHERE _name_ != \"\"", null);
+        Cursor cursor = db.rawQuery("SELECT _length_, _query_, _sort_, _name_, _serial_ FROM filters WHERE _name_ " + (filterString.isEmpty() ? "!= \"\"" : "LIKE \"" + filterString + "%\"") + " ORDER BY _name_", null);
 
         if (cursor.moveToFirst()) {
             do {
@@ -2754,6 +2754,23 @@ public class sqliteDB extends SQLiteOpenHelper {
 
         cursor.close();
         return filterList;
+    }
+
+    public void emptyTable(Context theParentActivity)
+    {
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor cursor = db.rawQuery("SELECT EXISTS(SELECT 1 FROM words)", null);
+
+        if (cursor.moveToFirst()) {
+            do {
+                if (cursor.getInt(0) == 0)
+                {
+                    alertBox("Empty 'words' table", "There are no rows in the 'words' table. Go to menu and select 'Prepare database' at first.", theParentActivity);
+                }
+            } while (cursor.moveToNext());
+        }
+
+        cursor.close();
     }
 
     public static void main(String[] args) {

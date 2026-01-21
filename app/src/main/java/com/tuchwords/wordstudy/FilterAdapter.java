@@ -1,11 +1,13 @@
 package com.tuchwords.wordstudy;
 
+import android.app.AlertDialog;
 import android.content.Context;
 import android.content.res.Configuration;
 import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.EditText;
 import android.widget.TextView;
 
 import androidx.recyclerview.widget.RecyclerView;
@@ -17,6 +19,7 @@ public class FilterAdapter extends RecyclerView.Adapter<FilterAdapter.ViewHolder
     int _resource;
     List<Filter> lival1;
     int loading;
+    sqliteDB database;
 
     final TextView[] previous = {null};
     Filter selection;
@@ -45,11 +48,12 @@ public class FilterAdapter extends RecyclerView.Adapter<FilterAdapter.ViewHolder
      * param dataSet String[] containing the data to populate views to be used
      * by RecyclerView
      */
-    public FilterAdapter(Context context, int resource, List<Filter> li1, int loader) {
+    public FilterAdapter(Context context, int resource, List<Filter> li1, int loader, sqliteDB db) {
         con = context;
         _resource = resource;
         lival1 = li1;
         loading = loader;
+        database = db;
     }
 
     // Create new views (invoked by the layout manager)
@@ -87,6 +91,30 @@ public class FilterAdapter extends RecyclerView.Adapter<FilterAdapter.ViewHolder
             t2.setBackgroundColor(Color.BLUE);
             previous[0] = t2;
             selection = lival1.get(viewHolder.getBindingAdapterPosition());
+        });
+
+        v.setOnLongClickListener(v2 -> {
+            LayoutInflater inflater = LayoutInflater.from(con);
+            final View yourCustomView = inflater.inflate(R.layout.update, null);
+
+            TextView t3 = yourCustomView.findViewById(R.id.textview69);
+            EditText e1 = yourCustomView.findViewById(R.id.edittext31);
+
+            Filter filterObject = lival1.get(viewHolder.getBindingAdapterPosition());
+            t3.setText("Current name: " + filterObject.getName());
+            e1.setText(filterObject.getName());
+
+            AlertDialog dialog = new AlertDialog.Builder(con)
+                    .setTitle("Rename saved word list")
+                    .setView(yourCustomView)
+                    .setPositiveButton("OK", (dialog1, whichButton) -> {
+                        String newName = (e1.getText()).toString();
+                        t1.setText(newName);
+                        database.saveFilter(filterObject.getSerial(), newName);
+                    }).create();
+            dialog.show();
+
+            return true;
         });
     }
 

@@ -30,4 +30,8 @@ public class Filter {
     public String getSort() {
         return sort;
     }
+
+    public int getSerial() {
+        return serial;
+    }
 }
