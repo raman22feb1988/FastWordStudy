@@ -21,8 +21,8 @@ android {
         applicationId "com.tuchwords.wordstudy"
         minSdk 21
         targetSdk 36
-        versionCode 21
-        versionName "21.0"
+        versionCode 22
+        versionName "22.0"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -33,10 +33,12 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
+
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_11
         targetCompatibility JavaVersion.VERSION_11
     }
+
     namespace 'com.tuchwords.wordstudy'
 }
 
