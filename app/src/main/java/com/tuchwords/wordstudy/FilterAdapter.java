@@ -108,7 +108,7 @@ public class FilterAdapter extends RecyclerView.Adapter<FilterAdapter.ViewHolder
                     .setTitle("Rename saved word list")
                     .setView(yourCustomView)
                     .setPositiveButton("OK", (dialog1, whichButton) -> {
-                        String newName = (e1.getText()).toString();
+                        String newName = ((e1.getText()).toString()).replace("\"", "'");
                         t1.setText(newName);
                         database.saveFilter(filterObject.getSerial(), newName);
                     }).create();

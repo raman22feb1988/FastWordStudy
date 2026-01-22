@@ -2211,6 +2211,7 @@ public class sqliteDB extends SQLiteOpenHelper {
     public String getFullDetails(String myGuess)
     {
         StringBuilder allDetails = new StringBuilder();
+        HashSet<String> oneSide = new HashSet<>();
 
         char[] charArray = myGuess.toCharArray();
         Arrays.sort(charArray);
@@ -2228,26 +2229,26 @@ public class sqliteDB extends SQLiteOpenHelper {
             {
                 if (match)
                 {
-                    thePrefix.add(alpha.substring(0, alpha.length() - 1) + myGuess.charAt(0) + myGuess);
+                    thePrefix.add("%" + alpha.substring(0, alpha.length() - 1) + myGuess.charAt(0) + myGuess);
                 }
             }
             else if (!alpha.isEmpty() && alpha.charAt(alpha.length() - 1) == '-')
             {
                 if (match)
                 {
-                    thePrefix.add(alpha.substring(0, alpha.length() - 1) + myGuess.substring(1));
+                    thePrefix.add("%" + alpha.substring(0, alpha.length() - 1) + myGuess.substring(1));
                 }
             }
             else
             {
                 if (match)
                 {
-                    thePrefix.add(alpha + myGuess);
+                    thePrefix.add("%" + alpha + myGuess);
                 }
             }
         }
 
-        StringBuilder result1 = getFullPrefixes(thePrefix, false);
+        StringBuilder result1 = getFullSuffixes(thePrefix, "_word_ != \"" + myGuess + "\" AND ", false, oneSide, false);
         if (result1.length() > 0) {
             allDetails.append("<br>").append("<b>Prefixes:</b> ").append(result1);
         }
@@ -2264,35 +2265,118 @@ public class sqliteDB extends SQLiteOpenHelper {
             {
                 if (mismatch)
                 {
-                    theSuffix.add(myGuess + myGuess.charAt(myGuess.length() - 1) + alpha.substring(1));
+                    theSuffix.add(myGuess + myGuess.charAt(myGuess.length() - 1) + alpha.substring(1) + "%");
                 }
             }
             else if (!alpha.isEmpty() && alpha.charAt(0) == '-')
             {
                 if (mismatch)
                 {
-                    theSuffix.add(myGuess.substring(0, myGuess.length() - 1) + alpha.substring(1));
+                    theSuffix.add(myGuess.substring(0, myGuess.length() - 1) + alpha.substring(1) + "%");
                 }
             }
             else
             {
                 if (mismatch)
                 {
-                    theSuffix.add(myGuess + alpha);
+                    theSuffix.add(myGuess + alpha + "%");
                 }
             }
         }
 
-        StringBuilder result2 = getFullPrefixes(theSuffix, false);
+        StringBuilder result2 = getFullSuffixes(theSuffix, "_word_ != \"" + myGuess + "\" AND ", false, oneSide, false);
         if (result2.length() > 0) {
             allDetails.append("<br>").append("<b>Suffixes:</b> ").append(result2);
         }
 
+        ArrayList<String> bothSides = new ArrayList<>();
+        for (Pair<String, String> prefixItem : thePrefixes)
+        {
+            for (Pair<String, String> suffixItem : theSuffixes)
+            {
+                String prefixAlpha = prefixItem.first;
+                String prefixBeta = prefixItem.second;
+                String suffixAlpha = suffixItem.first;
+                String suffixBeta = suffixItem.second;
+                boolean prefixMatch = (prefixBeta.isEmpty() || prefixBeta.contains(Character.toString(myGuess.charAt(0))));
+                boolean suffixMatch = (suffixBeta.isEmpty() || suffixBeta.contains(Character.toString(myGuess.charAt(myGuess.length() - 1))));
+
+                if (!prefixAlpha.isEmpty() && !suffixAlpha.isEmpty() && prefixAlpha.charAt(prefixAlpha.length() - 1) == '+' && suffixAlpha.charAt(0) == '+')
+                {
+                    if (prefixMatch && suffixMatch)
+                    {
+                        bothSides.add("%" + prefixAlpha.substring(0, prefixAlpha.length() - 1) + myGuess.charAt(0) + myGuess + myGuess.charAt(myGuess.length() - 1) + suffixAlpha.substring(1) + "%");
+                    }
+                }
+                else if (!prefixAlpha.isEmpty() && !suffixAlpha.isEmpty() && prefixAlpha.charAt(prefixAlpha.length() - 1) == '+' && suffixAlpha.charAt(0) == '-')
+                {
+                    if (prefixMatch && suffixMatch)
+                    {
+                        bothSides.add("%" + prefixAlpha.substring(0, prefixAlpha.length() - 1) + myGuess.charAt(0) + myGuess.substring(0, myGuess.length() - 1) + suffixAlpha.substring(1) + "%");
+                    }
+                }
+                else if (!prefixAlpha.isEmpty() && !suffixAlpha.isEmpty() && prefixAlpha.charAt(prefixAlpha.length() - 1) == '-' && suffixAlpha.charAt(0) == '+')
+                {
+                    if (prefixMatch && suffixMatch)
+                    {
+                        bothSides.add("%" + prefixAlpha.substring(0, prefixAlpha.length() - 1) + myGuess.substring(1) + myGuess.charAt(myGuess.length() - 1) + suffixAlpha.substring(1) + "%");
+                    }
+                }
+                else if (!prefixAlpha.isEmpty() && !suffixAlpha.isEmpty() && prefixAlpha.charAt(prefixAlpha.length() - 1) == '-' && suffixAlpha.charAt(0) == '-')
+                {
+                    if (prefixMatch && suffixMatch)
+                    {
+                        bothSides.add("%" + prefixAlpha.substring(0, prefixAlpha.length() - 1) + myGuess.substring(1, myGuess.length() - 1) + suffixAlpha.substring(1) + "%");
+                    }
+                }
+                else if (!prefixAlpha.isEmpty() && prefixAlpha.charAt(prefixAlpha.length() - 1) == '+')
+                {
+                    if (prefixMatch && suffixMatch)
+                    {
+                        bothSides.add("%" + prefixAlpha.substring(0, prefixAlpha.length() - 1) + myGuess.charAt(0) + myGuess + suffixAlpha + "%");
+                    }
+                }
+                else if (!prefixAlpha.isEmpty() && prefixAlpha.charAt(prefixAlpha.length() - 1) == '-')
+                {
+                    if (prefixMatch && suffixMatch)
+                    {
+                        bothSides.add("%" + prefixAlpha.substring(0, prefixAlpha.length() - 1) + myGuess.substring(1) + suffixAlpha + "%");
+                    }
+                }
+                else if (!suffixAlpha.isEmpty() && suffixAlpha.charAt(0) == '+')
+                {
+                    if (prefixMatch && suffixMatch)
+                    {
+                        bothSides.add("%" + prefixAlpha + myGuess + myGuess.charAt(myGuess.length() - 1) + suffixAlpha.substring(1) + "%");
+                    }
+                }
+                else if (!suffixAlpha.isEmpty() && suffixAlpha.charAt(0) == '-')
+                {
+                    if (prefixMatch && suffixMatch)
+                    {
+                        bothSides.add("%" + prefixAlpha + myGuess.substring(0, myGuess.length() - 1) + suffixAlpha.substring(1) + "%");
+                    }
+                }
+                else
+                {
+                    if (prefixMatch && suffixMatch)
+                    {
+                        bothSides.add("%" + prefixAlpha + myGuess + suffixAlpha + "%");
+                    }
+                }
+            }
+        }
+
+        StringBuilder result3 = getFullSuffixes(bothSides, "_word_ != \"" + myGuess + "\" AND ", false, oneSide, true);
+        if (result3.length() > 0) {
+            allDetails.append("<br>").append("<b>Extensions on both sides:</b> ").append(result3);
+        }
+
         ArrayList<String> theAnagram = new ArrayList<>();
         theAnagram.add(myAnagram);
-        StringBuilder result3 = getFullSuffixes(theAnagram, "_word_ != \"" + myGuess + "\" AND ", true);
-        if (result3.length() > 0) {
-            allDetails.append("<br>").append("<b>Anagrams:</b> ").append(result3);
+        StringBuilder result4 = getFullSuffixes(theAnagram, "_word_ != \"" + myGuess + "\" AND ", true, null, false);
+        if (result4.length() > 0) {
+            allDetails.append("<br>").append("<b>Anagrams:</b> ").append(result4);
         }
 
         ArrayList<String> singleLetterChange = new ArrayList<>();
@@ -2301,9 +2385,9 @@ public class sqliteDB extends SQLiteOpenHelper {
             singleLetterChange.add(myGuess.substring(0, myIndex) + "_" + myGuess.substring(myIndex + 1));
         }
 
-        StringBuilder result4 = getFullSuffixes(singleLetterChange, "_word_ != \"" + myGuess + "\" AND ", false);
-        if (result4.length() > 0) {
-            allDetails.append("<br>").append("<b>One letter change by position:</b> ").append(result4);
+        StringBuilder result5 = getFullSuffixes(singleLetterChange, "_word_ != \"" + myGuess + "\" AND ", false, null, false);
+        if (result5.length() > 0) {
+            allDetails.append("<br>").append("<b>One letter change by position:</b> ").append(result5);
         }
 
         ArrayList<String> singleLetterAdd = new ArrayList<>();
@@ -2319,9 +2403,9 @@ public class sqliteDB extends SQLiteOpenHelper {
             myCharacter = current;
         }
 
-        StringBuilder result5 = getFullPrefixes(singleLetterAdd, true);
-        if (result5.length() > 0) {
-            allDetails.append("<br>").append("<b>One letter drop:</b> ").append(result5);
+        StringBuilder result6 = getFullPrefixes(singleLetterAdd, true);
+        if (result6.length() > 0) {
+            allDetails.append("<br>").append("<b>One letter drop:</b> ").append(result6);
         }
 
         ArrayList<String> oneLetterDrop = new ArrayList<>();
@@ -2347,9 +2431,9 @@ public class sqliteDB extends SQLiteOpenHelper {
             previous = present;
         }
 
-        StringBuilder result6 = getFullSuffixes(oneLetterDrop, "_word_ != \"" + myGuess + "\" AND _length_ = " + myGuess.length() + " AND ", true);
-        if (result6.length() > 0) {
-            allDetails.append("<br>").append("<b>One letter change:</b> ").append(result6);
+        StringBuilder result7 = getFullSuffixes(oneLetterDrop, "_word_ != \"" + myGuess + "\" AND _length_ = " + myGuess.length() + " AND ", true, null, false);
+        if (result7.length() > 0) {
+            allDetails.append("<br>").append("<b>One letter change:</b> ").append(result7);
         }
 
         StringBuilder oneLetterChange = new StringBuilder();
@@ -2362,9 +2446,9 @@ public class sqliteDB extends SQLiteOpenHelper {
         ArrayList<String> oneLetterAdd = new ArrayList<>();
         oneLetterAdd.add(new String(oneLetterChange));
 
-        StringBuilder result7 = getFullSuffixes(oneLetterAdd, "_length_ = " + (myGuess.length() + 1) + " AND ", true);
-        if (result7.length() > 0) {
-            allDetails.append("<br>").append("<b>One letter addition:</b> ").append(result7);
+        StringBuilder result8 = getFullSuffixes(oneLetterAdd, "_length_ = " + (myGuess.length() + 1) + " AND ", true, null, false);
+        if (result8.length() > 0) {
+            allDetails.append("<br>").append("<b>One letter addition:</b> ").append(result8);
         }
 
         return new String(allDetails);
@@ -2398,7 +2482,7 @@ public class sqliteDB extends SQLiteOpenHelper {
         return fullDetails;
     }
 
-    public StringBuilder getFullSuffixes(ArrayList<String> argument, String condition, boolean myAlphagram)
+    public StringBuilder getFullSuffixes(ArrayList<String> argument, String condition, boolean myAlphagram, HashSet<String> oneSide, boolean redundant)
     {
         StringBuilder fullDetails = new StringBuilder();
         SQLiteDatabase db = this.getReadableDatabase();
@@ -2427,21 +2511,28 @@ public class sqliteDB extends SQLiteOpenHelper {
         }
 
         Cursor cursor = db.rawQuery("SELECT _front_, _word_, _back_ FROM words WHERE " + listItems + " ORDER BY _word_", null);
-
         int radix = 0;
 
         if (cursor.moveToFirst()) {
             do {
-                String firstItem = cursor.getString(0);
                 String secondItem = cursor.getString(1);
-                String thirdItem = cursor.getString(2);
 
-                if (radix > 0) {
-                    fullDetails.append(", ");
+                if (!redundant || !oneSide.contains(secondItem))
+                {
+                    String firstItem = cursor.getString(0);
+                    String thirdItem = cursor.getString(2);
+
+                    if (radix > 0) {
+                        fullDetails.append(", ");
+                    }
+
+                    fullDetails.append("<small>").append(firstItem).append("</small> ").append(secondItem).append(" <small>").append(thirdItem).append("</small>");
+                    radix++;
+
+                    if (!redundant && oneSide != null) {
+                        oneSide.add(secondItem);
+                    }
                 }
-
-                fullDetails.append("<small>").append(firstItem).append("</small> ").append(secondItem).append(" <small>").append(thirdItem).append("</small>");
-                radix++;
             } while (cursor.moveToNext());
         }
 
