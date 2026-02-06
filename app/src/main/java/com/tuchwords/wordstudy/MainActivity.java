@@ -109,15 +109,15 @@ public class MainActivity extends AppCompatActivity {
 
         pref = getApplicationContext().getSharedPreferences("AppData", 0);
         boolean prepared = pref.getBoolean("prepared", false);
-        hidden = pref.getBoolean("hidden", false);
+        hidden = pref.getBoolean("hidden", true);
         detail = pref.getBoolean("detail", false);
         int version = pref.getInt("version", 1);
         Menu menu = navigationView.getMenu();
 
-        if (hidden)
+        if (!hidden)
         {
             MenuItem menuItem = menu.findItem(R.id.button14);
-            menuItem.setTitle("Show number of anagrams");
+            menuItem.setTitle("Hide number of anagrams");
         }
 
         if (detail)
@@ -208,7 +208,7 @@ public class MainActivity extends AppCompatActivity {
                         editor.apply();
                         if (cusadapter != null) {
                             cusadapter.setHidden(false);
-                            cusadapter.notifyDataSetChanged();
+                            refresh();
                         }
                     } else {
                         hidden = true;
@@ -218,7 +218,7 @@ public class MainActivity extends AppCompatActivity {
                         editor.apply();
                         if (cusadapter != null) {
                             cusadapter.setHidden(true);
-                            cusadapter.notifyDataSetChanged();
+                            refresh();
                         }
                     }
                     break;
@@ -323,7 +323,7 @@ public class MainActivity extends AppCompatActivity {
                     db.messageBox("View all tables and columns", db.getSchema(), MainActivity.this);
                     break;
                 case R.id.button51:
-                    // Show a Toast message for the Letter distribution item
+                    // Show a Toast message for the View letter distribution item
                     db.letterDistribution(MainActivity.this);
                     break;
                 case R.id.button52:

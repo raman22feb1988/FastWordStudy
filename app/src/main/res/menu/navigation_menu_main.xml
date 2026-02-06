@@ -35,7 +35,7 @@
                 android:title="Change rows, columns, font size" />
             <item
                 android:id="@+id/button14"
-                android:title="Hide number of anagrams" />
+                android:title="Show number of anagrams" />
             <item
                 android:id="@+id/button21"
                 android:title="Show similar words (Slower)" />
@@ -107,7 +107,7 @@
                 android:title="View all tables and columns" />
             <item
                 android:id="@+id/button51"
-                android:title="Letter distribution" />
+                android:title="View letter distribution" />
         </menu>
     </item>
     <item android:title="Import and export">
