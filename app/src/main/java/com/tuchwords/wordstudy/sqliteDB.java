@@ -985,7 +985,7 @@ public class sqliteDB extends SQLiteOpenHelper {
                 coloursList.put("Guessable", "#FF8000");
                 coloursList.put("Past", "#00C0FF");
                 coloursList.put("Learnt", "#B97A57");
-                coloursList.put("New", "#FFFF00");
+                coloursList.put("New", "#C0C000");
                 coloursList.put("Removed", black);
                 coloursList.put("", white);
 
