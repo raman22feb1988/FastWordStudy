@@ -52,7 +52,7 @@ public class MainActivity extends AppCompatActivity {
     int letters = 0;
     String sqlQuery = "*";
     int mode = 0;
-    String label = "(No Action)";
+    String label = "(No action)";
     String ultimate;
     String white;
     boolean hidden;
@@ -980,7 +980,7 @@ public class MainActivity extends AppCompatActivity {
         white = (nightModeFlags == Configuration.UI_MODE_NIGHT_YES ? "#000000" : "#FFFFFF");
         ultimate = selectedWord;
 
-        if (label.equals("(No Action)"))
+        if (label.equals("(No action)"))
         {
             displayDefinition(meaning, category, lexicons);
         }
@@ -1089,7 +1089,7 @@ public class MainActivity extends AppCompatActivity {
     public void refreshSpinner()
     {
         labelsList = db.getAllLabels();
-        labelsList.add(0, new Pair<>("(No Action)", null));
+        labelsList.add(0, new Pair<>("(No action)", null));
         colourList = db.getColours();
 
         ColourAdapter comboBoxAdapter = new ColourAdapter(MainActivity.this, R.layout.colour, R.id.textview41, labelsList, MainActivity.this, true, combo);
@@ -1253,7 +1253,7 @@ public class MainActivity extends AppCompatActivity {
 
         Spinner s2 = yourCustomView.findViewById(R.id.spinner2);
         List<Pair<String, String>> tagsList = new ArrayList<>(labelsList.subList(1, labelsList.size()));;
-        tagsList.add(0, new Pair<>("(All Tags)", null));
+        tagsList.add(0, new Pair<>("(All tags)", null));
 
         ColourAdapter spinnerAdapter = new ColourAdapter(MainActivity.this, R.layout.colour, R.id.textview41, tagsList, MainActivity.this, true, combo);
         s2.setAdapter(spinnerAdapter);

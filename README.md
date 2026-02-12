@@ -4,7 +4,7 @@ Word Study mobile app: It contains 100 words per page which can be tagged in ran
 It covers all words by different lengths in descending order of probability across several pages.  
 If a certain page is incompletely studied, then you can go to the next page and study some of the known words there and come back to the incompletely solved page with all of your progress saved.  
 Tags can be chosen from the drop down list box at the top of the page and words can be tagged in different colours.  
-(No Action) tag can also be chosen if you just want to view a word and not want to apply any of tags to it.  
+(No action) tag can also be chosen if you just want to view a word and not want to apply any of tags to it.  
 Click on any of words to see definitions and long click on any of words to see all anagrams of the word.
 ***
 Custom Query can be used to filter words, for example:
