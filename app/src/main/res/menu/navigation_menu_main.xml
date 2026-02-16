@@ -35,7 +35,7 @@
                 android:title="Change rows, columns, font size" />
             <item
                 android:id="@+id/button14"
-                android:title="Show number of anagrams" />
+                android:title="Hide number of anagrams" />
             <item
                 android:id="@+id/button21"
                 android:title="Show similar words (Slower)" />

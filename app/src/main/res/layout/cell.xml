@@ -9,7 +9,7 @@
     <TextView
         android:id="@+id/textview11"
         android:textStyle="bold"
-        android:textAlignment="viewStart"
+        android:textAlignment="center"
         android:maxLines="1"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content">
@@ -17,7 +17,7 @@
     <TextView
         android:id="@+id/textview10"
         android:textStyle="bold"
-        android:textAlignment="viewEnd"
+        android:textAlignment="center"
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
     </TextView>

@@ -6,6 +6,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
+import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -70,6 +71,7 @@ public class MainActivity extends AppCompatActivity {
     CustomAdapter cusadapter;
     SharedPreferences pref;
 
+    MyViewModel viewModel;
     TextView t1;
     TextView t2;
     Button b1;
@@ -102,6 +104,9 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        // Standard ViewModel instantiation works automatically
+        viewModel = new ViewModelProvider(this).get(MyViewModel.class);
+
         // Initialize the DrawerLayout, NavigationView and Toolbar
         drawerLayout = findViewById(R.id.drawer_layout_main);
         NavigationView navigationView = findViewById(R.id.nav_view_main);
@@ -109,15 +114,15 @@ public class MainActivity extends AppCompatActivity {
 
         pref = getApplicationContext().getSharedPreferences("AppData", 0);
         boolean prepared = pref.getBoolean("prepared", false);
-        hidden = pref.getBoolean("hidden", true);
+        hidden = pref.getBoolean("hidden", false);
         detail = pref.getBoolean("detail", false);
         int version = pref.getInt("version", 1);
         Menu menu = navigationView.getMenu();
 
-        if (!hidden)
+        if (hidden)
         {
             MenuItem menuItem = menu.findItem(R.id.button14);
-            menuItem.setTitle("Hide number of anagrams");
+            menuItem.setTitle("Show number of anagrams");
         }
 
         if (detail)
@@ -992,9 +997,9 @@ public class MainActivity extends AppCompatActivity {
             l1.setBackgroundColor(Color.parseColor(newColour));
 
             if (newColour.equals(white)) {
-                t2.setText(Html.fromHtml(meaning + " <b>" + (label.isEmpty() ? "(No Tag)" : label) + " " + lexicons + "</b>" + (detail ? db.getFullDetails(selectedWord) : "")));
+                t2.setText(Html.fromHtml(meaning + " <b>" + (label.isEmpty() ? "(No tag)" : label) + " " + lexicons + "</b>" + (detail ? db.getFullDetails(selectedWord) : "")));
             } else {
-                t2.setText(Html.fromHtml("<font color=\"" + newColour + "\">" + meaning + " <b>" + (label.isEmpty() ? "(No Tag)" : label) + " " + lexicons + "</b>" + (detail ? db.getFullDetails(selectedWord) : "") + "</font>"));
+                t2.setText(Html.fromHtml("<font color=\"" + newColour + "\">" + meaning + " <b>" + (label.isEmpty() ? "(No tag)" : label) + " " + lexicons + "</b>" + (detail ? db.getFullDetails(selectedWord) : "") + "</font>"));
             }
         }
     }
@@ -1071,18 +1076,18 @@ public class MainActivity extends AppCompatActivity {
     {
         if (colourList.containsKey(category)) {
             if ((colourList.get(category)).equals(white)) {
-                t2.setText(Html.fromHtml(meaning + " <b>" + (category.isEmpty() ? "(No Tag)" : category) + " " + lexicons + "</b>" + (detail ? db.getFullDetails(ultimate) : "")));
+                t2.setText(Html.fromHtml(meaning + " <b>" + (category.isEmpty() ? "(No tag)" : category) + " " + lexicons + "</b>" + (detail ? db.getFullDetails(ultimate) : "")));
             } else {
-                t2.setText(Html.fromHtml("<font color=\"" + colourList.get(category) + "\">" + meaning + " <b>" + (category.isEmpty() ? "(No Tag)" : category) + " " + lexicons + "</b>" + (detail ? db.getFullDetails(ultimate) : "") + "</font>"));
+                t2.setText(Html.fromHtml("<font color=\"" + colourList.get(category) + "\">" + meaning + " <b>" + (category.isEmpty() ? "(No tag)" : category) + " " + lexicons + "</b>" + (detail ? db.getFullDetails(ultimate) : "") + "</font>"));
             }
         } else if (colourList.containsKey("")) {
             if ((colourList.get("")).equals(white)) {
-                t2.setText(Html.fromHtml(meaning + " <b>" + (category.isEmpty() ? "(No Tag)" : category) + " " + lexicons + "</b>" + (detail ? db.getFullDetails(ultimate) : "")));
+                t2.setText(Html.fromHtml(meaning + " <b>" + (category.isEmpty() ? "(No tag)" : category) + " " + lexicons + "</b>" + (detail ? db.getFullDetails(ultimate) : "")));
             } else {
-                t2.setText(Html.fromHtml("<font color=\"" + colourList.get("") + "\">" + meaning + " <b>" + (category.isEmpty() ? "(No Tag)" : category) + " " + lexicons + "</b>" + (detail ? db.getFullDetails(ultimate) : "") + "</font>"));
+                t2.setText(Html.fromHtml("<font color=\"" + colourList.get("") + "\">" + meaning + " <b>" + (category.isEmpty() ? "(No tag)" : category) + " " + lexicons + "</b>" + (detail ? db.getFullDetails(ultimate) : "") + "</font>"));
             }
         } else {
-            t2.setText(Html.fromHtml(meaning + " <b>" + (category.isEmpty() ? "(No Tag)" : category) + " " + lexicons + "</b>" + (detail ? db.getFullDetails(ultimate) : "")));
+            t2.setText(Html.fromHtml(meaning + " <b>" + (category.isEmpty() ? "(No tag)" : category) + " " + lexicons + "</b>" + (detail ? db.getFullDetails(ultimate) : "")));
         }
     }
 

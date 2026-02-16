@@ -109,16 +109,9 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Click on any of grid cells to see definitions of words"
+                android:text="Click on any word to see definition and to change tag"
                 android:textStyle="bold"
                 android:id="@+id/textview7">
-            </TextView>
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Click on any of grid cells also to change tags of words"
-                android:textStyle="bold"
-                android:id="@+id/textview70">
             </TextView>
             <TextView
                 android:layout_width="wrap_content"
