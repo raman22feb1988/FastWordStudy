@@ -89,7 +89,6 @@ public class CustomAdapter extends RecyclerView.Adapter<CustomAdapter.ViewHolder
         t2.setTextSize(size);
 
         String li = (colourList.containsKey(cardbox) ? colourList.get(cardbox) : (colourList.containsKey("") ? colourList.get("") : "#FFFFFF"));
-
         l1.setBackgroundColor(Color.parseColor(li));
 
         v.setOnClickListener(v1 -> {
@@ -112,8 +111,12 @@ public class CustomAdapter extends RecyclerView.Adapter<CustomAdapter.ViewHolder
                 parentActivity.getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
                 int screenWidth = displayMetrics.widthPixels;
                 if (measuredWidth * dimensions < screenWidth) {
-                    v.setMinimumWidth(screenWidth / dimensions);
-                    t1.setMinimumWidth((screenWidth / dimensions) - t2.getWidth());
+                    int newWidth = screenWidth / dimensions;
+                    int leftWidth = t1.getWidth();
+                    int rightWidth = t2.getWidth();
+                    int remainingWidth = newWidth - leftWidth - rightWidth;
+                    t1.setMinimumWidth(rightWidth == 0 ? leftWidth + remainingWidth : leftWidth + (remainingWidth / 2));
+                    t2.setMinimumWidth(rightWidth == 0 ? 0 : rightWidth + (remainingWidth / 2));
                 }
             }
         });

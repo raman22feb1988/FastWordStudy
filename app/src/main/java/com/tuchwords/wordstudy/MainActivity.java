@@ -1,12 +1,12 @@
 package com.tuchwords.wordstudy;
 
 import androidx.activity.OnBackPressedCallback;
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
-import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -71,7 +71,6 @@ public class MainActivity extends AppCompatActivity {
     CustomAdapter cusadapter;
     SharedPreferences pref;
 
-    MyViewModel viewModel;
     TextView t1;
     TextView t2;
     Button b1;
@@ -103,9 +102,6 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
-        // Standard ViewModel instantiation works automatically
-        viewModel = new ViewModelProvider(this).get(MyViewModel.class);
 
         // Initialize the DrawerLayout, NavigationView and Toolbar
         drawerLayout = findViewById(R.id.drawer_layout_main);
@@ -267,9 +263,7 @@ public class MainActivity extends AppCompatActivity {
                         editor.apply();
                     }
 
-                    if (ultimate != null) {
-                        refreshDefinition();
-                    }
+                    refreshDefinition();
                     break;
                 case R.id.button22:
                     // Show a Toast message for the View all prefixes and suffixes item
@@ -470,6 +464,23 @@ public class MainActivity extends AppCompatActivity {
                     }).create();
             dialog3.show();
         });
+
+        int nightModeFlags =
+                this.getResources().getConfiguration().uiMode &
+                        Configuration.UI_MODE_NIGHT_MASK;
+        white = (nightModeFlags == Configuration.UI_MODE_NIGHT_YES ? "#000000" : "#FFFFFF");
+
+        if (savedInstanceState != null) {
+            // Restore your data from the Bundle
+            letters = savedInstanceState.getInt("letters");
+            sqlQuery = savedInstanceState.getString("sqlQuery");
+            mode = savedInstanceState.getInt("mode");
+            label = savedInstanceState.getString("label");
+            ultimate = savedInstanceState.getString("ultimate");
+            orderBy = savedInstanceState.getString("orderBy");
+
+            refresh();
+        }
     }
 
     public void promptDictionary(boolean deleteTable)
@@ -978,11 +989,6 @@ public class MainActivity extends AppCompatActivity {
         String meaning = chosenWord.get(0);
         String category = chosenWord.get(2);
         String lexicons = chosenWord.get(3);
-
-        int nightModeFlags =
-                this.getResources().getConfiguration().uiMode &
-                        Configuration.UI_MODE_NIGHT_MASK;
-        white = (nightModeFlags == Configuration.UI_MODE_NIGHT_YES ? "#000000" : "#FFFFFF");
         ultimate = selectedWord;
 
         if (label.equals("(No action)"))
@@ -993,7 +999,6 @@ public class MainActivity extends AppCompatActivity {
             db.updateLabel(selectedWord, label);
             (jumbles.get(selectedWord)).set(2, label);
             String newColour = colourList.get(label);
-
             l1.setBackgroundColor(Color.parseColor(newColour));
 
             if (newColour.equals(white)) {
@@ -1324,6 +1329,7 @@ public class MainActivity extends AppCompatActivity {
                     }
                     else
                     {
+                        mode = 1;
                         letters = temporary;
                         sqlQuery = intermediate;
                         orderBy = sortBy(sortIndex);
@@ -1468,5 +1474,18 @@ public class MainActivity extends AppCompatActivity {
             case 1: return " ORDER BY RANDOM()" + (selection[1] == 1 ? " DESC" : "");
             default: return " ORDER BY _" + allColumns.get(selection[0]) + "_" + (selection[1] == 1 ? " DESC" : "");
         }
+    }
+
+    @Override
+    protected void onSaveInstanceState(@NonNull Bundle outState) {
+        super.onSaveInstanceState(outState);
+
+        // Save your custom data to the Bundle
+        outState.putInt("letters", letters);
+        outState.putString("sqlQuery", sqlQuery);
+        outState.putInt("mode", mode);
+        outState.putString("label", label);
+        outState.putString("ultimate", ultimate);
+        outState.putString("orderBy", orderBy);
     }
 }
