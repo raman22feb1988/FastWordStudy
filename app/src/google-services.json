@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "303939288556",
+    "project_id": "my-awesome-project-id-e9d2b",
+    "storage_bucket": "my-awesome-project-id-e9d2b.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:303939288556:android:d3ccbb585277d365d094c9",
+        "android_client_info": {
+          "package_name": "com.tuchwords.wordquiz"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBURJF6GmFAHquCCDlE4_i5ECQt-Pb8LFA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:303939288556:android:bdad6de04bd6119ad094c9",
+        "android_client_info": {
+          "package_name": "com.tuchwords.wordstudy"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBURJF6GmFAHquCCDlE4_i5ECQt-Pb8LFA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
