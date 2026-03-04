@@ -692,11 +692,11 @@ public class sqliteDB extends SQLiteOpenHelper {
         return new String(schema);
     }
 
-    public int insertScores(int letters, int counter, String sqlQuery, String orderBy)
+    public long insertScores(int letters, int counter, String sqlQuery, String orderBy)
     {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues contentValues = new ContentValues();
-        int filterSerial = getFilterSerial();
+        long filterSerial = getFilterSerial();
 
         contentValues.put("_length_", letters);
         contentValues.put("_counter_", counter);
@@ -1146,10 +1146,10 @@ public class sqliteDB extends SQLiteOpenHelper {
         }
     }
 
-    public int getCounter(int letters, String sqlQuery, String orderBy)
+    public int getCounter(long filterSerial)
     {
         SQLiteDatabase db = this.getReadableDatabase();
-        Cursor cursor = db.rawQuery("SELECT _counter_ FROM filters WHERE _length_ = " + letters + " AND _query_ = \"" + sqlQuery + "\" AND _sort_ = \"" + orderBy + "\"", null);
+        Cursor cursor = db.rawQuery("SELECT _counter_ FROM filters WHERE _serial_ = " + filterSerial, null);
 
         String data = null;
 
@@ -1169,17 +1169,17 @@ public class sqliteDB extends SQLiteOpenHelper {
         }
     }
 
-    public int getExist(int letters, String sqlQuery, String orderBy)
+    public long getExist(int letters, String sqlQuery, String orderBy)
     {
         SQLiteDatabase db = this.getReadableDatabase();
         Cursor cursor = db.rawQuery("SELECT _serial_ FROM filters WHERE _length_ = " + letters + " AND _query_ = \"" + sqlQuery + "\" AND _sort_ = \"" + orderBy + "\"", null);
 
-        int exist = 0;
+        long exist = 0;
 
         if (cursor.getCount() > 0) {
             if (cursor.moveToFirst()) {
                 do {
-                    exist = cursor.getInt(0);
+                    exist = cursor.getLong(0);
                 } while (cursor.moveToNext());
             }
         }
@@ -1301,14 +1301,14 @@ public class sqliteDB extends SQLiteOpenHelper {
         }
     }
 
-    public void updateCounter(int letters, int counter, String sqlQuery, String orderBy) {
+    public void updateCounter(long filterSerial, int counter) {
         SQLiteDatabase db = this.getWritableDatabase();
 
         ContentValues values = new ContentValues();
         values.put("_counter_", counter);
 
-        db.update("filters", values, "_length_ = ? AND _query_ = ? AND _sort_ = ?",
-                new String[] {Integer.toString(letters), sqlQuery, orderBy});
+        db.update("filters", values, "_serial_ = ?",
+                new String[] {Long.toString(filterSerial)});
     }
 
     public void alertBox(String title, String message, Context location)
@@ -2777,18 +2777,18 @@ public class sqliteDB extends SQLiteOpenHelper {
         dialog.show();
     }
 
-    public int getFilterSerial() {
+    public long getFilterSerial() {
         SQLiteDatabase db = this.getWritableDatabase();
         db.execSQL(
                 "UPDATE zoom SET _columns_ = _columns_ + 1 WHERE _activity_ = \"List\""
         );
 
         Cursor cursor = db.rawQuery("SELECT _columns_ FROM zoom WHERE _activity_ = \"List\"", null);
-        int filterSerial = 0;
+        long filterSerial = 0;
 
         if (cursor.moveToFirst()) {
             do {
-                filterSerial = cursor.getInt(0);
+                filterSerial = cursor.getLong(0);
             } while (cursor.moveToNext());
         }
 
@@ -2796,7 +2796,7 @@ public class sqliteDB extends SQLiteOpenHelper {
         return filterSerial;
     }
 
-    public String getFilterName(int filterNumber) {
+    public String getFilterName(long filterNumber) {
         SQLiteDatabase db = this.getReadableDatabase();
 
         Cursor cursor = db.rawQuery("SELECT _name_ FROM filters WHERE _serial_ = " + filterNumber, null);
@@ -2814,14 +2814,14 @@ public class sqliteDB extends SQLiteOpenHelper {
         return filterIdentity;
     }
 
-    public void saveFilter(int filterNumber, String filterName) {
+    public void saveFilter(long filterNumber, String filterName) {
         SQLiteDatabase db = this.getWritableDatabase();
 
         ContentValues filterValues = new ContentValues();
         filterValues.put("_name_", filterName);
 
         db.update("filters", filterValues, "_serial_ = ?",
-                new String[] {Integer.toString(filterNumber)});
+                new String[] {Long.toString(filterNumber)});
     }
 
     public ArrayList<Filter> loadFilter(String filterString) {
@@ -2836,7 +2836,7 @@ public class sqliteDB extends SQLiteOpenHelper {
                 String query = cursor.getString(1);
                 String sort = cursor.getString(2);
                 String name = cursor.getString(3);
-                int serial = cursor.getInt(4);
+                long serial = cursor.getLong(4);
 
                 Filter myFilter = new Filter(length, query, sort, name, serial);
                 filterList.add(myFilter);

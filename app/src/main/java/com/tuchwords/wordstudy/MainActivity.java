@@ -93,7 +93,7 @@ public class MainActivity extends AppCompatActivity {
     int combo;
     int loader;
     int maximumWordLength;
-    int filterSerial;
+    long filterSerial;
 
     // Declare the DrawerLayout, NavigationView and Toolbar
     private DrawerLayout drawerLayout;
@@ -329,7 +329,7 @@ public class MainActivity extends AppCompatActivity {
                     // Show a Toast message for the Load saved word list item
                     LayoutInflater inflater3 = LayoutInflater.from(MainActivity.this);
                     final View yourCustomView5 = inflater3.inflate(R.layout.list, null);
-                    EditText e17 = yourCustomView5.findViewById(R.id.edittext30);
+                    EditText e4 = yourCustomView5.findViewById(R.id.edittext30);
 
                     RecyclerView g2 = yourCustomView5.findViewById(R.id.gridview3);
                     RecyclerView.LayoutManager listManager = new LinearLayoutManager(MainActivity.this, LinearLayoutManager.VERTICAL, false);
@@ -338,7 +338,7 @@ public class MainActivity extends AppCompatActivity {
                     final FilterAdapter[] filterAdapter = {new FilterAdapter(MainActivity.this, R.layout.list, db.loadFilter(""), loader, db)};
                     g2.setAdapter(filterAdapter[0]);
 
-                    e17.addTextChangedListener(new TextWatcher() {
+                    e4.addTextChangedListener(new TextWatcher() {
                         @Override
                         public void afterTextChanged(Editable s) {
                         }
@@ -478,6 +478,7 @@ public class MainActivity extends AppCompatActivity {
             label = savedInstanceState.getString("label");
             ultimate = savedInstanceState.getString("ultimate");
             orderBy = savedInstanceState.getString("orderBy");
+            filterSerial = savedInstanceState.getLong("filterSerial");
 
             refresh();
         }
@@ -801,17 +802,17 @@ public class MainActivity extends AppCompatActivity {
     {
         closeCursor();
 
-        int exist = db.getExist(letters, sqlQuery, orderBy);
+        long exist = db.getExist(letters, sqlQuery, orderBy);
         filterSerial = (exist == 0 ? db.insertScores(letters, 0, sqlQuery, orderBy) : exist);
 
         anagrams = db.getAllAnagrams(letters, sqlQuery, orderBy);
         words = anagrams.getCount();
-        counter = db.getCounter(letters, sqlQuery, orderBy);
+        counter = db.getCounter(filterSerial);
 
         int high = (words - 1) / (rows * columns);
         if (counter > high && words > 0) {
             counter = high;
-            db.updateCounter(letters, counter, sqlQuery, orderBy);
+            db.updateCounter(filterSerial, counter);
         }
 
         ultimate = null;
@@ -834,19 +835,19 @@ public class MainActivity extends AppCompatActivity {
             words = anagrams.getCount();
             letters = 0;
 
-            int exist = db.getExist(letters, sqlQuery, orderBy);
+            long exist = db.getExist(letters, sqlQuery, orderBy);
             filterSerial = (exist == 0 ? db.insertScores(letters, counter, sqlQuery, orderBy) : exist);
-            counter = (exist == 0 ? 0 : db.getCounter(letters, sqlQuery, orderBy));
+            counter = (exist == 0 ? 0 : db.getCounter(filterSerial));
 
             int highest = (words - 1) / (rows * columns);
             if (counter > highest && words > 0) {
                 counter = highest;
-                db.updateCounter(letters, counter, sqlQuery, orderBy);
+                db.updateCounter(filterSerial, counter);
             }
 
             ultimate = null;
             db.emptyTable(MainActivity.this);
-            executeSqlQuery();
+            nextWord();
         }
     }
 
@@ -870,7 +871,7 @@ public class MainActivity extends AppCompatActivity {
             {
                 counter = (words - 1) / (rows * columns);
             }
-            db.updateCounter(letters, counter, sqlQuery, orderBy);
+            db.updateCounter(filterSerial, counter);
             ultimate = null;
             nextWord();
         });
@@ -881,7 +882,7 @@ public class MainActivity extends AppCompatActivity {
             {
                 counter = 0;
             }
-            db.updateCounter(letters, counter, sqlQuery, orderBy);
+            db.updateCounter(filterSerial, counter);
             ultimate = null;
             nextWord();
         });
@@ -908,73 +909,7 @@ public class MainActivity extends AppCompatActivity {
                         {
                             ultimate = null;
                             counter = page - 1;
-                            db.updateCounter(letters, counter, sqlQuery, orderBy);
-                            nextWord();
-                        }
-                    }).create();
-            dialog.show();
-        });
-    }
-
-    public void executeSqlQuery()
-    {
-        b1.setEnabled(true);
-        b2.setEnabled(true);
-        b5.setEnabled(true);
-        b6.setEnabled(true);
-
-        t1.setText("Page " + (counter + 1) + " out of " + (((words - 1) / (rows * columns)) + 1) + " (" + words + (words == 1 ? " word)" : " words)"));
-        if (ultimate == null) {
-            t2.setText("");
-        }
-
-        updateGridView();
-
-        b1.setOnClickListener(view -> {
-            counter--;
-            if (counter < 0)
-            {
-                counter = (words - 1) / (rows * columns);
-            }
-            db.updateCounter(letters, counter, sqlQuery, orderBy);
-            ultimate = null;
-            executeSqlQuery();
-        });
-
-        b2.setOnClickListener(view -> {
-            counter++;
-            if (counter == ((words - 1) / (rows * columns)) + 1)
-            {
-                counter = 0;
-            }
-            db.updateCounter(letters, counter, sqlQuery, orderBy);
-            ultimate = null;
-            executeSqlQuery();
-        });
-
-        b5.setOnClickListener(view -> {
-            LayoutInflater inflater = LayoutInflater.from(MainActivity.this);
-            final View yourCustomView = inflater.inflate(R.layout.input, null);
-
-            EditText e4 = yourCustomView.findViewById(R.id.edittext1);
-            int maximum = ((words - 1) / (rows * columns)) + 1;
-            e4.setHint("Enter a value between 1 and " + maximum);
-
-            AlertDialog dialog = new AlertDialog.Builder(MainActivity.this)
-                    .setTitle("Go to page")
-                    .setView(yourCustomView)
-                    .setPositiveButton("OK", (dialog1, whichButton) -> {
-                        String pages = (e4.getText()).toString();
-                        int page = (pages.isEmpty() ? 0 : Integer.parseInt(pages));
-                        if (page < 1 || page > maximum)
-                        {
-                            Toast.makeText(MainActivity.this, "Enter a value between 1 and " + maximum, Toast.LENGTH_LONG).show();
-                        }
-                        else
-                        {
-                            counter = page - 1;
-                            db.updateCounter(letters, counter, sqlQuery, orderBy);
-                            ultimate = null;
+                            db.updateCounter(filterSerial, counter);
                             nextWord();
                         }
                     }).create();
@@ -1037,12 +972,12 @@ public class MainActivity extends AppCompatActivity {
             closeCursor();
             anagrams = db.getAllAnagrams(letters, sqlQuery, orderBy);
             words = anagrams.getCount();
-            counter = db.getCounter(letters, sqlQuery, orderBy);
+            counter = db.getCounter(filterSerial);
 
             int peak = (words - 1) / (rows * columns);
             if (counter > peak && words > 0) {
                 counter = peak;
-                db.updateCounter(letters, counter, sqlQuery, orderBy);
+                db.updateCounter(filterSerial, counter);
             }
 
             nextWord();
@@ -1051,15 +986,15 @@ public class MainActivity extends AppCompatActivity {
             closeCursor();
             anagrams = db.getSqlQuery(sqlQuery, MainActivity.this, orderBy);
             words = anagrams.getCount();
-            counter = db.getCounter(letters, sqlQuery, orderBy);
+            counter = db.getCounter(filterSerial);
 
             int apex = (words - 1) / (rows * columns);
             if (counter > apex && words > 0) {
                 counter = apex;
-                db.updateCounter(letters, counter, sqlQuery, orderBy);
+                db.updateCounter(filterSerial, counter);
             }
 
-            executeSqlQuery();
+            nextWord();
             refreshDefinition();
         }
     }
@@ -1487,5 +1422,6 @@ public class MainActivity extends AppCompatActivity {
         outState.putString("label", label);
         outState.putString("ultimate", ultimate);
         outState.putString("orderBy", orderBy);
+        outState.putLong("filterSerial", filterSerial);
     }
 }
