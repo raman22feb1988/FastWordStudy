@@ -45,6 +45,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Red:"
+            android:textColor="@color/red"
             android:id="@+id/textview19">
         </TextView>
         <TextView
@@ -68,6 +69,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Green:"
+            android:textColor="@color/green"
             android:id="@+id/textview21">
         </TextView>
         <TextView
@@ -91,6 +93,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Blue:"
+            android:textColor="@color/blue"
             android:id="@+id/textview23">
         </TextView>
         <TextView
