@@ -330,6 +330,9 @@ public class MainActivity extends AppCompatActivity {
                     LayoutInflater inflater3 = LayoutInflater.from(MainActivity.this);
                     final View yourCustomView5 = inflater3.inflate(R.layout.list, null);
                     EditText e4 = yourCustomView5.findViewById(R.id.edittext30);
+                    CheckBox c5 = yourCustomView5.findViewById(R.id.checkbox5);
+                    Button b7 = yourCustomView5.findViewById(R.id.button53);
+                    Button b8 = yourCustomView5.findViewById(R.id.button54);
 
                     RecyclerView g2 = yourCustomView5.findViewById(R.id.gridview3);
                     RecyclerView.LayoutManager listManager = new LinearLayoutManager(MainActivity.this, LinearLayoutManager.VERTICAL, false);
@@ -349,7 +352,29 @@ public class MainActivity extends AppCompatActivity {
 
                         @Override
                         public void onTextChanged(CharSequence s, int start, int before, int count) {
-                            filterAdapter[0] = new FilterAdapter(MainActivity.this, R.layout.list, db.loadFilter(s.toString()), loader, db);
+                            if (c5.isChecked()) {
+                                filterAdapter[0] = new FilterAdapter(MainActivity.this, R.layout.list, db.loadFilter(s.toString()), loader, db);
+                                g2.setAdapter(filterAdapter[0]);
+                            }
+                        }
+                    });
+
+                    b7.setOnClickListener(v -> {
+                        filterAdapter[0] = new FilterAdapter(MainActivity.this, R.layout.list, db.loadFilter((e4.getText()).toString()), loader, db);
+                        g2.setAdapter(filterAdapter[0]);
+                    });
+
+                    b8.setOnClickListener(v -> {
+                        e4.setText("");
+                        if (c5.isChecked()) {
+                            filterAdapter[0] = new FilterAdapter(MainActivity.this, R.layout.list, db.loadFilter((e4.getText()).toString()), loader, db);
+                            g2.setAdapter(filterAdapter[0]);
+                        }
+                    });
+
+                    c5.setOnCheckedChangeListener((buttonView, isChecked) -> {
+                        if (isChecked) {
+                            filterAdapter[0] = new FilterAdapter(MainActivity.this, R.layout.list, db.loadFilter((e4.getText()).toString()), loader, db);
                             g2.setAdapter(filterAdapter[0]);
                         }
                     });

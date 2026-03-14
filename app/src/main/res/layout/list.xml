@@ -3,23 +3,44 @@
     android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
-    <LinearLayout
-        android:orientation="horizontal"
+    <EditText
+        android:id="@+id/edittext30"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Search for word lists starting with"
+        android:background="@drawable/rectangle">
+    </EditText>
+    <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
-        <TextView
+        <Button
+            android:id="@+id/button53"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Search:">
-        </TextView>
-        <EditText
-            android:id="@+id/edittext30"
+            android:layout_alignParentEnd="true"
+            android:layout_marginStart="-5dp"
+            android:layout_marginEnd="-5dp"
+            android:text="Search">
+        </Button>
+        <Button
+            android:id="@+id/button54"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_toStartOf="@+id/button53"
+            android:layout_marginStart="-5dp"
+            android:layout_marginEnd="-5dp"
+            android:text="Clear">
+        </Button>
+        <CheckBox
+            android:id="@+id/checkbox5"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Starting with"
-            android:background="@drawable/rectangle">
-        </EditText>
-    </LinearLayout>
+            android:layout_gravity="start"
+            android:layout_toStartOf="@+id/button54"
+            android:text="Update on every letter change"
+            android:checked="true">
+        </CheckBox>
+    </RelativeLayout>
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
