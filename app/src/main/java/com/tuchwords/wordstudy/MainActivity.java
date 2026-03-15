@@ -949,11 +949,12 @@ public class MainActivity extends AppCompatActivity {
         String meaning = chosenWord.get(0);
         String category = chosenWord.get(2);
         String lexicons = chosenWord.get(3);
+        String serialNumber = chosenWord.get(4);
         ultimate = selectedWord;
 
         if (label.equals("(No action)"))
         {
-            displayDefinition(meaning, category, lexicons);
+            displayDefinition(meaning, category, lexicons, serialNumber);
         }
         else {
             db.updateLabel(selectedWord, label);
@@ -962,9 +963,9 @@ public class MainActivity extends AppCompatActivity {
             l1.setBackgroundColor(Color.parseColor(newColour));
 
             if (newColour.equals(white)) {
-                t2.setText(Html.fromHtml(meaning + " <b>" + (label.isEmpty() ? "(No tag)" : label) + " " + lexicons + "</b>" + (detail ? db.getFullDetails(selectedWord) : "")));
+                t2.setText(Html.fromHtml(meaning + " <b>" + (label.isEmpty() ? "(No tag)" : label) + " " + lexicons + "</b> " + serialNumber + (detail ? db.getFullDetails(selectedWord) : "")));
             } else {
-                t2.setText(Html.fromHtml("<font color=\"" + newColour + "\">" + meaning + " <b>" + (label.isEmpty() ? "(No tag)" : label) + " " + lexicons + "</b>" + (detail ? db.getFullDetails(selectedWord) : "") + "</font>"));
+                t2.setText(Html.fromHtml("<font color=\"" + newColour + "\">" + meaning + " <b>" + (label.isEmpty() ? "(No tag)" : label) + " " + lexicons + "</b> " + serialNumber + (detail ? db.getFullDetails(selectedWord) : "") + "</font>"));
             }
         }
     }
@@ -1032,27 +1033,28 @@ public class MainActivity extends AppCompatActivity {
             String meaning = tag.get(0);
             String category = tag.get(2);
             String lexicons = tag.get(3);
+            String serialNumber = tag.get(4);
 
-            displayDefinition(meaning, category, lexicons);
+            displayDefinition(meaning, category, lexicons, serialNumber);
         }
     }
 
-    public void displayDefinition(String meaning, String category, String lexicons)
+    public void displayDefinition(String meaning, String category, String lexicons, String serialNumber)
     {
         if (colourList.containsKey(category)) {
             if ((colourList.get(category)).equals(white)) {
-                t2.setText(Html.fromHtml(meaning + " <b>" + (category.isEmpty() ? "(No tag)" : category) + " " + lexicons + "</b>" + (detail ? db.getFullDetails(ultimate) : "")));
+                t2.setText(Html.fromHtml(meaning + " <b>" + (category.isEmpty() ? "(No tag)" : category) + " " + lexicons + "</b> " + serialNumber + (detail ? db.getFullDetails(ultimate) : "")));
             } else {
-                t2.setText(Html.fromHtml("<font color=\"" + colourList.get(category) + "\">" + meaning + " <b>" + (category.isEmpty() ? "(No tag)" : category) + " " + lexicons + "</b>" + (detail ? db.getFullDetails(ultimate) : "") + "</font>"));
+                t2.setText(Html.fromHtml("<font color=\"" + colourList.get(category) + "\">" + meaning + " <b>" + (category.isEmpty() ? "(No tag)" : category) + " " + lexicons + "</b> " + serialNumber + (detail ? db.getFullDetails(ultimate) : "") + "</font>"));
             }
         } else if (colourList.containsKey("")) {
             if ((colourList.get("")).equals(white)) {
-                t2.setText(Html.fromHtml(meaning + " <b>" + (category.isEmpty() ? "(No tag)" : category) + " " + lexicons + "</b>" + (detail ? db.getFullDetails(ultimate) : "")));
+                t2.setText(Html.fromHtml(meaning + " <b>" + (category.isEmpty() ? "(No tag)" : category) + " " + lexicons + "</b> " + serialNumber + (detail ? db.getFullDetails(ultimate) : "")));
             } else {
-                t2.setText(Html.fromHtml("<font color=\"" + colourList.get("") + "\">" + meaning + " <b>" + (category.isEmpty() ? "(No tag)" : category) + " " + lexicons + "</b>" + (detail ? db.getFullDetails(ultimate) : "") + "</font>"));
+                t2.setText(Html.fromHtml("<font color=\"" + colourList.get("") + "\">" + meaning + " <b>" + (category.isEmpty() ? "(No tag)" : category) + " " + lexicons + "</b> " + serialNumber + (detail ? db.getFullDetails(ultimate) : "") + "</font>"));
             }
         } else {
-            t2.setText(Html.fromHtml(meaning + " <b>" + (category.isEmpty() ? "(No tag)" : category) + " " + lexicons + "</b>" + (detail ? db.getFullDetails(ultimate) : "")));
+            t2.setText(Html.fromHtml(meaning + " <b>" + (category.isEmpty() ? "(No tag)" : category) + " " + lexicons + "</b> " + serialNumber + (detail ? db.getFullDetails(ultimate) : "")));
         }
     }
 

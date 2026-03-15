@@ -572,7 +572,7 @@ public class sqliteDB extends SQLiteOpenHelper {
         int total = 1;
 
         SQLiteDatabase db = this.getReadableDatabase();
-        Cursor cursor = db.rawQuery("SELECT _word_, _definition_, _back_, _front_, _length_, _csw24_, _csw19_, _csw15_, _csw12_, _csw07_, _nwl23_, _nwl18_, _twl06_, _nswl23_, _wims_, _cel21_ FROM words WHERE _alphagram_ = \"" + order + "\"", null);
+        Cursor cursor = db.rawQuery("SELECT _word_, _definition_, _back_, _front_, _length_, _page_, _position_, _serial_, _csw24_, _csw19_, _csw15_, _csw12_, _csw07_, _nwl23_, _nwl18_, _twl06_, _nswl23_, _wims_, _cel21_ FROM words WHERE _alphagram_ = \"" + order + "\"", null);
 
         if (cursor.moveToFirst()) {
             do {
@@ -581,25 +581,28 @@ public class sqliteDB extends SQLiteOpenHelper {
                 String back = cursor.getString(2);
                 String front = cursor.getString(3);
                 int length = cursor.getInt(4);
-                int csw24 = cursor.getInt(5);
-                int csw19 = cursor.getInt(6);
-                int csw15 = cursor.getInt(7);
-                int csw12 = cursor.getInt(8);
-                int csw07 = cursor.getInt(9);
-                int nwl23 = cursor.getInt(10);
-                int nwl18 = cursor.getInt(11);
-                int twl06 = cursor.getInt(12);
-                int nswl23 = cursor.getInt(13);
-                int cel21 = cursor.getInt(14);
-                int wims = cursor.getInt(15);
+                int page = cursor.getInt(5);
+                int position = cursor.getInt(6);
+                int serial = cursor.getInt(7);
+                int csw24 = cursor.getInt(8);
+                int csw19 = cursor.getInt(9);
+                int csw15 = cursor.getInt(10);
+                int csw12 = cursor.getInt(11);
+                int csw07 = cursor.getInt(12);
+                int nwl23 = cursor.getInt(13);
+                int nwl18 = cursor.getInt(14);
+                int twl06 = cursor.getInt(15);
+                int nswl23 = cursor.getInt(16);
+                int cel21 = cursor.getInt(17);
+                int wims = cursor.getInt(18);
 
                 ArrayList<String> dictionaryList = dictionaries(length, csw24, csw19, csw15, csw12, csw07, nwl23, nwl18, twl06, nswl23, wims, cel21);
 
                 if (total == 1) {
-                    unsolvedAnswers.append(total).append(". <b><small>").append(front).append("</small> ").append(data).append(" <small>").append(back).append("</small></b> ").append(definition).append(" <b>").append(dictionaryList.get(0)).append(" ").append(dictionaryList.get(1)).append(" ").append(dictionaryList.get(2)).append(" ").append(dictionaryList.get(3)).append("</b>");
+                    unsolvedAnswers.append(total).append(". <b><small>").append(front).append("</small> ").append(data).append(" <small>").append(back).append("</small></b> ").append(definition).append(" <b>").append(dictionaryList.get(0)).append(" ").append(dictionaryList.get(1)).append(" ").append(dictionaryList.get(2)).append(" ").append(dictionaryList.get(3)).append("</b> Order ").append(serial).append(" (Word ").append(position).append(" in Page ").append(page).append(")");
                 }
                 else {
-                    unsolvedAnswers.append("<br>").append(total).append(". <b><small>").append(front).append("</small> ").append(data).append(" <small>").append(back).append("</small></b> ").append(definition).append(" <b>").append(dictionaryList.get(0)).append(" ").append(dictionaryList.get(1)).append(" ").append(dictionaryList.get(2)).append(" ").append(dictionaryList.get(3)).append("</b>");
+                    unsolvedAnswers.append("<br>").append(total).append(". <b><small>").append(front).append("</small> ").append(data).append(" <small>").append(back).append("</small></b> ").append(definition).append(" <b>").append(dictionaryList.get(0)).append(" ").append(dictionaryList.get(1)).append(" ").append(dictionaryList.get(2)).append(" ").append(dictionaryList.get(3)).append("</b> Order ").append(serial).append(" (Word ").append(position).append(" in Page ").append(page).append(")");
                 }
 
                 total++;
@@ -1205,7 +1208,7 @@ public class sqliteDB extends SQLiteOpenHelper {
         ArrayList<String> h = new ArrayList<>();
 
         SQLiteDatabase db = this.getReadableDatabase();
-        Cursor cursor = db.rawQuery("SELECT _word_, _definition_, _front_, _back_, _answers_, _tag_, _length_, _csw24_, _csw19_, _csw15_, _csw12_, _csw07_, _nwl23_, _nwl18_, _twl06_, _nswl23_, _wims_, _cel21_ FROM words WHERE _word_ = \"" + guess + "\"", null);
+        Cursor cursor = db.rawQuery("SELECT _word_, _definition_, _front_, _back_, _answers_, _tag_, _length_, _page_, _position_, _serial_, _csw24_, _csw19_, _csw15_, _csw12_, _csw07_, _nwl23_, _nwl18_, _twl06_, _nswl23_, _wims_, _cel21_ FROM words WHERE _word_ = \"" + guess + "\"", null);
 
         if (cursor.moveToFirst()) {
             do {
@@ -1216,17 +1219,20 @@ public class sqliteDB extends SQLiteOpenHelper {
                 String answers = cursor.getString(4);
                 String label = cursor.getString(5);
                 int length = cursor.getInt(6);
-                int csw24 = cursor.getInt(7);
-                int csw19 = cursor.getInt(8);
-                int csw15 = cursor.getInt(9);
-                int csw12 = cursor.getInt(10);
-                int csw07 = cursor.getInt(11);
-                int nwl23 = cursor.getInt(12);
-                int nwl18 = cursor.getInt(13);
-                int twl06 = cursor.getInt(14);
-                int nswl23 = cursor.getInt(15);
-                int cel21 = cursor.getInt(16);
-                int wims = cursor.getInt(17);
+                int page = cursor.getInt(7);
+                int position = cursor.getInt(8);
+                int serial = cursor.getInt(9);
+                int csw24 = cursor.getInt(10);
+                int csw19 = cursor.getInt(11);
+                int csw15 = cursor.getInt(12);
+                int csw12 = cursor.getInt(13);
+                int csw07 = cursor.getInt(14);
+                int nwl23 = cursor.getInt(15);
+                int nwl18 = cursor.getInt(16);
+                int twl06 = cursor.getInt(17);
+                int nswl23 = cursor.getInt(18);
+                int cel21 = cursor.getInt(19);
+                int wims = cursor.getInt(20);
 
                 ArrayList<String> dictionaryList = dictionaries(length, csw24, csw19, csw15, csw12, csw07, nwl23, nwl18, twl06, nswl23, wims, cel21);
                 String lexicons = dictionaryList.get(0) + " " + dictionaryList.get(1) + " " + dictionaryList.get(2) + " " + dictionaryList.get(3);
@@ -1235,6 +1241,7 @@ public class sqliteDB extends SQLiteOpenHelper {
                 h.add(answers);
                 h.add(label);
                 h.add(lexicons);
+                h.add("Order " + serial + " (Word " + position + " in Page " + page + ")");
             } while (cursor.moveToNext());
         }
 
@@ -1248,7 +1255,7 @@ public class sqliteDB extends SQLiteOpenHelper {
         String anagramsList = (((wordsList.toString()).replace("[", "(\"")).replace("]", "\")")).replace(", ", "\", \"");
 
         SQLiteDatabase db = this.getReadableDatabase();
-        Cursor cursor = db.rawQuery("SELECT _word_, _definition_, _front_, _back_, _answers_, _tag_, _length_, _csw24_, _csw19_, _csw15_, _csw12_, _csw07_, _nwl23_, _nwl18_, _twl06_, _nswl23_, _wims_, _cel21_ FROM words WHERE _word_ IN " + anagramsList, null);
+        Cursor cursor = db.rawQuery("SELECT _word_, _definition_, _front_, _back_, _answers_, _tag_, _length_, _page_, _position_, _serial_, _csw24_, _csw19_, _csw15_, _csw12_, _csw07_, _nwl23_, _nwl18_, _twl06_, _nswl23_, _wims_, _cel21_ FROM words WHERE _word_ IN " + anagramsList, null);
 
         if (cursor.moveToFirst()) {
             do {
@@ -1259,17 +1266,20 @@ public class sqliteDB extends SQLiteOpenHelper {
                 String answers = cursor.getString(4);
                 String label = cursor.getString(5);
                 int length = cursor.getInt(6);
-                int csw24 = cursor.getInt(7);
-                int csw19 = cursor.getInt(8);
-                int csw15 = cursor.getInt(9);
-                int csw12 = cursor.getInt(10);
-                int csw07 = cursor.getInt(11);
-                int nwl23 = cursor.getInt(12);
-                int nwl18 = cursor.getInt(13);
-                int twl06 = cursor.getInt(14);
-                int nswl23 = cursor.getInt(15);
-                int cel21 = cursor.getInt(16);
-                int wims = cursor.getInt(17);
+                int page = cursor.getInt(7);
+                int position = cursor.getInt(8);
+                int serial = cursor.getInt(9);
+                int csw24 = cursor.getInt(10);
+                int csw19 = cursor.getInt(11);
+                int csw15 = cursor.getInt(12);
+                int csw12 = cursor.getInt(13);
+                int csw07 = cursor.getInt(14);
+                int nwl23 = cursor.getInt(15);
+                int nwl18 = cursor.getInt(16);
+                int twl06 = cursor.getInt(17);
+                int nswl23 = cursor.getInt(18);
+                int cel21 = cursor.getInt(19);
+                int wims = cursor.getInt(20);
 
                 ArrayList<String> dictionaryList = dictionaries(length, csw24, csw19, csw15, csw12, csw07, nwl23, nwl18, twl06, nswl23, wims, cel21);
                 String lexicons = dictionaryList.get(0) + " " + dictionaryList.get(1) + " " + dictionaryList.get(2) + " " + dictionaryList.get(3);
@@ -1279,6 +1289,7 @@ public class sqliteDB extends SQLiteOpenHelper {
                 h.add(answers);
                 h.add(label);
                 h.add(lexicons);
+                h.add("Order " + serial + " (Word " + position + " in Page " + page + ")");
 
                 jumbles.put(data, h);
             } while (cursor.moveToNext());
