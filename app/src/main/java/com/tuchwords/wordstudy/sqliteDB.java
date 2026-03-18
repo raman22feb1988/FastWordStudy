@@ -22,6 +22,7 @@ import android.widget.EditText;
 import android.widget.ProgressBar;
 import android.widget.Spinner;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.GridLayoutManager;
@@ -599,10 +600,10 @@ public class sqliteDB extends SQLiteOpenHelper {
                 ArrayList<String> dictionaryList = dictionaries(length, csw24, csw19, csw15, csw12, csw07, nwl23, nwl18, twl06, nswl23, wims, cel21);
 
                 if (total == 1) {
-                    unsolvedAnswers.append(total).append(". <b><small>").append(front).append("</small> ").append(data).append(" <small>").append(back).append("</small></b> ").append(definition).append(" <b>").append(dictionaryList.get(0)).append(" ").append(dictionaryList.get(1)).append(" ").append(dictionaryList.get(2)).append(" ").append(dictionaryList.get(3)).append("</b> Order ").append(serial).append(" (Word ").append(position).append(" in Page ").append(page).append(")");
+                    unsolvedAnswers.append(total).append(". <b><small>").append(front).append("</small> ").append(data).append(" <small>").append(back).append("</small></b> ").append(definition).append(" <b>").append(dictionaryList.get(0)).append(" ").append(dictionaryList.get(1)).append(" ").append(dictionaryList.get(2)).append(" ").append(dictionaryList.get(3)).append("</b> Serial ").append(serial).append(" (Word ").append(position).append(" in Page ").append(page).append(")");
                 }
                 else {
-                    unsolvedAnswers.append("<br>").append(total).append(". <b><small>").append(front).append("</small> ").append(data).append(" <small>").append(back).append("</small></b> ").append(definition).append(" <b>").append(dictionaryList.get(0)).append(" ").append(dictionaryList.get(1)).append(" ").append(dictionaryList.get(2)).append(" ").append(dictionaryList.get(3)).append("</b> Order ").append(serial).append(" (Word ").append(position).append(" in Page ").append(page).append(")");
+                    unsolvedAnswers.append("<br>").append(total).append(". <b><small>").append(front).append("</small> ").append(data).append(" <small>").append(back).append("</small></b> ").append(definition).append(" <b>").append(dictionaryList.get(0)).append(" ").append(dictionaryList.get(1)).append(" ").append(dictionaryList.get(2)).append(" ").append(dictionaryList.get(3)).append("</b> Serial ").append(serial).append(" (Word ").append(position).append(" in Page ").append(page).append(")");
                 }
 
                 total++;
@@ -1241,7 +1242,7 @@ public class sqliteDB extends SQLiteOpenHelper {
                 h.add(answers);
                 h.add(label);
                 h.add(lexicons);
-                h.add("Order " + serial + " (Word " + position + " in Page " + page + ")");
+                h.add("Serial " + serial + " (Word " + position + " in Page " + page + ")");
             } while (cursor.moveToNext());
         }
 
@@ -1289,7 +1290,7 @@ public class sqliteDB extends SQLiteOpenHelper {
                 h.add(answers);
                 h.add(label);
                 h.add(lexicons);
-                h.add("Order " + serial + " (Word " + position + " in Page " + page + ")");
+                h.add("Serial " + serial + " (Word " + position + " in Page " + page + ")");
 
                 jumbles.put(data, h);
             } while (cursor.moveToNext());
@@ -2645,21 +2646,15 @@ public class sqliteDB extends SQLiteOpenHelper {
         });
 
         b2.setOnClickListener(v -> {
-            String originalString = (editText.getText()).toString();
-            boolean space = (originalString.isEmpty() || originalString.charAt(originalString.length() - 1) == ' ');
-            editText.append(space ? "AND" : " AND");
+            insertSql(editText, "AND");
         });
 
         b3.setOnClickListener(v -> {
-            String originalString = (editText.getText()).toString();
-            boolean space = (originalString.isEmpty() || originalString.charAt(originalString.length() - 1) == ' ');
-            editText.append(space ? "OR" : " OR");
+            insertSql(editText, "OR");
         });
 
         b4.setOnClickListener(v -> {
-            String originalString = (editText.getText()).toString();
-            boolean space = (originalString.isEmpty() || originalString.charAt(originalString.length() - 1) == ' ');
-            editText.append(space ? "NOT" : " NOT");
+            insertSql(editText, "NOT");
         });
 
         b5.setOnClickListener(v -> {
@@ -2687,38 +2682,30 @@ public class sqliteDB extends SQLiteOpenHelper {
         });
 
         b11.setOnClickListener(v -> {
-            String originalString = (editText.getText()).toString();
-            boolean space = (originalString.isEmpty() || originalString.charAt(originalString.length() - 1) == ' ');
             Column columnName = tableInformation.get(s9.getSelectedItemPosition());
             String conditions = ((e10.getText()).toString()).toUpperCase();
-            editText.append((space ? "" : " ") + columnName.getColumn(autoUnderscores.isChecked()) + " " + (s10.getSelectedItem()).toString() + " " + ((columnName.getType()).equalsIgnoreCase("text") ? "'" + conditions + "'" : conditions));
+            insertSql(editText, columnName.getColumn(autoUnderscores.isChecked()) + " " + (s10.getSelectedItem()).toString() + " " + ((columnName.getType()).equalsIgnoreCase("text") ? "'" + conditions + "'" : conditions));
         });
 
         b12.setOnClickListener(v -> {
-            String originalString = (editText.getText()).toString();
-            boolean space = (originalString.isEmpty() || originalString.charAt(originalString.length() - 1) == ' ');
             Column columnName = tableInformation.get(s11.getSelectedItemPosition());
             String conditions = ((e11.getText()).toString()).toUpperCase();
             String[] conditionList = conditions.split(",\\s*");
             String conditionsList = ((columnName.getType()).equalsIgnoreCase("text") ? "('" + String.join("', '", conditionList) + "')" : "(" + String.join(", ", conditionList) + ")");
-            editText.append((space ? "" : " ") + columnName.getColumn(autoUnderscores.isChecked()) + " " + (s12.getSelectedItem()).toString() + " " + conditionsList);
+            insertSql(editText, columnName.getColumn(autoUnderscores.isChecked()) + " " + (s12.getSelectedItem()).toString() + " " + conditionsList);
         });
 
         b13.setOnClickListener(v -> {
-            String originalString = (editText.getText()).toString();
-            boolean space = (originalString.isEmpty() || originalString.charAt(originalString.length() - 1) == ' ');
             Column columnName = tableInformation.get(s13.getSelectedItemPosition());
             String conditions = ((e12.getText()).toString()).toUpperCase();
-            editText.append((space ? "" : " ") + columnName.getColumn(autoUnderscores.isChecked()) + " LIKE " + ((columnName.getType()).equalsIgnoreCase("text") ? "'" + conditions + "'" : conditions));
+            insertSql(editText, columnName.getColumn(autoUnderscores.isChecked()) + " LIKE " + ((columnName.getType()).equalsIgnoreCase("text") ? "'" + conditions + "'" : conditions));
         });
 
         b14.setOnClickListener(v -> {
-            String originalString = (editText.getText()).toString();
-            boolean space = (originalString.isEmpty() || originalString.charAt(originalString.length() - 1) == ' ');
             Column columnName = tableInformation.get(s14.getSelectedItemPosition());
             String firstCondition = ((e13.getText()).toString()).toUpperCase();
             String secondCondition = ((e14.getText()).toString()).toUpperCase();
-            editText.append((space ? "" : " ") + columnName.getColumn(autoUnderscores.isChecked()) + " BETWEEN " + ((columnName.getType()).equalsIgnoreCase("text") ? "'" + firstCondition + "'" : firstCondition) + " AND " + ((columnName.getType()).equalsIgnoreCase("text") ? "'" + secondCondition + "'" : secondCondition));
+            insertSql(editText, columnName.getColumn(autoUnderscores.isChecked()) + " BETWEEN " + ((columnName.getType()).equalsIgnoreCase("text") ? "'" + firstCondition + "'" : firstCondition) + " AND " + ((columnName.getType()).equalsIgnoreCase("text") ? "'" + secondCondition + "'" : secondCondition));
         });
 
         s9.setAdapter(columnAdapter);
@@ -2733,6 +2720,23 @@ public class sqliteDB extends SQLiteOpenHelper {
         ArrayAdapter<String> comparatorAdapter = new ArrayAdapter<>(con, android.R.layout.simple_spinner_item, comparator);
         comparatorAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         s12.setAdapter(comparatorAdapter);
+    }
+
+    public void insertSql(EditText editText, String sqlString)
+    {
+        String originalString = (editText.getText()).toString();
+        int selectionStart = editText.getSelectionStart();
+        int selectionEnd = editText.getSelectionEnd();
+
+        if (selectionEnd < selectionStart) {
+            int selectionBegin = selectionStart;
+            selectionStart = selectionEnd;
+            selectionEnd = selectionBegin;
+        }
+
+        String startSpace = ((selectionStart == 0 || originalString.charAt(selectionStart - 1) == ' ') ? "" : " ");
+        String endSpace = ((selectionStart == originalString.length() || originalString.charAt(selectionEnd) == ' ') ? "" : " ");
+        (editText.getText()).replace(selectionStart, selectionEnd, startSpace + sqlString + endSpace);
     }
 
     public String myFormat(String myString) {
